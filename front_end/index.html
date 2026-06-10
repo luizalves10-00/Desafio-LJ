@@ -1,86 +1,394 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LevelUp Study – Painel</title>
   <style>
-    :root {
-      --bg: #0f0f1a;
-      --surface: #1a1a2e;
-      --surface2: #16213e;
-      --accent: #7c3aed;
-      --accent2: #a855f7;
-      --gold: #f59e0b;
-      --green: #10b981;
-      --red: #ef4444;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --border: #2d2d4e;
-      --radius: 12px;
+    /* ═══════════════════════════════════════════════
+       THEMES
+    ═══════════════════════════════════════════════ */
+    [data-theme="dark"] {
+      --bg:        #0f0f1a;
+      --bg2:       #13131f;
+      --surface:   #1a1a2e;
+      --surface2:  #16213e;
+      --border:    #2d2d4e;
+      --accent:    #7c3aed;
+      --accent2:   #a855f7;
+      --accent-glow: rgba(124,58,237,.25);
+      --gold:      #f59e0b;
+      --green:     #10b981;
+      --red:       #ef4444;
+      --text:      #e2e8f0;
+      --text2:     #cbd5e1;
+      --muted:     #94a3b8;
+      --sidebar-w: 240px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    [data-theme="ocean"] {
+      --bg:        #040d1a;
+      --bg2:       #071323;
+      --surface:   #0a1f3a;
+      --surface2:  #0d2748;
+      --border:    #1a3a5c;
+      --accent:    #0ea5e9;
+      --accent2:   #38bdf8;
+      --accent-glow: rgba(14,165,233,.25);
+      --gold:      #f59e0b;
+      --green:     #34d399;
+      --red:       #f87171;
+      --text:      #e0f2fe;
+      --text2:     #bae6fd;
+      --muted:     #7cb9e0;
+      --sidebar-w: 240px;
+    }
+    [data-theme="forest"] {
+      --bg:        #071210;
+      --bg2:       #0b1a16;
+      --surface:   #0f2318;
+      --surface2:  #132e20;
+      --border:    #1f4a30;
+      --accent:    #16a34a;
+      --accent2:   #4ade80;
+      --accent-glow: rgba(22,163,74,.25);
+      --gold:      #facc15;
+      --green:     #86efac;
+      --red:       #f87171;
+      --text:      #dcfce7;
+      --text2:     #bbf7d0;
+      --muted:     #6ee7b7;
+      --sidebar-w: 240px;
+    }
+    [data-theme="sunset"] {
+      --bg:        #1a0a05;
+      --bg2:       #200d06;
+      --surface:   #2d1008;
+      --surface2:  #3a1509;
+      --border:    #5a2510;
+      --accent:    #ea580c;
+      --accent2:   #fb923c;
+      --accent-glow: rgba(234,88,12,.25);
+      --gold:      #fbbf24;
+      --green:     #34d399;
+      --red:       #f87171;
+      --text:      #fff7ed;
+      --text2:     #fed7aa;
+      --muted:     #fdba74;
+      --sidebar-w: 240px;
+    }
+    [data-theme="light"] {
+      --bg:        #f1f5f9;
+      --bg2:       #e2e8f0;
+      --surface:   #ffffff;
+      --surface2:  #f8fafc;
+      --border:    #cbd5e1;
+      --accent:    #6d28d9;
+      --accent2:   #7c3aed;
+      --accent-glow: rgba(109,40,217,.15);
+      --gold:      #d97706;
+      --green:     #059669;
+      --red:       #dc2626;
+      --text:      #1e293b;
+      --text2:     #334155;
+      --muted:     #64748b;
+      --sidebar-w: 240px;
+    }
+    [data-theme="midnight"] {
+      --bg:        #000000;
+      --bg2:       #080808;
+      --surface:   #111111;
+      --surface2:  #181818;
+      --border:    #2a2a2a;
+      --accent:    #e879f9;
+      --accent2:   #f0abfc;
+      --accent-glow: rgba(232,121,249,.2);
+      --gold:      #fbbf24;
+      --green:     #34d399;
+      --red:       #f87171;
+      --text:      #f5f5f5;
+      --text2:     #e5e5e5;
+      --muted:     #a3a3a3;
+      --sidebar-w: 240px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      display: flex;
+      transition: background .3s, color .3s;
     }
 
-    /* ── HEADER ── */
-    header {
+    /* ═══════════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 20;
+      transition: transform .3s, background .3s;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      padding: 22px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-logo .brand {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--accent2);
+      line-height: 1;
+    }
+    .sidebar-logo .brand span { color: var(--gold); }
+    .sidebar-logo .tagline {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* XP bar inside sidebar */
+    .sidebar-xp {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-xp-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+    .sidebar-level {
+      font-size: .9rem;
+      font-weight: 800;
+      color: var(--accent2);
+    }
+    .sidebar-xp-val {
+      font-size: .72rem;
+      color: var(--muted);
+    }
+    .xp-bar {
+      height: 7px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .xp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 99px;
+      transition: width .6s ease;
+    }
+    .xp-next {
+      font-size: .68rem;
+      color: var(--muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    /* Nav items */
+    nav {
+      flex: 1;
+      padding: 10px 0;
+    }
+    .nav-section-label {
+      font-size: .62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      padding: 12px 20px 4px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background .15s, color .15s;
+      color: var(--muted);
+      font-size: .88rem;
+      font-weight: 500;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
+    }
+    .nav-item:hover { background: var(--surface2); color: var(--text); }
+    .nav-item.active {
+      color: var(--accent2);
+      background: var(--surface2);
+      font-weight: 700;
+    }
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent2);
+      border-radius: 0 2px 2px 0;
+    }
+    .nav-icon { font-size: 1.1rem; width: 22px; text-align: center; flex-shrink: 0; }
+
+    /* Streak badge in sidebar */
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 3px 10px;
+      font-size: .75rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin: 0 20px 8px;
+    }
+
+    /* User area at bottom */
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding: 14px 20px;
+      flex-shrink: 0;
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .85rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .user-details { min-width: 0; }
+    .user-name {
+      font-size: .82rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .user-email {
+      font-size: .68rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 8px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); background: rgba(239,68,68,.06); }
+
+    /* ═══════════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: margin .3s;
+    }
+
+    /* Top bar */
+    .topbar {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
+      padding: 14px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    .logo { font-size: 1.3rem; font-weight: 700; color: var(--accent2); }
-    .logo span { color: var(--gold); }
-
-    /* ── HERO STATS ── */
-    .hero-bar {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      flex-wrap: wrap;
+    .topbar-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
     }
-    .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-    .stat-label { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-    .stat-val { font-size: 1rem; font-weight: 700; }
-    .stat-val.gold { color: var(--gold); }
-    .stat-val.green { color: var(--green); }
-    .stat-val.purple { color: var(--accent2); }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
 
-    .xp-bar-wrap { display: flex; flex-direction: column; gap: 3px; min-width: 140px; }
-    .xp-bar-label { font-size: .65rem; color: var(--muted); display: flex; justify-content: space-between; }
-    .xp-bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
-    .xp-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .5s ease; }
+    /* hamburger (mobile) */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px;
+    }
 
-    /* ── LAYOUT ── */
-    main {
+    /* ── Content sections ── */
+    .content {
+      padding: 24px 28px;
+      flex: 1;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ═══════════════════════════════════════════════
+       CARDS & GRID
+    ═══════════════════════════════════════════════ */
+    .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
-      padding: 24px;
-      max-width: 1100px;
-      margin: 0 auto;
     }
-    @media (max-width: 700px) { main { grid-template-columns: 1fr; } }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .col-span-2 { grid-column: span 2; }
 
-    /* ── CARD ── */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 14px;
       padding: 20px;
+      transition: background .3s, border-color .3s;
     }
     .card-title {
-      font-size: .8rem;
+      font-size: .75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .08em;
@@ -88,350 +396,832 @@
       margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
     }
 
-    /* ── POMODORO ── */
+    /* stat cards */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: background .3s;
+    }
+    .stat-card-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .icon-purple { background: rgba(124,58,237,.18); }
+    .icon-gold   { background: rgba(245,158,11,.18); }
+    .icon-green  { background: rgba(16,185,129,.18); }
+    .icon-red    { background: rgba(239,68,68,.18);  }
+    .stat-info { min-width: 0; }
+    .stat-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text);
+    }
+    .stat-label { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+
+    /* ═══════════════════════════════════════════════
+       POMODORO
+    ═══════════════════════════════════════════════ */
     .timer-display {
-      font-size: 4rem;
+      font-size: 5rem;
       font-weight: 800;
       text-align: center;
       letter-spacing: .05em;
-      margin: 12px 0;
+      margin: 8px 0 4px;
       font-variant-numeric: tabular-nums;
+      color: var(--text);
+      transition: color .3s;
     }
     .timer-display.break { color: var(--green); }
     .timer-mode {
       text-align: center;
-      font-size: .8rem;
+      font-size: .82rem;
       color: var(--muted);
-      margin-bottom: 16px;
+      margin-bottom: 18px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
     }
-    .timer-btns { display: flex; gap: 10px; justify-content: center; }
+
+    /* ring progress */
+    .timer-ring-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .timer-ring {
+      transform: rotate(-90deg);
+    }
+    .ring-bg   { fill: none; stroke: var(--border); stroke-width: 6; }
+    .ring-fill {
+      fill: none;
+      stroke: var(--accent2);
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .9s linear, stroke .3s;
+    }
+    .ring-fill.break { stroke: var(--green); }
+    .timer-inner {
+      position: absolute;
+      text-align: center;
+    }
+
+    .timer-btns { display: flex; gap: 10px; justify-content: center; margin-top: 16px; }
     .btn {
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       padding: 10px 22px;
-      font-size: .9rem;
-      font-weight: 600;
+      font-size: .88rem;
+      font-weight: 700;
       cursor: pointer;
-      transition: opacity .15s, transform .1s;
+      transition: opacity .15s, transform .1s, box-shadow .15s;
+      letter-spacing: .02em;
     }
     .btn:active { transform: scale(.97); }
-    .btn:hover { opacity: .88; }
-    .btn-primary { background: var(--accent); color: #fff; }
-    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn:hover  { opacity: .88; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .btn-primary  { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; box-shadow: 0 4px 14px var(--accent-glow); }
+    .btn-secondary { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+    .btn-gold   { background: var(--gold); color: #1a0a00; }
+    .btn-green  { background: var(--green); color: #fff; }
     .btn-danger { background: var(--red); color: #fff; }
-    .btn-gold { background: var(--gold); color: #0f0f1a; }
-    .btn-green { background: var(--green); color: #fff; }
-    .btn-sm { padding: 6px 14px; font-size: .8rem; }
+    .btn-sm { padding: 7px 14px; font-size: .78rem; }
+    .btn-full { width: 100%; justify-content: center; }
 
-    .pomodoro-count {
+    .preset-row {
       display: flex;
-      gap: 6px;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .pom-dots {
+      display: flex;
+      gap: 7px;
       justify-content: center;
       margin-top: 14px;
     }
     .pom-dot {
-      width: 10px; height: 10px;
+      width: 11px; height: 11px;
       border-radius: 50%;
       background: var(--border);
-      transition: background .3s;
+      transition: background .3s, transform .2s;
     }
-    .pom-dot.done { background: var(--accent2); }
+    .pom-dot.done { background: var(--accent2); transform: scale(1.15); }
 
-    /* ── TASKS ── */
-    .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    /* ═══════════════════════════════════════════════
+       TASKS
+    ═══════════════════════════════════════════════ */
+    .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
     .task-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
     input, select {
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 10px;
+      padding: 9px 13px;
       color: var(--text);
-      font-size: .85rem;
+      font-size: .88rem;
       outline: none;
-      transition: border-color .2s;
+      transition: border-color .2s, box-shadow .2s, background .3s;
     }
-    input:focus, select:focus { border-color: var(--accent2); }
-    input[type="text"] { flex: 1; min-width: 120px; }
-    input[type="date"] { flex: 1; min-width: 120px; }
+    input:focus, select:focus {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    input[type="text"] { flex: 1; min-width: 140px; }
+    input[type="date"] { flex: 1; min-width: 130px; }
+    input::placeholder { color: var(--muted); }
+    select option { background: var(--surface2); }
 
-    .task-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+    .task-list { display: flex; flex-direction: column; gap: 8px; }
     .task-item {
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 10px 14px;
+      border-radius: 10px;
+      padding: 11px 14px;
       display: flex;
       align-items: center;
       gap: 10px;
-      transition: opacity .2s;
+      transition: opacity .2s, border-color .2s;
     }
-    .task-item.done { opacity: .45; }
+    .task-item:hover { border-color: var(--accent); }
+    .task-item.done { opacity: .4; }
     .task-item.done .task-title { text-decoration: line-through; }
     .task-info { flex: 1; min-width: 0; }
     .task-title { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .task-meta { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .task-meta  { font-size: .72rem; color: var(--muted); margin-top: 2px; }
     .priority-badge {
-      font-size: .65rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 99px;
-      white-space: nowrap;
+      font-size: .65rem; font-weight: 700;
+      padding: 3px 9px; border-radius: 99px; white-space: nowrap; flex-shrink: 0;
     }
-    .p1 { background: #fca5a5; color: #7f1d1d; }
-    .p2 { background: #fde68a; color: #78350f; }
-    .p3 { background: #86efac; color: #14532d; }
+    .p1 { background: rgba(239,68,68,.18);   color: #fca5a5; }
+    .p2 { background: rgba(245,158,11,.18);  color: #fde68a; }
+    .p3 { background: rgba(16,185,129,.18);  color: #86efac; }
     .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
-    /* ── SUGGEST ── */
+    .empty-state {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--muted);
+      font-size: .88rem;
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 8px; }
+
+    /* ═══════════════════════════════════════════════
+       SUGGEST BOX
+    ═══════════════════════════════════════════════ */
     .suggest-box {
-      background: linear-gradient(135deg, #1e1b4b, #1a1a2e);
+      background: linear-gradient(135deg, var(--surface2), var(--surface));
       border: 1px solid var(--accent);
-      border-radius: var(--radius);
+      border-radius: 12px;
       padding: 18px;
       display: flex;
       flex-direction: column;
+      gap: 8px;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .suggest-title { font-size: 1.05rem; font-weight: 700; color: var(--accent2); }
+    .suggest-body  { font-size: .88rem; color: var(--text2); }
+    .suggest-meta  { font-size: .75rem; color: var(--muted); }
+
+    /* ═══════════════════════════════════════════════
+       ACHIEVEMENTS
+    ═══════════════════════════════════════════════ */
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 12px;
     }
-    .suggest-title { font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
-    .suggest-body { font-size: .9rem; color: var(--text); }
-    .suggest-meta { font-size: .78rem; color: var(--muted); }
-
-    /* ── ACHIEVEMENTS ── */
-    .achievements { display: flex; flex-wrap: wrap; gap: 10px; }
     .badge {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
-      padding: 10px 14px;
+      gap: 6px;
+      padding: 16px 12px;
       background: var(--surface2);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      opacity: .3;
-      transition: opacity .3s, border-color .3s;
+      border-radius: 12px;
+      text-align: center;
+      opacity: .28;
+      transition: opacity .3s, border-color .3s, box-shadow .3s;
     }
-    .badge.unlocked { opacity: 1; border-color: var(--gold); }
-    .badge-icon { font-size: 1.6rem; }
-    .badge-name { font-size: .65rem; color: var(--muted); text-align: center; }
+    .badge.unlocked {
+      opacity: 1;
+      border-color: var(--gold);
+      box-shadow: 0 0 16px rgba(245,158,11,.18);
+    }
+    .badge-icon { font-size: 2rem; }
+    .badge-name { font-size: .72rem; color: var(--muted); font-weight: 600; }
+    .badge-desc { font-size: .65rem; color: var(--muted); }
 
-    /* ── TOAST ── */
-    #toast-container {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
+    /* ═══════════════════════════════════════════════
+       THEMES SECTION
+    ═══════════════════════════════════════════════ */
+    .themes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+    .theme-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s, box-shadow .2s;
+    }
+    .theme-card:hover { transform: translateY(-3px); }
+    .theme-card.active { border-color: var(--accent2); box-shadow: 0 0 20px var(--accent-glow); }
+    .theme-preview {
+      height: 90px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      z-index: 100;
+      padding: 10px;
+      gap: 6px;
+      position: relative;
+    }
+    .preview-bar { height: 8px; border-radius: 4px; }
+    .preview-card { height: 28px; border-radius: 6px; }
+    .theme-name {
+      padding: 8px 12px;
+      font-size: .82rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .theme-check { font-size: .9rem; }
+
+    /* individual theme previews */
+    .tp-dark     { background: #0f0f1a; }
+    .tp-dark     .preview-bar { background: #7c3aed; }
+    .tp-dark     .preview-card { background: #1a1a2e; border: 1px solid #2d2d4e; }
+    .tp-dark     .theme-name { background: #1a1a2e; color: #e2e8f0; }
+
+    .tp-ocean    { background: #040d1a; }
+    .tp-ocean    .preview-bar { background: #0ea5e9; }
+    .tp-ocean    .preview-card { background: #0a1f3a; border: 1px solid #1a3a5c; }
+    .tp-ocean    .theme-name { background: #0a1f3a; color: #e0f2fe; }
+
+    .tp-forest   { background: #071210; }
+    .tp-forest   .preview-bar { background: #16a34a; }
+    .tp-forest   .preview-card { background: #0f2318; border: 1px solid #1f4a30; }
+    .tp-forest   .theme-name { background: #0f2318; color: #dcfce7; }
+
+    .tp-sunset   { background: #1a0a05; }
+    .tp-sunset   .preview-bar { background: #ea580c; }
+    .tp-sunset   .preview-card { background: #2d1008; border: 1px solid #5a2510; }
+    .tp-sunset   .theme-name { background: #2d1008; color: #fff7ed; }
+
+    .tp-light    { background: #f1f5f9; }
+    .tp-light    .preview-bar { background: #6d28d9; }
+    .tp-light    .preview-card { background: #ffffff; border: 1px solid #cbd5e1; }
+    .tp-light    .theme-name { background: #ffffff; color: #1e293b; }
+
+    .tp-midnight { background: #000000; }
+    .tp-midnight .preview-bar { background: #e879f9; }
+    .tp-midnight .preview-card { background: #111111; border: 1px solid #2a2a2a; }
+    .tp-midnight .theme-name { background: #111111; color: #f5f5f5; }
+
+    /* ═══════════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════════ */
+    #toast-container {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      display: flex; flex-direction: column;
+      gap: 8px; z-index: 100;
     }
     .toast {
       background: var(--surface);
-      border: 1px solid var(--accent);
-      border-radius: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
       padding: 12px 18px;
       color: var(--text);
-      font-size: .88rem;
+      font-size: .86rem;
       animation: slide-in .3s ease;
-      max-width: 280px;
+      max-width: 290px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
     }
     .toast.gold { border-color: var(--gold); }
-    .toast .xp-gain { font-weight: 700; color: var(--gold); }
+    .toast.green { border-color: var(--green); }
     @keyframes slide-in {
-      from { transform: translateX(100px); opacity: 0; }
+      from { transform: translateX(110px); opacity: 0; }
       to   { transform: translateX(0);     opacity: 1; }
     }
 
-    /* ── USER MENU ── */
-    .user-menu { display: flex; align-items: center; gap: 10px; }
-    .user-name { font-size: .82rem; color: var(--muted); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .btn-logout {
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-size: .78rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: border-color .2s, color .2s;
+    /* ═══════════════════════════════════════════════
+       MOBILE OVERLAY
+    ═══════════════════════════════════════════════ */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 19;
     }
-    .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
     /* scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+      :root { --sidebar-w: 240px; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.show { display: block; }
+      .main { margin-left: 0; }
+      .hamburger { display: block; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .col-span-2 { grid-column: span 1; }
+      .content { padding: 16px; }
+    }
+    @media (max-width: 480px) {
+      .timer-display { font-size: 3.5rem; }
+    }
   </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">LevelUp <span>Study</span></div>
-  <div class="hero-bar">
-    <div class="stat">
-      <span class="stat-label">Nível</span>
-      <span class="stat-val purple" id="hdr-level">1</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">XP</span>
-      <span class="stat-val gold" id="hdr-xp">0</span>
-    </div>
-    <div class="stat">
-      <span class="stat-label">🔥 Streak</span>
-      <span class="stat-val green" id="hdr-streak">0</span>
-    </div>
-    <div class="xp-bar-wrap">
-      <div class="xp-bar-label">
-        <span>Progresso</span>
-        <span id="hdr-xp-next">200 para o próx.</span>
-      </div>
-      <div class="xp-bar"><div class="xp-fill" id="hdr-xp-fill" style="width:0%"></div></div>
-    </div>
-    <div class="user-menu">
-      <span class="user-name" id="hdr-username"></span>
-      <button class="btn-logout" onclick="logout()">Sair</button>
-    </div>
-  </div>
-</header>
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
-<main>
-
-  <!-- POMODORO -->
-  <div class="card">
-    <div class="card-title">⏱ Timer Pomodoro</div>
-    <div class="timer-mode" id="timer-mode">Sessão de Foco</div>
-    <div class="timer-display" id="timer-display">25:00</div>
-    <div class="timer-btns">
-      <button class="btn btn-primary" id="btn-start">▶ Iniciar</button>
-      <button class="btn btn-secondary" id="btn-pause" disabled>⏸ Pausar</button>
-      <button class="btn btn-secondary" id="btn-reset">↺ Resetar</button>
-    </div>
-    <div class="pomodoro-count" id="pom-dots"></div>
-
-    <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm" onclick="setDuration(25, 5)">25/5 min</button>
-      <button class="btn btn-secondary btn-sm" onclick="setDuration(50, 10)">50/10 min</button>
-      <button class="btn btn-secondary btn-sm" onclick="setDuration(15, 3)">15/3 min</button>
-    </div>
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">LevelUp <span>Study</span></div>
+    <div class="tagline">Estude como um herói</div>
   </div>
 
-  <!-- SUGESTÃO -->
-  <div class="card">
-    <div class="card-title">🎯 O que estudar agora?</div>
-    <div id="suggest-area">
-      <div class="suggest-box">
-        <div class="suggest-title" id="suggest-title">Carregando...</div>
-        <div class="suggest-body" id="suggest-body"></div>
-        <div class="suggest-meta" id="suggest-meta"></div>
-      </div>
+  <div class="sidebar-xp">
+    <div class="sidebar-xp-row">
+      <span class="sidebar-level" id="sb-level">Nível 1</span>
+      <span class="sidebar-xp-val" id="sb-xp">0 XP</span>
     </div>
-    <button class="btn btn-gold" style="margin-top:14px;width:100%;" onclick="loadSuggest()">
-      🎯 O que devo fazer agora?
+    <div class="xp-bar"><div class="xp-fill" id="sb-xp-fill" style="width:0%"></div></div>
+    <div class="xp-next" id="sb-xp-next">200 XP para o próximo nível</div>
+  </div>
+
+  <div class="streak-badge" id="sb-streak">🔥 0 dias de streak</div>
+
+  <nav>
+    <div class="nav-section-label">Menu</div>
+    <button class="nav-item active" data-section="dashboard" onclick="navigate('dashboard', this)">
+      <span class="nav-icon">🏠</span> Dashboard
     </button>
-  </div>
+    <button class="nav-item" data-section="pomodoro" onclick="navigate('pomodoro', this)">
+      <span class="nav-icon">⏱</span> Pomodoro
+    </button>
+    <button class="nav-item" data-section="tarefas" onclick="navigate('tarefas', this)">
+      <span class="nav-icon">📋</span> Tarefas
+    </button>
+    <button class="nav-item" data-section="conquistas" onclick="navigate('conquistas', this)">
+      <span class="nav-icon">🏆</span> Conquistas
+    </button>
 
-  <!-- TAREFAS -->
-  <div class="card" style="grid-column: span 2;" id="tasks-card">
-    <div class="card-title">📋 Minhas Tarefas</div>
-    <div class="task-form">
-      <div class="task-form-row">
-        <input type="text" id="task-title" placeholder="Nome da tarefa (ex: Estudar Matemática)" />
-        <input type="text" id="task-subject" placeholder="Matéria" style="max-width:150px" />
-      </div>
-      <div class="task-form-row">
-        <input type="date" id="task-due" />
-        <select id="task-priority">
-          <option value="3">🟢 Baixa prioridade</option>
-          <option value="2" selected>🟡 Média prioridade</option>
-          <option value="1">🔴 Alta prioridade</option>
-        </select>
-        <button class="btn btn-primary" onclick="addTask()">+ Adicionar</button>
+    <div class="nav-section-label">Configurações</div>
+    <button class="nav-item" data-section="temas" onclick="navigate('temas', this)">
+      <span class="nav-icon">🎨</span> Temas
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="sb-avatar">?</div>
+      <div class="user-details">
+        <div class="user-name" id="sb-name">—</div>
+        <div class="user-email" id="sb-email">—</div>
       </div>
     </div>
-    <div class="task-list" id="task-list">
-      <div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px">
-        Nenhuma tarefa ainda. Adicione sua primeira!
+    <button class="btn-logout" onclick="logout()">↩ Sair da conta</button>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:.8rem;color:var(--muted)" id="topbar-date"></span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <section class="section active" id="section-dashboard">
+      <div class="grid-3" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-card-icon icon-purple">🏅</div>
+          <div class="stat-info">
+            <div class="stat-val" id="d-level">1</div>
+            <div class="stat-label">Nível atual</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon icon-gold">⚡</div>
+          <div class="stat-info">
+            <div class="stat-val" id="d-xp">0</div>
+            <div class="stat-label">XP Total</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon icon-green">🔥</div>
+          <div class="stat-info">
+            <div class="stat-val" id="d-streak">0</div>
+            <div class="stat-label">Dias de streak</div>
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
 
-  <!-- CONQUISTAS -->
-  <div class="card" style="grid-column: span 2;">
-    <div class="card-title">🏆 Conquistas</div>
-    <div class="achievements" id="achievements">
-    </div>
-  </div>
+      <div class="grid-2">
+        <!-- Sugestão -->
+        <div class="card">
+          <div class="card-title">🎯 O que estudar agora?</div>
+          <div class="suggest-box">
+            <div class="suggest-title" id="suggest-title">Carregando...</div>
+            <div class="suggest-body"  id="suggest-body"></div>
+            <div class="suggest-meta"  id="suggest-meta"></div>
+          </div>
+          <button class="btn btn-gold btn-full" style="margin-top:14px" onclick="loadSuggest()">
+            🎯 Atualizar sugestão
+          </button>
+        </div>
 
-</main>
+        <!-- Pomodoro rápido -->
+        <div class="card">
+          <div class="card-title">⏱ Timer Rápido</div>
+          <div class="timer-ring-wrap">
+            <svg class="timer-ring" width="150" height="150" viewBox="0 0 150 150">
+              <circle class="ring-bg"   cx="75" cy="75" r="64"/>
+              <circle class="ring-fill" id="ring-fill" cx="75" cy="75" r="64"
+                stroke-dasharray="402.1" stroke-dashoffset="0"/>
+            </svg>
+            <div class="timer-inner">
+              <div class="timer-display" id="timer-display" style="font-size:2.4rem;margin:0">25:00</div>
+              <div class="timer-mode"    id="timer-mode"    style="font-size:.7rem;margin:0">FOCO</div>
+            </div>
+          </div>
+          <div class="timer-btns">
+            <button class="btn btn-primary" id="btn-start">▶ Iniciar</button>
+            <button class="btn btn-secondary" id="btn-pause" disabled>⏸</button>
+            <button class="btn btn-secondary" id="btn-reset">↺</button>
+          </div>
+          <div class="pom-dots" id="pom-dots"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ POMODORO COMPLETO ══ -->
+    <section class="section" id="section-pomodoro">
+      <div class="grid-2">
+        <div class="card" style="text-align:center;">
+          <div class="card-title" style="justify-content:center;">⏱ Timer Pomodoro</div>
+          <div class="timer-ring-wrap">
+            <svg class="timer-ring" width="220" height="220" viewBox="0 0 220 220">
+              <circle class="ring-bg"    cx="110" cy="110" r="96"/>
+              <circle class="ring-fill"  id="ring-fill-full" cx="110" cy="110" r="96"
+                stroke-dasharray="603.2" stroke-dashoffset="0" style="stroke-width:7"/>
+            </svg>
+            <div class="timer-inner">
+              <div class="timer-display" id="timer-display-full" style="font-size:3.8rem;margin:0">25:00</div>
+              <div class="timer-mode"    id="timer-mode-full"    style="margin:0">SESSÃO DE FOCO</div>
+            </div>
+          </div>
+          <div class="timer-btns">
+            <button class="btn btn-primary"   id="btn-start-full">▶ Iniciar</button>
+            <button class="btn btn-secondary" id="btn-pause-full" disabled>⏸ Pausar</button>
+            <button class="btn btn-secondary" id="btn-reset-full">↺ Resetar</button>
+          </div>
+          <div class="pom-dots" id="pom-dots-full" style="margin-top:18px;"></div>
+          <div class="preset-row">
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(25,5)">25 / 5 min</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(50,10)">50 / 10 min</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(15,3)">15 / 3 min</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(45,15)">45 / 15 min</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 Estatísticas de hoje</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="stat-card">
+              <div class="stat-card-icon icon-purple">🍅</div>
+              <div class="stat-info">
+                <div class="stat-val" id="p-total-pom">0</div>
+                <div class="stat-label">Pomodoros concluídos</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-gold">⚡</div>
+              <div class="stat-info">
+                <div class="stat-val" id="p-xp">0 XP</div>
+                <div class="stat-label">XP acumulado</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-green">⏳</div>
+              <div class="stat-info">
+                <div class="stat-val" id="p-mins">0 min</div>
+                <div class="stat-label">Tempo de foco estimado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ TAREFAS ══ -->
+    <section class="section" id="section-tarefas">
+      <div class="card">
+        <div class="card-title">📋 Gerenciar Tarefas</div>
+        <div class="task-form">
+          <div class="task-form-row">
+            <input type="text" id="task-title" placeholder="Nome da tarefa (ex: Estudar Matemática)" />
+            <input type="text" id="task-subject" placeholder="Matéria" style="max-width:160px" />
+          </div>
+          <div class="task-form-row">
+            <input type="date" id="task-due" />
+            <select id="task-priority">
+              <option value="3">🟢 Baixa prioridade</option>
+              <option value="2" selected>🟡 Média prioridade</option>
+              <option value="1">🔴 Alta prioridade</option>
+            </select>
+            <button class="btn btn-primary" onclick="addTask()">+ Adicionar</button>
+          </div>
+        </div>
+        <div class="task-list" id="task-list">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            Nenhuma tarefa ainda. Adicione sua primeira!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONQUISTAS ══ -->
+    <section class="section" id="section-conquistas">
+      <div class="card">
+        <div class="card-title">🏆 Conquistas</div>
+        <div class="badges-grid" id="badges-grid"></div>
+      </div>
+    </section>
+
+    <!-- ══ TEMAS ══ -->
+    <section class="section" id="section-temas">
+      <div class="card">
+        <div class="card-title">🎨 Escolha um tema</div>
+        <div class="themes-grid">
+
+          <div class="theme-card tp-dark" id="theme-dark" onclick="setTheme('dark')">
+            <div class="theme-preview tp-dark">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-dark">
+              🌙 Dark
+              <span class="theme-check" id="check-dark"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-ocean" id="theme-ocean" onclick="setTheme('ocean')">
+            <div class="theme-preview tp-ocean">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-ocean">
+              🌊 Ocean
+              <span class="theme-check" id="check-ocean"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-forest" id="theme-forest" onclick="setTheme('forest')">
+            <div class="theme-preview tp-forest">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-forest">
+              🌿 Forest
+              <span class="theme-check" id="check-forest"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-sunset" id="theme-sunset" onclick="setTheme('sunset')">
+            <div class="theme-preview tp-sunset">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-sunset">
+              🌅 Sunset
+              <span class="theme-check" id="check-sunset"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-light" id="theme-light" onclick="setTheme('light')">
+            <div class="theme-preview tp-light">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-light">
+              ☀️ Light
+              <span class="theme-check" id="check-light"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-midnight" id="theme-midnight" onclick="setTheme('midnight')">
+            <div class="theme-preview tp-midnight">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-midnight">
+              💜 Midnight
+              <span class="theme-check" id="check-midnight"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
 
 <div id="toast-container"></div>
 
 <script>
 const API = "http://localhost:5000/api";
 
-// ── STATE ──
+// ── STATE ──────────────────────────────────────────────────────────────────
 let focusMins = 25, breakMins = 5;
-let secondsLeft = focusMins * 60;
+let totalSecs = focusMins * 60;
+let secondsLeft = totalSecs;
 let isBreak = false;
 let running = false;
 let interval = null;
 let pomodorosDone = 0;
 let statusData = {};
 
-// ── TIMER ──
+// ── NAVIGATION ──────────────────────────────────────────────────────────────
+const SECTION_TITLES = {
+  dashboard:  "Dashboard",
+  pomodoro:   "Pomodoro",
+  tarefas:    "Tarefas",
+  conquistas: "Conquistas",
+  temas:      "Temas",
+};
+
+function navigate(name, btn) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+  document.getElementById("section-" + name).classList.add("active");
+  btn.classList.add("active");
+  document.getElementById("topbar-title").textContent = SECTION_TITLES[name];
+  closeSidebar();
+  if (name === "tarefas")    loadTasks();
+  if (name === "conquistas") renderAchievements();
+  if (name === "dashboard")  loadSuggest();
+}
+
+// ── SIDEBAR MOBILE ─────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById("sidebar").classList.toggle("open");
+  document.getElementById("overlay").classList.toggle("show");
+}
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+}
+
+// ── THEMES ─────────────────────────────────────────────────────────────────
+const THEMES = ["dark","ocean","forest","sunset","light","midnight"];
+
+function setTheme(name) {
+  document.documentElement.setAttribute("data-theme", name);
+  localStorage.setItem("lus-theme", name);
+  THEMES.forEach(t => {
+    document.getElementById("theme-" + t).classList.toggle("active", t === name);
+    document.getElementById("check-" + t).textContent = t === name ? "✓" : "";
+  });
+  showToast("Tema " + name + " aplicado!", "");
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem("lus-theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
+  THEMES.forEach(t => {
+    document.getElementById("theme-" + t).classList.toggle("active", t === saved);
+    document.getElementById("check-" + t).textContent = t === saved ? "✓" : "";
+  });
+}
+
+// ── TIMER ──────────────────────────────────────────────────────────────────
 function setDuration(focus, brk) {
   focusMins = focus; breakMins = brk;
   resetTimer();
 }
 
+const RING_MINI_CIRC = 402.1;
+const RING_FULL_CIRC = 603.2;
+
 function updateDisplay() {
   const m = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
   const s = String(secondsLeft % 60).padStart(2, "0");
-  document.getElementById("timer-display").textContent = `${m}:${s}`;
-  document.getElementById("timer-display").className = "timer-display" + (isBreak ? " break" : "");
-  document.getElementById("timer-mode").textContent = isBreak ? "⛹ Pausa — Descanse!" : "🧠 Sessão de Foco";
+  const timeStr = `${m}:${s}`;
+  const modeStr = isBreak ? "PAUSA" : "FOCO";
+  const modeStrFull = isBreak ? "⛹ PAUSA — DESCANSE!" : "🧠 SESSÃO DE FOCO";
+  const breakCls = isBreak ? " break" : "";
+
+  // dashboard mini timer
+  const d = document.getElementById("timer-display");
+  if (d) { d.textContent = timeStr; d.className = "timer-display" + breakCls; }
+  const dm = document.getElementById("timer-mode");
+  if (dm) dm.textContent = modeStr;
+
+  // pomodoro full timer
+  const df = document.getElementById("timer-display-full");
+  if (df) { df.textContent = timeStr; df.className = "timer-display" + breakCls; }
+  const dmf = document.getElementById("timer-mode-full");
+  if (dmf) dmf.textContent = modeStrFull;
+
+  // rings
+  const pct = secondsLeft / totalSecs;
+  const offsetMini = RING_MINI_CIRC * (1 - pct);
+  const offsetFull = RING_FULL_CIRC * (1 - pct);
+
+  const rMini = document.getElementById("ring-fill");
+  if (rMini) { rMini.style.strokeDashoffset = offsetMini; rMini.className = "ring-fill" + breakCls; }
+  const rFull = document.getElementById("ring-fill-full");
+  if (rFull) { rFull.style.strokeDashoffset = offsetFull; rFull.className = "ring-fill" + breakCls; }
 }
 
 function startTimer() {
   if (running) return;
   running = true;
-  document.getElementById("btn-start").disabled = true;
-  document.getElementById("btn-pause").disabled = false;
+  setSyncBtns(true);
   interval = setInterval(tick, 1000);
 }
-
 function pauseTimer() {
   running = false;
   clearInterval(interval);
-  document.getElementById("btn-start").disabled = false;
-  document.getElementById("btn-pause").disabled = true;
+  setSyncBtns(false);
 }
-
 function resetTimer() {
   pauseTimer();
   isBreak = false;
-  secondsLeft = focusMins * 60;
+  totalSecs = focusMins * 60;
+  secondsLeft = totalSecs;
   updateDisplay();
+}
+function setSyncBtns(isRunning) {
+  ["", "-full"].forEach(suffix => {
+    const s = document.getElementById("btn-start" + suffix);
+    const p = document.getElementById("btn-pause" + suffix);
+    if (s) s.disabled = isRunning;
+    if (p) p.disabled = !isRunning;
+  });
 }
 
 function tick() {
   if (secondsLeft <= 0) {
     clearInterval(interval);
     running = false;
+    setSyncBtns(false);
     if (!isBreak) {
       pomodorosDone++;
       renderDots();
       completePomodoro();
       isBreak = true;
-      secondsLeft = breakMins * 60;
-      showToast("⏰ Pomodoro concluído! Hora de descansar.", "gold");
+      totalSecs = breakMins * 60;
+      secondsLeft = totalSecs;
+      showToast("🍅 Pomodoro concluído! Descanse.", "gold");
       playBeep(880);
     } else {
       isBreak = false;
-      secondsLeft = focusMins * 60;
+      totalSecs = focusMins * 60;
+      secondsLeft = totalSecs;
       showToast("🚀 Pausa encerrada! Volte ao foco.", "");
       playBeep(440);
     }
@@ -450,31 +1240,39 @@ function playBeep(freq) {
     const gain = ctx.createGain();
     osc.connect(gain); gain.connect(ctx.destination);
     osc.frequency.value = freq;
-    osc.start(); gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    osc.start();
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
     osc.stop(ctx.currentTime + 0.6);
   } catch(e) {}
 }
 
 function renderDots() {
-  const wrap = document.getElementById("pom-dots");
-  wrap.innerHTML = "";
-  for (let i = 0; i < 4; i++) {
-    const d = document.createElement("div");
-    d.className = "pom-dot" + (i < pomodorosDone % 4 ? " done" : "");
-    wrap.appendChild(d);
-  }
+  ["pom-dots", "pom-dots-full"].forEach(id => {
+    const wrap = document.getElementById(id);
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    for (let i = 0; i < 4; i++) {
+      const d = document.createElement("div");
+      d.className = "pom-dot" + (i < pomodorosDone % 4 ? " done" : "");
+      wrap.appendChild(d);
+    }
+  });
 }
 
-document.getElementById("btn-start").addEventListener("click", startTimer);
-document.getElementById("btn-pause").addEventListener("click", pauseTimer);
-document.getElementById("btn-reset").addEventListener("click", resetTimer);
+// wire buttons (dashboard mini + pomodoro full share same timer state)
+["", "-full"].forEach(suffix => {
+  const s = document.getElementById("btn-start" + suffix);
+  const p = document.getElementById("btn-pause" + suffix);
+  const r = document.getElementById("btn-reset" + suffix);
+  if (s) s.addEventListener("click", startTimer);
+  if (p) p.addEventListener("click", pauseTimer);
+  if (r) r.addEventListener("click", resetTimer);
+});
 
-// ── API ──
-const FETCH_OPTS = { credentials: "include" };
-
+// ── API HELPERS ────────────────────────────────────────────────────────────
 function apiFetch(url, opts = {}) {
-  return fetch(url, { ...FETCH_OPTS, ...opts });
+  return fetch(url, { credentials: "include", ...opts });
 }
 
 async function completePomodoro() {
@@ -482,7 +1280,7 @@ async function completePomodoro() {
     const res = await apiFetch(`${API}/pomodoro/complete`, { method: "POST" });
     if (res.status === 401) { redirectLogin(); return; }
     const d = await res.json();
-    showToast(`+${d.xp_gained} XP ganhos! 🔥 Streak: ${d.streak}`, "gold");
+    showToast(`+${d.xp_gained} XP ganhos! 🔥 Streak: ${d.streak} dias`, "gold");
     loadStatus();
   } catch(e) {}
 }
@@ -492,11 +1290,21 @@ async function loadStatus() {
     const res = await apiFetch(`${API}/status`);
     if (res.status === 401) { redirectLogin(); return; }
     statusData = await res.json();
-    document.getElementById("hdr-level").textContent = statusData.level;
-    document.getElementById("hdr-xp").textContent = statusData.xp;
-    document.getElementById("hdr-streak").textContent = statusData.streak + " dias";
-    document.getElementById("hdr-xp-next").textContent = `${statusData.xp_to_next} para o próx.`;
-    document.getElementById("hdr-xp-fill").style.width = statusData.xp_progress_pct + "%";
+    // sidebar
+    document.getElementById("sb-level").textContent = `Nível ${statusData.level}`;
+    document.getElementById("sb-xp").textContent = `${statusData.xp} XP`;
+    document.getElementById("sb-xp-fill").style.width = statusData.xp_progress_pct + "%";
+    document.getElementById("sb-xp-next").textContent = `${statusData.xp_to_next} XP para o próximo nível`;
+    document.getElementById("sb-streak").textContent = `🔥 ${statusData.streak} dia${statusData.streak !== 1 ? "s" : ""} de streak`;
+    // dashboard stats
+    document.getElementById("d-level").textContent = statusData.level;
+    document.getElementById("d-xp").textContent = statusData.xp;
+    document.getElementById("d-streak").textContent = statusData.streak;
+    // pomodoro stats
+    document.getElementById("p-total-pom").textContent = statusData.total_pomodoros;
+    document.getElementById("p-xp").textContent = statusData.xp + " XP";
+    document.getElementById("p-mins").textContent = (statusData.total_pomodoros * focusMins) + " min";
+
     renderAchievements();
   } catch(e) {}
 }
@@ -505,8 +1313,7 @@ async function loadTasks() {
   try {
     const res = await apiFetch(`${API}/tasks`);
     if (res.status === 401) { redirectLogin(); return; }
-    const tasks = await res.json();
-    renderTasks(tasks);
+    renderTasks(await res.json());
   } catch(e) {}
 }
 
@@ -515,22 +1322,22 @@ async function addTask() {
   if (!title) { showToast("Digite o nome da tarefa!", ""); return; }
   const body = {
     title,
-    subject: document.getElementById("task-subject").value.trim(),
+    subject:  document.getElementById("task-subject").value.trim(),
     due_date: document.getElementById("task-due").value,
-    priority: document.getElementById("task-priority").value
+    priority: document.getElementById("task-priority").value,
   };
   try {
     await apiFetch(`${API}/tasks`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
     });
     document.getElementById("task-title").value = "";
     document.getElementById("task-subject").value = "";
     document.getElementById("task-due").value = "";
     loadTasks();
     loadSuggest();
-    showToast("Tarefa adicionada!", "");
+    showToast("Tarefa adicionada! ✓", "green");
   } catch(e) {}
 }
 
@@ -558,9 +1365,9 @@ async function loadSuggest() {
     if (d.suggestion) {
       document.getElementById("suggest-title").textContent = d.suggestion.title;
       document.getElementById("suggest-body").textContent = d.suggestion.subject
-        ? `Matéria: ${d.suggestion.subject}` : "Sem matéria específica";
+        ? `📚 Matéria: ${d.suggestion.subject}` : "Sem matéria específica";
       document.getElementById("suggest-meta").textContent = d.suggestion.due_date
-        ? `Prazo: ${formatDate(d.suggestion.due_date)}` : "";
+        ? `📅 Prazo: ${formatDate(d.suggestion.due_date)}` : "";
     } else {
       document.getElementById("suggest-title").textContent = "🎉 Tudo em dia!";
       document.getElementById("suggest-body").textContent = d.message;
@@ -574,17 +1381,15 @@ async function logout() {
   redirectLogin();
 }
 
-function redirectLogin() {
-  window.location.href = "login.html";
-}
+function redirectLogin() { window.location.href = "login.html"; }
 
-// ── RENDER ──
+// ── RENDER ─────────────────────────────────────────────────────────────────
 const PRIORITY_LABELS = { 1: ["Alta", "p1"], 2: ["Média", "p2"], 3: ["Baixa", "p3"] };
 
 function renderTasks(tasks) {
   const list = document.getElementById("task-list");
   if (!tasks.length) {
-    list.innerHTML = `<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px">Nenhuma tarefa ainda. Adicione sua primeira!</div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Nenhuma tarefa ainda. Adicione sua primeira!</div>`;
     return;
   }
   list.innerHTML = tasks.map(t => {
@@ -606,38 +1411,42 @@ function renderTasks(tasks) {
 }
 
 const BADGES = [
-  { id: "first_pom",  icon: "🍅", name: "Primeiro Pomodoro", cond: d => d.total_pomodoros >= 1 },
-  { id: "pom5",       icon: "🔥", name: "5 Pomodoros",       cond: d => d.total_pomodoros >= 5 },
-  { id: "pom20",      icon: "💪", name: "20 Pomodoros",      cond: d => d.total_pomodoros >= 20 },
-  { id: "streak3",    icon: "⚡", name: "Streak 3 dias",     cond: d => d.streak >= 3 },
-  { id: "streak7",    icon: "🌟", name: "Streak 7 dias",     cond: d => d.streak >= 7 },
-  { id: "level5",     icon: "🏆", name: "Nível 5",           cond: d => d.level >= 5 },
-  { id: "level10",    icon: "👑", name: "Nível 10",          cond: d => d.level >= 10 },
-  { id: "xp500",      icon: "💎", name: "500 XP",            cond: d => d.xp >= 500 },
+  { id: "first_pom",  icon: "🍅", name: "Primeiro Pomodoro", desc: "Complete 1 pomodoro",  cond: d => d.total_pomodoros >= 1  },
+  { id: "pom5",       icon: "🔥", name: "Em Chamas",         desc: "5 pomodoros",          cond: d => d.total_pomodoros >= 5  },
+  { id: "pom20",      icon: "💪", name: "Dedicação",         desc: "20 pomodoros",         cond: d => d.total_pomodoros >= 20 },
+  { id: "pom50",      icon: "🚀", name: "Maratonista",       desc: "50 pomodoros",         cond: d => d.total_pomodoros >= 50 },
+  { id: "streak3",    icon: "⚡", name: "Streak 3 dias",     desc: "3 dias seguidos",      cond: d => d.streak >= 3  },
+  { id: "streak7",    icon: "🌟", name: "Semana Perfeita",   desc: "7 dias seguidos",      cond: d => d.streak >= 7  },
+  { id: "streak30",   icon: "👑", name: "Mês de Ouro",       desc: "30 dias seguidos",     cond: d => d.streak >= 30 },
+  { id: "level5",     icon: "🏆", name: "Nível 5",           desc: "Alcance o nível 5",    cond: d => d.level >= 5   },
+  { id: "level10",    icon: "💎", name: "Nível 10",          desc: "Alcance o nível 10",   cond: d => d.level >= 10  },
+  { id: "xp500",      icon: "✨", name: "500 XP",            desc: "Acumule 500 XP",       cond: d => d.xp >= 500    },
+  { id: "xp2000",     icon: "🌈", name: "2000 XP",           desc: "Acumule 2000 XP",      cond: d => d.xp >= 2000   },
 ];
 
 function renderAchievements() {
-  const wrap = document.getElementById("achievements");
-  wrap.innerHTML = BADGES.map(b => {
+  const grid = document.getElementById("badges-grid");
+  if (!grid) return;
+  grid.innerHTML = BADGES.map(b => {
     const unlocked = b.cond(statusData);
-    return `<div class="badge ${unlocked ? "unlocked" : ""}" title="${b.name}">
+    return `<div class="badge ${unlocked ? "unlocked" : ""}">
       <div class="badge-icon">${b.icon}</div>
       <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
     </div>`;
   }).join("");
 }
 
-// ── TOAST ──
+// ── TOAST ──────────────────────────────────────────────────────────────────
 function showToast(msg, type) {
   const el = document.createElement("div");
   el.className = "toast" + (type ? " " + type : "");
   el.innerHTML = msg;
-  const container = document.getElementById("toast-container");
-  container.appendChild(el);
+  document.getElementById("toast-container").appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
 
-// ── UTILS ──
+// ── UTILS ──────────────────────────────────────────────────────────────────
 function esc(s) {
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 }
@@ -646,14 +1455,23 @@ function formatDate(s) {
   const [y,m,d] = s.split("-");
   return `${d}/${m}/${y}`;
 }
+function setTopbarDate() {
+  const now = new Date();
+  document.getElementById("topbar-date").textContent =
+    now.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long" });
+}
 
-// ── INIT ──
+// ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
+  loadTheme();
+  setTopbarDate();
   try {
     const res = await apiFetch(`${API}/auth/me`);
     if (res.status === 401) { redirectLogin(); return; }
     const { user } = await res.json();
-    document.getElementById("hdr-username").textContent = user.name;
+    document.getElementById("sb-name").textContent = user.name;
+    document.getElementById("sb-email").textContent = user.email;
+    document.getElementById("sb-avatar").textContent = user.name.charAt(0).toUpperCase();
   } catch {
     redirectLogin();
     return;
@@ -661,7 +1479,6 @@ async function init() {
   updateDisplay();
   renderDots();
   loadStatus();
-  loadTasks();
   loadSuggest();
 }
 
