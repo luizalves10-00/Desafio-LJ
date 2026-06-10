@@ -11,7 +11,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'focusquest.db')}"
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
