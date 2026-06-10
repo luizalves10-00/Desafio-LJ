@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusQuest – Painel</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --gold: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #2d2d4e;
+      --radius: 12px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .logo { font-size: 1.3rem; font-weight: 700; color: var(--accent2); }
+    .logo span { color: var(--gold); }
+
+    /* ── HERO STATS ── */
+    .hero-bar {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .stat-label { font-size: .65rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .stat-val { font-size: 1rem; font-weight: 700; }
+    .stat-val.gold { color: var(--gold); }
+    .stat-val.green { color: var(--green); }
+    .stat-val.purple { color: var(--accent2); }
+
+    .xp-bar-wrap { display: flex; flex-direction: column; gap: 3px; min-width: 140px; }
+    .xp-bar-label { font-size: .65rem; color: var(--muted); display: flex; justify-content: space-between; }
+    .xp-bar { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+    .xp-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 99px; transition: width .5s ease; }
+
+    /* ── LAYOUT ── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    @media (max-width: 700px) { main { grid-template-columns: 1fr; } }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .card-title {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--accent2);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── POMODORO ── */
+    .timer-display {
+      font-size: 4rem;
+      font-weight: 800;
+      text-align: center;
+      letter-spacing: .05em;
+      margin: 12px 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .timer-display.break { color: var(--green); }
+    .timer-mode {
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .timer-btns { display: flex; gap: 10px; justify-content: center; }
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn:hover { opacity: .88; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--border); color: var(--text); }
+    .btn-danger { background: var(--red); color: #fff; }
+    .btn-gold { background: var(--gold); color: #0f0f1a; }
+    .btn-green { background: var(--green); color: #fff; }
+    .btn-sm { padding: 6px 14px; font-size: .8rem; }
+
+    .pomodoro-count {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 14px;
+    }
+    .pom-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background .3s;
+    }
+    .pom-dot.done { background: var(--accent2); }
+
+    /* ── TASKS ── */
+    .task-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .task-form-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    input, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: .85rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus { border-color: var(--accent2); }
+    input[type="text"] { flex: 1; min-width: 120px; }
+    input[type="date"] { flex: 1; min-width: 120px; }
+
+    .task-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+    .task-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: opacity .2s;
+    }
+    .task-item.done { opacity: .45; }
+    .task-item.done .task-title { text-decoration: line-through; }
+    .task-info { flex: 1; min-width: 0; }
+    .task-title { font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .task-meta { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .priority-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 99px;
+      white-space: nowrap;
+    }
+    .p1 { background: #fca5a5; color: #7f1d1d; }
+    .p2 { background: #fde68a; color: #78350f; }
+    .p3 { background: #86efac; color: #14532d; }
+    .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ── SUGGEST ── */
+    .suggest-box {
+      background: linear-gradient(135deg, #1e1b4b, #1a1a2e);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .suggest-title { font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+    .suggest-body { font-size: .9rem; color: var(--text); }
+    .suggest-meta { font-size: .78rem; color: var(--muted); }
+
+    /* ── ACHIEVEMENTS ── */
+    .achievements { display: flex; flex-wrap: wrap; gap: 10px; }
+    .badge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      opacity: .3;
+      transition: opacity .3s, border-color .3s;
+    }
+    .badge.unlocked { opacity: 1; border-color: var(--gold); }
+    .badge-icon { font-size: 1.6rem; }
+    .badge-name { font-size: .65rem; color: var(--muted); text-align: center; }
+
+    /* ── TOAST ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      padding: 12px 18px;
+      color: var(--text);
+      font-size: .88rem;
+      animation: slide-in .3s ease;
+      max-width: 280px;
+    }
+    .toast.gold { border-color: var(--gold); }
+    .toast .xp-gain { font-weight: 700; color: var(--gold); }
+    @keyframes slide-in {
+      from { transform: translateX(100px); opacity: 0; }
+      to   { transform: translateX(0);     opacity: 1; }
+    }
+
+    /* ── USER MENU ── */
+    .user-menu { display: flex; align-items: center; gap: 10px; }
+    .user-name { font-size: .82rem; color: var(--muted); max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-logout {
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Focus<span>Quest</span></div>
+  <div class="hero-bar">
+    <div class="stat">
+      <span class="stat-label">Nível</span>
+      <span class="stat-val purple" id="hdr-level">1</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">XP</span>
+      <span class="stat-val gold" id="hdr-xp">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">🔥 Streak</span>
+      <span class="stat-val green" id="hdr-streak">0</span>
+    </div>
+    <div class="xp-bar-wrap">
+      <div class="xp-bar-label">
+        <span>Progresso</span>
+        <span id="hdr-xp-next">200 para o próx.</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" id="hdr-xp-fill" style="width:0%"></div></div>
+    </div>
+    <div class="user-menu">
+      <span class="user-name" id="hdr-username"></span>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- POMODORO -->
+  <div class="card">
+    <div class="card-title">⏱ Timer Pomodoro</div>
+    <div class="timer-mode" id="timer-mode">Sessão de Foco</div>
+    <div class="timer-display" id="timer-display">25:00</div>
+    <div class="timer-btns">
+      <button class="btn btn-primary" id="btn-start">▶ Iniciar</button>
+      <button class="btn btn-secondary" id="btn-pause" disabled>⏸ Pausar</button>
+      <button class="btn btn-secondary" id="btn-reset">↺ Resetar</button>
+    </div>
+    <div class="pomodoro-count" id="pom-dots"></div>
+
+    <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+      <button class="btn btn-secondary btn-sm" onclick="setDuration(25, 5)">25/5 min</button>
+      <button class="btn btn-secondary btn-sm" onclick="setDuration(50, 10)">50/10 min</button>
+      <button class="btn btn-secondary btn-sm" onclick="setDuration(15, 3)">15/3 min</button>
+    </div>
+  </div>
+
+  <!-- SUGESTÃO -->
+  <div class="card">
+    <div class="card-title">🎯 O que estudar agora?</div>
+    <div id="suggest-area">
+      <div class="suggest-box">
+        <div class="suggest-title" id="suggest-title">Carregando...</div>
+        <div class="suggest-body" id="suggest-body"></div>
+        <div class="suggest-meta" id="suggest-meta"></div>
+      </div>
+    </div>
+    <button class="btn btn-gold" style="margin-top:14px;width:100%;" onclick="loadSuggest()">
+      🎯 O que devo fazer agora?
+    </button>
+  </div>
+
+  <!-- TAREFAS -->
+  <div class="card" style="grid-column: span 2;" id="tasks-card">
+    <div class="card-title">📋 Minhas Tarefas</div>
+    <div class="task-form">
+      <div class="task-form-row">
+        <input type="text" id="task-title" placeholder="Nome da tarefa (ex: Estudar Matemática)" />
+        <input type="text" id="task-subject" placeholder="Matéria" style="max-width:150px" />
+      </div>
+      <div class="task-form-row">
+        <input type="date" id="task-due" />
+        <select id="task-priority">
+          <option value="3">🟢 Baixa prioridade</option>
+          <option value="2" selected>🟡 Média prioridade</option>
+          <option value="1">🔴 Alta prioridade</option>
+        </select>
+        <button class="btn btn-primary" onclick="addTask()">+ Adicionar</button>
+      </div>
+    </div>
+    <div class="task-list" id="task-list">
+      <div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px">
+        Nenhuma tarefa ainda. Adicione sua primeira!
+      </div>
+    </div>
+  </div>
+
+  <!-- CONQUISTAS -->
+  <div class="card" style="grid-column: span 2;">
+    <div class="card-title">🏆 Conquistas</div>
+    <div class="achievements" id="achievements">
+    </div>
+  </div>
+
+</main>
+
+<div id="toast-container"></div>
+
+<script>
+const API = "http://localhost:5000/api";
+
+// ── STATE ──
+let focusMins = 25, breakMins = 5;
+let secondsLeft = focusMins * 60;
+let isBreak = false;
+let running = false;
+let interval = null;
+let pomodorosDone = 0;
+let statusData = {};
+
+// ── TIMER ──
+function setDuration(focus, brk) {
+  focusMins = focus; breakMins = brk;
+  resetTimer();
+}
+
+function updateDisplay() {
+  const m = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+  const s = String(secondsLeft % 60).padStart(2, "0");
+  document.getElementById("timer-display").textContent = `${m}:${s}`;
+  document.getElementById("timer-display").className = "timer-display" + (isBreak ? " break" : "");
+  document.getElementById("timer-mode").textContent = isBreak ? "⛹ Pausa — Descanse!" : "🧠 Sessão de Foco";
+}
+
+function startTimer() {
+  if (running) return;
+  running = true;
+  document.getElementById("btn-start").disabled = true;
+  document.getElementById("btn-pause").disabled = false;
+  interval = setInterval(tick, 1000);
+}
+
+function pauseTimer() {
+  running = false;
+  clearInterval(interval);
+  document.getElementById("btn-start").disabled = false;
+  document.getElementById("btn-pause").disabled = true;
+}
+
+function resetTimer() {
+  pauseTimer();
+  isBreak = false;
+  secondsLeft = focusMins * 60;
+  updateDisplay();
+}
+
+function tick() {
+  if (secondsLeft <= 0) {
+    clearInterval(interval);
+    running = false;
+    if (!isBreak) {
+      pomodorosDone++;
+      renderDots();
+      completePomodoro();
+      isBreak = true;
+      secondsLeft = breakMins * 60;
+      showToast("⏰ Pomodoro concluído! Hora de descansar.", "gold");
+      playBeep(880);
+    } else {
+      isBreak = false;
+      secondsLeft = focusMins * 60;
+      showToast("🚀 Pausa encerrada! Volte ao foco.", "");
+      playBeep(440);
+    }
+    updateDisplay();
+    startTimer();
+    return;
+  }
+  secondsLeft--;
+  updateDisplay();
+}
+
+function playBeep(freq) {
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = freq;
+    osc.start(); gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.stop(ctx.currentTime + 0.6);
+  } catch(e) {}
+}
+
+function renderDots() {
+  const wrap = document.getElementById("pom-dots");
+  wrap.innerHTML = "";
+  for (let i = 0; i < 4; i++) {
+    const d = document.createElement("div");
+    d.className = "pom-dot" + (i < pomodorosDone % 4 ? " done" : "");
+    wrap.appendChild(d);
+  }
+}
+
+document.getElementById("btn-start").addEventListener("click", startTimer);
+document.getElementById("btn-pause").addEventListener("click", pauseTimer);
+document.getElementById("btn-reset").addEventListener("click", resetTimer);
+
+// ── API ──
+const FETCH_OPTS = { credentials: "include" };
+
+function apiFetch(url, opts = {}) {
+  return fetch(url, { ...FETCH_OPTS, ...opts });
+}
+
+async function completePomodoro() {
+  try {
+    const res = await apiFetch(`${API}/pomodoro/complete`, { method: "POST" });
+    if (res.status === 401) { redirectLogin(); return; }
+    const d = await res.json();
+    showToast(`+${d.xp_gained} XP ganhos! 🔥 Streak: ${d.streak}`, "gold");
+    loadStatus();
+  } catch(e) {}
+}
+
+async function loadStatus() {
+  try {
+    const res = await apiFetch(`${API}/status`);
+    if (res.status === 401) { redirectLogin(); return; }
+    statusData = await res.json();
+    document.getElementById("hdr-level").textContent = statusData.level;
+    document.getElementById("hdr-xp").textContent = statusData.xp;
+    document.getElementById("hdr-streak").textContent = statusData.streak + " dias";
+    document.getElementById("hdr-xp-next").textContent = `${statusData.xp_to_next} para o próx.`;
+    document.getElementById("hdr-xp-fill").style.width = statusData.xp_progress_pct + "%";
+    renderAchievements();
+  } catch(e) {}
+}
+
+async function loadTasks() {
+  try {
+    const res = await apiFetch(`${API}/tasks`);
+    if (res.status === 401) { redirectLogin(); return; }
+    const tasks = await res.json();
+    renderTasks(tasks);
+  } catch(e) {}
+}
+
+async function addTask() {
+  const title = document.getElementById("task-title").value.trim();
+  if (!title) { showToast("Digite o nome da tarefa!", ""); return; }
+  const body = {
+    title,
+    subject: document.getElementById("task-subject").value.trim(),
+    due_date: document.getElementById("task-due").value,
+    priority: document.getElementById("task-priority").value
+  };
+  try {
+    await apiFetch(`${API}/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    document.getElementById("task-title").value = "";
+    document.getElementById("task-subject").value = "";
+    document.getElementById("task-due").value = "";
+    loadTasks();
+    loadSuggest();
+    showToast("Tarefa adicionada!", "");
+  } catch(e) {}
+}
+
+async function completeTask(id) {
+  try {
+    const res = await apiFetch(`${API}/tasks/${id}/complete`, { method: "POST" });
+    const d = await res.json();
+    showToast(`✅ Tarefa concluída! +${d.xp_gained} XP`, "gold");
+    loadTasks(); loadStatus(); loadSuggest();
+  } catch(e) {}
+}
+
+async function deleteTask(id) {
+  try {
+    await apiFetch(`${API}/tasks/${id}`, { method: "DELETE" });
+    loadTasks(); loadSuggest();
+  } catch(e) {}
+}
+
+async function loadSuggest() {
+  try {
+    const res = await apiFetch(`${API}/suggest`);
+    if (res.status === 401) return;
+    const d = await res.json();
+    if (d.suggestion) {
+      document.getElementById("suggest-title").textContent = d.suggestion.title;
+      document.getElementById("suggest-body").textContent = d.suggestion.subject
+        ? `Matéria: ${d.suggestion.subject}` : "Sem matéria específica";
+      document.getElementById("suggest-meta").textContent = d.suggestion.due_date
+        ? `Prazo: ${formatDate(d.suggestion.due_date)}` : "";
+    } else {
+      document.getElementById("suggest-title").textContent = "🎉 Tudo em dia!";
+      document.getElementById("suggest-body").textContent = d.message;
+      document.getElementById("suggest-meta").textContent = "";
+    }
+  } catch(e) {}
+}
+
+async function logout() {
+  await apiFetch(`${API}/auth/logout`, { method: "POST" });
+  redirectLogin();
+}
+
+function redirectLogin() {
+  window.location.href = "login.html";
+}
+
+// ── RENDER ──
+const PRIORITY_LABELS = { 1: ["Alta", "p1"], 2: ["Média", "p2"], 3: ["Baixa", "p3"] };
+
+function renderTasks(tasks) {
+  const list = document.getElementById("task-list");
+  if (!tasks.length) {
+    list.innerHTML = `<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:20px">Nenhuma tarefa ainda. Adicione sua primeira!</div>`;
+    return;
+  }
+  list.innerHTML = tasks.map(t => {
+    const [plabel, pcls] = PRIORITY_LABELS[t.priority] || ["Média", "p2"];
+    const due = t.due_date ? ` · Prazo: ${formatDate(t.due_date)}` : "";
+    return `
+      <div class="task-item ${t.done ? "done" : ""}">
+        <div class="task-info">
+          <div class="task-title">${esc(t.title)}</div>
+          <div class="task-meta">${esc(t.subject || "Sem matéria")}${due}</div>
+        </div>
+        <span class="priority-badge ${pcls}">${plabel}</span>
+        <div class="task-actions">
+          ${!t.done ? `<button class="btn btn-green btn-sm" onclick="completeTask(${t.id})">✓</button>` : ""}
+          <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id})">✕</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+const BADGES = [
+  { id: "first_pom",  icon: "🍅", name: "Primeiro Pomodoro", cond: d => d.total_pomodoros >= 1 },
+  { id: "pom5",       icon: "🔥", name: "5 Pomodoros",       cond: d => d.total_pomodoros >= 5 },
+  { id: "pom20",      icon: "💪", name: "20 Pomodoros",      cond: d => d.total_pomodoros >= 20 },
+  { id: "streak3",    icon: "⚡", name: "Streak 3 dias",     cond: d => d.streak >= 3 },
+  { id: "streak7",    icon: "🌟", name: "Streak 7 dias",     cond: d => d.streak >= 7 },
+  { id: "level5",     icon: "🏆", name: "Nível 5",           cond: d => d.level >= 5 },
+  { id: "level10",    icon: "👑", name: "Nível 10",          cond: d => d.level >= 10 },
+  { id: "xp500",      icon: "💎", name: "500 XP",            cond: d => d.xp >= 500 },
+];
+
+function renderAchievements() {
+  const wrap = document.getElementById("achievements");
+  wrap.innerHTML = BADGES.map(b => {
+    const unlocked = b.cond(statusData);
+    return `<div class="badge ${unlocked ? "unlocked" : ""}" title="${b.name}">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>`;
+  }).join("");
+}
+
+// ── TOAST ──
+function showToast(msg, type) {
+  const el = document.createElement("div");
+  el.className = "toast" + (type ? " " + type : "");
+  el.innerHTML = msg;
+  const container = document.getElementById("toast-container");
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ── UTILS ──
+function esc(s) {
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function formatDate(s) {
+  if (!s) return "";
+  const [y,m,d] = s.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+// ── INIT ──
+async function init() {
+  try {
+    const res = await apiFetch(`${API}/auth/me`);
+    if (res.status === 401) { redirectLogin(); return; }
+    const { user } = await res.json();
+    document.getElementById("hdr-username").textContent = user.name;
+  } catch {
+    redirectLogin();
+    return;
+  }
+  updateDisplay();
+  renderDots();
+  loadStatus();
+  loadTasks();
+  loadSuggest();
+}
+
+init();
+</script>
+</body>
+</html>
