@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FocusQuest – Criar conta</title>
+  <style>
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface2: #16213e;
+      --accent: #7c3aed;
+      --accent2: #a855f7;
+      --gold: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --border: #2d2d4e;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(124,58,237,.15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 35% at 20% 80%, rgba(168,85,247,.1) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0,0,0,.5);
+    }
+
+    .logo {
+      text-align: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--accent2);
+      margin-bottom: 4px;
+    }
+    .logo span { color: var(--gold); }
+
+    .tagline {
+      text-align: center;
+      color: var(--muted);
+      font-size: .85rem;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      width: 100%;
+    }
+    input:focus {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px rgba(168,85,247,.15);
+    }
+    input.invalid {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(239,68,68,.12);
+    }
+    input::placeholder { color: var(--muted); font-size: .88rem; }
+
+    .field-hint {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .field-hint.error { color: #fca5a5; }
+
+    /* password strength */
+    .strength-bar {
+      height: 4px;
+      border-radius: 99px;
+      background: var(--border);
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-fill {
+      height: 100%;
+      border-radius: 99px;
+      width: 0%;
+      transition: width .3s, background .3s;
+    }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: opacity .2s, transform .1s;
+      letter-spacing: .03em;
+    }
+    .btn-submit:hover { opacity: .9; }
+    .btn-submit:active { transform: scale(.98); }
+    .btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: .8rem;
+    }
+    .divider::before, .divider::after {
+      content: ""; flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .link-row {
+      text-align: center;
+      font-size: .87rem;
+      color: var(--muted);
+    }
+    .link-row a {
+      color: var(--accent2);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .link-row a:hover { text-decoration: underline; }
+
+    .alert {
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: .85rem;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .alert.error   { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.35);  color: #fca5a5; }
+    .alert.success { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.35); color: #6ee7b7; }
+    .alert.show    { display: block; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .perks {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+    .perk {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .82rem;
+      color: var(--muted);
+    }
+    .perk-icon { font-size: 1rem; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">Focus<span>Quest</span></div>
+    <p class="tagline">Crie sua conta e comece sua jornada</p>
+
+    <div class="perks">
+      <div class="perk"><span class="perk-icon">🍅</span> Timer Pomodoro com controle de foco</div>
+      <div class="perk"><span class="perk-icon">🏆</span> Sistema de XP, níveis e conquistas</div>
+      <div class="perk"><span class="perk-icon">🔥</span> Streak diário para manter consistência</div>
+    </div>
+
+    <div class="alert error"   id="alert-error"></div>
+    <div class="alert success" id="alert-success"></div>
+
+    <form id="register-form" novalidate>
+      <div class="form-group">
+        <label for="name">Nome completo</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Como quer ser chamado?"
+          autocomplete="name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="seu@email.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Mínimo 6 caracteres"
+          autocomplete="new-password"
+          required
+        />
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <span class="field-hint" id="strength-label"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm">Confirmar senha</label>
+        <input
+          type="password"
+          id="confirm"
+          name="confirm"
+          placeholder="Repita a senha"
+          autocomplete="new-password"
+          required
+        />
+        <span class="field-hint error" id="confirm-hint"></span>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit">Criar conta</button>
+    </form>
+
+    <div class="divider">ou</div>
+
+    <div class="link-row">
+      Já tem conta? <a href="login.html">Entrar</a>
+    </div>
+  </div>
+
+<script>
+const API = "http://localhost:5000/api";
+
+const form         = document.getElementById("register-form");
+const btnSubmit    = document.getElementById("btn-submit");
+const errBox       = document.getElementById("alert-error");
+const okBox        = document.getElementById("alert-success");
+const strengthFill = document.getElementById("strength-fill");
+const strengthLbl  = document.getElementById("strength-label");
+const confirmHint  = document.getElementById("confirm-hint");
+const pwdInput     = document.getElementById("password");
+const cfmInput     = document.getElementById("confirm");
+
+// ── Password strength ──────────────────────────────────────────────────
+const LEVELS = [
+  { min: 0,  color: "#ef4444", label: "Muito fraca", pct: 15  },
+  { min: 1,  color: "#f97316", label: "Fraca",       pct: 30  },
+  { min: 2,  color: "#f59e0b", label: "Razoável",    pct: 55  },
+  { min: 3,  color: "#84cc16", label: "Boa",         pct: 80  },
+  { min: 4,  color: "#10b981", label: "Forte",       pct: 100 },
+];
+
+function scorePassword(pwd) {
+  let score = 0;
+  if (pwd.length >= 6)  score++;
+  if (pwd.length >= 10) score++;
+  if (/[A-Z]/.test(pwd)) score++;
+  if (/[0-9]/.test(pwd)) score++;
+  if (/[^A-Za-z0-9]/.test(pwd)) score++;
+  return Math.min(score, 4);
+}
+
+pwdInput.addEventListener("input", () => {
+  const pwd = pwdInput.value;
+  if (!pwd) {
+    strengthFill.style.width = "0%";
+    strengthLbl.textContent = "";
+    return;
+  }
+  const lvl = LEVELS[scorePassword(pwd)];
+  strengthFill.style.width      = lvl.pct + "%";
+  strengthFill.style.background = lvl.color;
+  strengthLbl.textContent       = lvl.label;
+  checkConfirm();
+});
+
+cfmInput.addEventListener("input", checkConfirm);
+
+function checkConfirm() {
+  const match = cfmInput.value === pwdInput.value;
+  confirmHint.textContent = cfmInput.value && !match ? "As senhas não coincidem." : "";
+  cfmInput.classList.toggle("invalid", cfmInput.value.length > 0 && !match);
+}
+
+// ── Alerts ─────────────────────────────────────────────────────────────
+function showError(msg) {
+  errBox.textContent = msg;
+  errBox.classList.add("show");
+  okBox.classList.remove("show");
+}
+function showSuccess(msg) {
+  okBox.textContent = msg;
+  okBox.classList.add("show");
+  errBox.classList.remove("show");
+}
+function clearAlerts() {
+  errBox.classList.remove("show");
+  okBox.classList.remove("show");
+}
+function setLoading(on) {
+  btnSubmit.disabled = on;
+  btnSubmit.innerHTML = on
+    ? '<span class="spinner"></span>Criando conta...'
+    : "Criar conta";
+}
+
+// ── Submit ──────────────────────────────────────────────────────────────
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearAlerts();
+
+  const name     = document.getElementById("name").value.trim();
+  const email    = document.getElementById("email").value.trim();
+  const password = pwdInput.value;
+  const confirm  = cfmInput.value;
+
+  if (!name || !email || !password || !confirm) {
+    showError("Preencha todos os campos.");
+    return;
+  }
+  if (password.length < 6) {
+    showError("A senha deve ter pelo menos 6 caracteres.");
+    return;
+  }
+  if (password !== confirm) {
+    showError("As senhas não coincidem.");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method:      "POST",
+      headers:     { "Content-Type": "application/json" },
+      credentials: "include",
+      body:        JSON.stringify({ name, email, password }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      showError(data.error || "Erro ao criar conta.");
+      return;
+    }
+
+    showSuccess(`Conta criada! Bem-vindo, ${data.user.name}! 🎮`);
+    setTimeout(() => { window.location.href = "index.html"; }, 900);
+  } catch {
+    showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
+  } finally {
+    setLoading(false);
+  }
+});
+</script>
+</body>
+</html>
