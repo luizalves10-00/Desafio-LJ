@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, session
+from flask import Flask, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,6 +8,7 @@ import os
 
 # ── App setup ──────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "front_end")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
@@ -15,7 +16,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'lev
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
-CORS(app, supports_credentials=True, origins=["http://localhost:5500", "http://127.0.0.1:5500", "null"])
+CORS(app, supports_credentials=True, origins=["http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:8080", "http://127.0.0.1:8080", "null"])
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -23,6 +24,8 @@ migrate = Migrate(app, db)
 # ── Constants ──────────────────────────────────────────────────────────────
 XP_PER_POMODORO     = 50
 XP_PER_TASK         = 30
+# missões estilo RPG: quanto maior a prioridade, maior a recompensa
+XP_PER_TASK_PRIORITY = {1: 40, 2: 30, 3: 20}
 XP_PER_LEVEL        = 200
 GAME_XP_MAX_PER_CALL = 50    # teto de XP por partida
 GAME_XP_DAILY_CAP    = 150   # teto de XP de jogos por dia (anti-abuso)
@@ -200,7 +203,9 @@ def get_status():
     if isinstance(result, tuple):
         return result
     stats = get_or_create_stats(result)
-    return jsonify(stats.to_dict())
+    data = stats.to_dict()
+    data["tasks_done"] = Task.query.filter_by(user_id=result.id, done=True).count()
+    return jsonify(data)
 
 
 # ── Pomodoro ───────────────────────────────────────────────────────────────
@@ -323,11 +328,12 @@ def complete_task(task_id: int):
 
     task.done = True
     stats = get_or_create_stats(user)
-    stats.xp += XP_PER_TASK
+    xp_gained = XP_PER_TASK_PRIORITY.get(task.priority, XP_PER_TASK)
+    stats.xp += xp_gained
     db.session.commit()
 
     return jsonify({
-        "xp_gained":      XP_PER_TASK,
+        "xp_gained":      xp_gained,
         "total_xp":       stats.xp,
         "level":          stats.level,
         "xp_progress_pct": stats.xp_progress_pct,
@@ -363,8 +369,19 @@ def suggest():
     return jsonify({"suggestion": best.to_dict(), "message": f"Comece por: {best.title}"})
 
 
+# ── Frontend (serve as páginas no mesmo host da API) ─────────────────────────
+@app.route("/")
+def index_page():
+    return send_from_directory(FRONTEND_DIR, "login.html")
+
+
+@app.route("/<path:filename>")
+def frontend_files(filename):
+    return send_from_directory(FRONTEND_DIR, filename)
+
+
 # ── Entry point ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=int(os.environ.get("PORT", 5000)))

@@ -38,7 +38,7 @@
       <span class="nav-icon">⏱</span> Pomodoro
     </button>
     <button class="nav-item" data-section="tarefas" onclick="navigate('tarefas', this)">
-      <span class="nav-icon">📋</span> Tarefas
+      <span class="nav-icon">📜</span> Missões
     </button>
     <button class="nav-item" data-section="conquistas" onclick="navigate('conquistas', this)">
       <span class="nav-icon">🏆</span> Conquistas
@@ -83,19 +83,53 @@
 
     <!-- ══ DASHBOARD ══ -->
     <section class="section active" id="section-dashboard">
+
+      <!-- Carteirinha do herói -->
+      <div class="card hero-card" style="margin-bottom:20px;">
+        <div class="hero-avatar" id="hero-avatar">🐣</div>
+        <div class="hero-info">
+          <div class="hero-class-row">
+            <span class="hero-class" id="hero-class">Aprendiz</span>
+            <span class="hero-level" id="hero-level">Nv. 1</span>
+          </div>
+          <div class="hero-name" id="hero-name">—</div>
+          <div class="hero-xpbar">
+            <div class="hero-xpbar-fill" id="hero-xpbar-fill" style="width:0%"></div>
+            <span class="hero-xpbar-label" id="hero-xpbar-label">0 EXP</span>
+          </div>
+        </div>
+        <div class="hero-attrs">
+          <div class="hero-attr">
+            <span class="attr-name">⚔️ Força <small>pomodoros</small></span>
+            <div class="attr-bar"><div class="attr-fill attr-red" id="attr-forca" style="width:0%"></div></div>
+            <b class="attr-val" id="attr-forca-val">0</b>
+          </div>
+          <div class="hero-attr">
+            <span class="attr-name">📖 Sabedoria <small>missões</small></span>
+            <div class="attr-bar"><div class="attr-fill attr-blue" id="attr-sabedoria" style="width:0%"></div></div>
+            <b class="attr-val" id="attr-sabedoria-val">0</b>
+          </div>
+          <div class="hero-attr">
+            <span class="attr-name">🔥 Disciplina <small>streak</small></span>
+            <div class="attr-bar"><div class="attr-fill attr-gold" id="attr-disciplina" style="width:0%"></div></div>
+            <b class="attr-val" id="attr-disciplina-val">0</b>
+          </div>
+        </div>
+      </div>
+
       <div class="grid-3" style="margin-bottom:20px;">
         <div class="stat-card">
           <div class="stat-card-icon icon-purple">🏅</div>
           <div class="stat-info">
             <div class="stat-val" id="d-level">1</div>
-            <div class="stat-label">Nível atual</div>
+            <div class="stat-label">Nível do herói</div>
           </div>
         </div>
         <div class="stat-card">
           <div class="stat-card-icon icon-gold">⚡</div>
           <div class="stat-info">
             <div class="stat-val" id="d-xp">0</div>
-            <div class="stat-label">XP Total</div>
+            <div class="stat-label">EXP total</div>
           </div>
         </div>
         <div class="stat-card">
@@ -110,7 +144,7 @@
       <div class="grid-2">
         <!-- Sugestão -->
         <div class="card">
-          <div class="card-title">🎯 O que estudar agora?</div>
+          <div class="card-title">🗺️ Missão recomendada</div>
           <div class="suggest-box">
             <div class="suggest-title" id="suggest-title">Carregando...</div>
             <div class="suggest-body"  id="suggest-body"></div>
@@ -123,7 +157,14 @@
 
         <!-- Pomodoro rápido -->
         <div class="card">
-          <div class="card-title">⏱ Timer Rápido</div>
+          <div class="card-title">⚔️ Batalha Rápida</div>
+          <div class="monster-mini" id="monster-mini">
+            <span id="monster-mini-icon">👹</span>
+            <div class="monster-mini-info">
+              <span class="monster-mini-name" id="monster-mini-name">—</span>
+              <div class="monster-hp"><div class="monster-hp-fill" id="monster-hp-mini" style="width:100%"></div></div>
+            </div>
+          </div>
           <div class="timer-ring-wrap">
             <svg class="timer-ring" width="150" height="150" viewBox="0 0 150 150">
               <circle class="ring-bg"   cx="75" cy="75" r="64"/>
@@ -149,7 +190,15 @@
     <section class="section" id="section-pomodoro">
       <div class="grid-2">
         <div class="card" style="text-align:center;">
-          <div class="card-title" style="justify-content:center;">⏱ Timer Pomodoro</div>
+          <div class="card-title" style="justify-content:center;">⚔️ Batalha de Foco</div>
+          <div class="monster-box" id="monster-box">
+            <div class="monster-icon" id="monster-icon">👹</div>
+            <div class="monster-detail">
+              <div class="monster-name" id="monster-name">—</div>
+              <div class="monster-hp"><div class="monster-hp-fill" id="monster-hp-full" style="width:100%"></div></div>
+              <div class="monster-hp-label" id="monster-hp-label">HP 100%</div>
+            </div>
+          </div>
           <div class="timer-ring-wrap">
             <svg class="timer-ring" width="220" height="220" viewBox="0 0 220 220">
               <circle class="ring-bg"    cx="110" cy="110" r="96"/>
@@ -204,29 +253,29 @@
       </div>
     </section>
 
-    <!-- ══ TAREFAS ══ -->
+    <!-- ══ MISSÕES (tarefas) ══ -->
     <section class="section" id="section-tarefas">
       <div class="card">
-        <div class="card-title">📋 Gerenciar Tarefas</div>
+        <div class="card-title">📜 Mural de Missões</div>
         <div class="task-form">
           <div class="task-form-row">
-            <input type="text" id="task-title" placeholder="Nome da tarefa (ex: Estudar Matemática)" />
+            <input type="text" id="task-title" placeholder="Nome da missão (ex: Estudar Matemática)" />
             <input type="text" id="task-subject" placeholder="Matéria" style="max-width:160px" />
           </div>
           <div class="task-form-row">
             <input type="date" id="task-due" />
             <select id="task-priority">
-              <option value="3">🟢 Baixa prioridade</option>
-              <option value="2" selected>🟡 Média prioridade</option>
-              <option value="1">🔴 Alta prioridade</option>
+              <option value="3">🗡️ Missão Normal (+20 XP)</option>
+              <option value="2" selected>🛡️ Missão Elite (+30 XP)</option>
+              <option value="1">⚔️ Missão Chefe (+40 XP)</option>
             </select>
-            <button class="btn btn-primary" onclick="addTask()">+ Adicionar</button>
+            <button class="btn btn-primary" onclick="addTask()">📜 Aceitar missão</button>
           </div>
         </div>
         <div class="task-list" id="task-list">
           <div class="empty-state">
             <div class="empty-icon">📭</div>
-            Nenhuma tarefa ainda. Adicione sua primeira!
+            Nenhuma missão no mural. Aceite a primeira!
           </div>
         </div>
       </div>
@@ -236,7 +285,8 @@
     <section class="section" id="section-conquistas">
       <div class="card">
         <div class="card-title">🏆 Conquistas</div>
-        <div class="badges-grid" id="badges-grid"></div>
+        <div id="ach-summary"></div>
+        <div id="ach-groups"></div>
       </div>
     </section>
 
@@ -696,23 +746,27 @@
 
         <!-- ── PLATAFORMA ── -->
         <div class="game-pane" id="game-pane-plataforma">
-          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙 e chegue à bandeira 🚩.</p>
+          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙, pule na cabeça dos vilões 👾, desvie dos espinhos e derrote o chefão 👿 para liberar a bandeira 🚩. Vença a fase para avançar ao próximo cenário! 🌋</p>
           <div class="mini-wrap">
             <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Fase</span><span class="snake-stat-val" id="plat-level">1/2</span></div>
               <div class="snake-stat"><span class="snake-stat-label">Moedas</span><span class="snake-stat-val gold" id="plat-coins">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vilões</span><span class="snake-stat-val" id="plat-kills">0</span></div>
               <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="plat-lives">3</span></div>
             </div>
             <div class="board-overlay-wrap">
-              <canvas id="plat-canvas" width="360" height="260"></canvas>
+              <canvas id="plat-canvas" width="600" height="340"></canvas>
               <div class="snake-overlay" id="plat-overlay">
                 <div class="snake-overlay-msg" id="plat-overlay-msg">Pronto para a aventura?</div>
                 <button class="btn btn-primary" onclick="platStart()">▶ Começar</button>
               </div>
             </div>
             <div class="snake-controls">
-              <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
-              <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
-              <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
+                <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
+                <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1171,23 +1225,27 @@
 
         <!-- ── PLATAFORMA ── -->
         <div class="game-pane" id="game-pane-plataforma-modal">
-          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙 e chegue à bandeira 🚩.</p>
+          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙, pule na cabeça dos vilões 👾, desvie dos espinhos e derrote o chefão 👿 para liberar a bandeira 🚩. Vença a fase para avançar ao próximo cenário! 🌋</p>
           <div class="mini-wrap">
             <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Fase</span><span class="snake-stat-val" id="plat-level-modal">1/2</span></div>
               <div class="snake-stat"><span class="snake-stat-label">Moedas</span><span class="snake-stat-val gold" id="plat-coins-modal">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vilões</span><span class="snake-stat-val" id="plat-kills-modal">0</span></div>
               <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="plat-lives-modal">3</span></div>
             </div>
             <div class="board-overlay-wrap">
-              <canvas id="plat-canvas-modal" width="360" height="260"></canvas>
+              <canvas id="plat-canvas-modal" width="600" height="340"></canvas>
               <div class="snake-overlay" id="plat-overlay-modal">
                 <div class="snake-overlay-msg" id="plat-overlay-msg-modal">Pronto para a aventura?</div>
                 <button class="btn btn-primary" onclick="platStart()">▶ Começar</button>
               </div>
             </div>
             <div class="snake-controls">
-              <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
-              <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
-              <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
+                <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
+                <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+              </div>
             </div>
           </div>
         </div>

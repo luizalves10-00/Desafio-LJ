@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api";
+const API = "/api";
 
 // ── STATE ──────────────────────────────────────────────────────────────────
 let focusMins = 25, breakMins = 5;
@@ -13,8 +13,8 @@ let statusData = {};
 // ── NAVIGATION ──────────────────────────────────────────────────────────────
 const SECTION_TITLES = {
   dashboard:  "Dashboard",
-  pomodoro:   "Pomodoro",
-  tarefas:    "Tarefas",
+  pomodoro:   "Batalha de Foco",
+  tarefas:    "Missões",
   conquistas: "Conquistas",
   jogos:      "Jogos",
   temas:      "Temas",
@@ -65,6 +65,38 @@ function loadTheme() {
   });
 }
 
+// ── MONSTRO DA SESSÃO (modo batalha RPG) ───────────────────────────────────
+// cada sessão de foco é uma batalha: o HP do monstro desce com o tempo
+const POM_MONSTERS = [
+  ["👹", "Goblin da Distração"],
+  ["🐉", "Dragão da Preguiça"],
+  ["👻", "Fantasma do Celular"],
+  ["🧟", "Zumbi do Sono"],
+  ["🤡", "Palhaço da Procrastinação"],
+  ["🦹", "Vilão das Redes Sociais"],
+  ["💀", "Lorde do Cansaço"],
+  ["🐙", "Polvo da Enrolação"],
+];
+let pomMonster = POM_MONSTERS[Math.floor(Math.random() * POM_MONSTERS.length)];
+
+function rollMonster() {
+  pomMonster = POM_MONSTERS[Math.floor(Math.random() * POM_MONSTERS.length)];
+}
+
+function updateMonster() {
+  const hpPct = isBreak ? 0 : Math.round((secondsLeft / totalSecs) * 100);
+  const icon = isBreak ? "😴" : pomMonster[0];
+  const name = isBreak ? "Monstro derrotado! Descanse..." : pomMonster[1];
+  const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
+  set("monster-icon",       el => { el.textContent = icon; });
+  set("monster-name",       el => { el.textContent = name; });
+  set("monster-mini-icon",  el => { el.textContent = icon; });
+  set("monster-mini-name",  el => { el.textContent = name; });
+  set("monster-hp-full",    el => { el.style.width = hpPct + "%"; });
+  set("monster-hp-mini",    el => { el.style.width = hpPct + "%"; });
+  set("monster-hp-label",   el => { el.textContent = isBreak ? "💤 pausa" : `HP ${hpPct}%`; });
+}
+
 // ── TIMER ──────────────────────────────────────────────────────────────────
 function setDuration(focus, brk) {
   focusMins = focus; breakMins = brk;
@@ -103,6 +135,8 @@ function updateDisplay() {
 
   const bt = document.getElementById("break-timer");
   if (bt) bt.textContent = timeStr;
+
+  updateMonster();
 }
 
 function startTimer() {
@@ -121,6 +155,7 @@ function resetTimer() {
   isBreak = false;
   totalSecs = focusMins * 60;
   secondsLeft = totalSecs;
+  rollMonster(); // novo monstro para a próxima batalha
   updateDisplay();
 }
 function setSyncBtns(isRunning) {
@@ -144,14 +179,15 @@ function tick() {
       isBreak = true;
       totalSecs = breakMins * 60;
       secondsLeft = totalSecs;
-      showToast("🍅 Pomodoro concluído! Descanse jogando.", "gold");
+      showToast(`⚔️ ${pomMonster[0]} ${pomMonster[1]} derrotado! Descanse jogando.`, "gold");
       playBeep(880);
       openBreakModal();
     } else {
       isBreak = false;
       totalSecs = focusMins * 60;
       secondsLeft = totalSecs;
-      showToast("🚀 Pausa encerrada! Volte ao foco.", "");
+      rollMonster(); // um novo monstro aparece!
+      showToast(`🚀 Pausa encerrada! ${pomMonster[0]} ${pomMonster[1]} apareceu — ao ataque!`, "");
       playBeep(440);
       closeBreakModal();
     }
@@ -234,11 +270,50 @@ async function completePomodoro() {
   } catch(e) {}
 }
 
+// classe do herói evolui com o nível
+const HERO_CLASSES = [
+  { min: 20, icon: "🐉", name: "Lenda" },
+  { min: 15, icon: "🧙", name: "Arquimago(a)" },
+  { min: 11, icon: "🔮", name: "Mago(a)" },
+  { min: 8,  icon: "🛡️", name: "Cavaleiro(a)" },
+  { min: 5,  icon: "⚔️", name: "Guerreiro(a)" },
+  { min: 3,  icon: "🗡️", name: "Escudeiro(a)" },
+  { min: 1,  icon: "🐣", name: "Aprendiz" },
+];
+function heroClass(level) {
+  return HERO_CLASSES.find(c => level >= c.min) || HERO_CLASSES[HERO_CLASSES.length - 1];
+}
+
+function updateHeroCard(d) {
+  const set = (id, fn) => { const el = document.getElementById(id); if (el) fn(el); };
+  const cls = heroClass(d.level);
+  set("hero-avatar", el => { el.textContent = cls.icon; });
+  set("hero-class",  el => { el.textContent = cls.name; });
+  set("hero-level",  el => { el.textContent = `Nv. ${d.level}`; });
+  set("hero-name",   el => {
+    const nm = document.getElementById("sb-name");
+    el.textContent = nm ? nm.textContent : "Herói";
+  });
+  set("hero-xpbar-fill",  el => { el.style.width = d.xp_progress_pct + "%"; });
+  set("hero-xpbar-label", el => { el.textContent = `${d.xp} EXP · faltam ${d.xp_to_next} para subir`; });
+  // atributos: barras crescem rumo a um teto simbólico
+  const attrs = [
+    ["forca",      d.total_pomodoros, 100],
+    ["sabedoria",  d.tasks_done || 0, 50],
+    ["disciplina", d.streak,          30],
+  ];
+  attrs.forEach(([id, val, cap]) => {
+    set("attr-" + id,          el => { el.style.width = Math.min(100, Math.round(val / cap * 100)) + "%"; });
+    set("attr-" + id + "-val", el => { el.textContent = val; });
+  });
+}
+
 async function loadStatus() {
   try {
     const res = await apiFetch(`${API}/status`);
     if (res.status === 401) { redirectLogin(); return; }
     statusData = await res.json();
+    updateHeroCard(statusData);
     document.getElementById("sb-level").textContent = `Nível ${statusData.level}`;
     document.getElementById("sb-xp").textContent = `${statusData.xp} XP`;
     document.getElementById("sb-xp-fill").style.width = statusData.xp_progress_pct + "%";
@@ -355,31 +430,112 @@ function renderTasks(tasks) {
   }).join("");
 }
 
+// ── CONQUISTAS ──────────────────────────────────────────────────────────────
+const ACH_RARITY = {
+  comum:    { label: "Comum",    cls: "r-comum"    },
+  raro:     { label: "Raro",     cls: "r-raro"     },
+  epico:    { label: "Épico",    cls: "r-epico"    },
+  lendario: { label: "Lendário", cls: "r-lendario" },
+};
+const ACH_CATS = [
+  { id: "foco",    title: "🍅 Foco" },
+  { id: "streak",  title: "🔥 Streak" },
+  { id: "nivel",   title: "⭐ Nível e XP" },
+  { id: "tarefas", title: "📚 Tarefas" },
+  { id: "jogos",   title: "🎮 Jogos" },
+];
+const lsInt = k => parseInt(localStorage.getItem(k) || "0", 10);
+
+// cada conquista tem progresso (value/target) e raridade — quanto mais difícil, mais rara
 const BADGES = [
-  { id: "first_pom",  icon: "🍅", name: "Primeiro Pomodoro", desc: "Complete 1 pomodoro",  cond: d => d.total_pomodoros >= 1  },
-  { id: "pom5",       icon: "🔥", name: "Em Chamas",         desc: "5 pomodoros",          cond: d => d.total_pomodoros >= 5  },
-  { id: "pom20",      icon: "💪", name: "Dedicação",         desc: "20 pomodoros",         cond: d => d.total_pomodoros >= 20 },
-  { id: "pom50",      icon: "🚀", name: "Maratonista",       desc: "50 pomodoros",         cond: d => d.total_pomodoros >= 50 },
-  { id: "streak3",    icon: "⚡", name: "Streak 3 dias",     desc: "3 dias seguidos",      cond: d => d.streak >= 3  },
-  { id: "streak7",    icon: "🌟", name: "Semana Perfeita",   desc: "7 dias seguidos",      cond: d => d.streak >= 7  },
-  { id: "streak30",   icon: "👑", name: "Mês de Ouro",       desc: "30 dias seguidos",     cond: d => d.streak >= 30 },
-  { id: "level5",     icon: "🏆", name: "Nível 5",           desc: "Alcance o nível 5",    cond: d => d.level >= 5   },
-  { id: "level10",    icon: "💎", name: "Nível 10",          desc: "Alcance o nível 10",   cond: d => d.level >= 10  },
-  { id: "xp500",      icon: "✨", name: "500 XP",            desc: "Acumule 500 XP",       cond: d => d.xp >= 500    },
-  { id: "xp2000",     icon: "🌈", name: "2000 XP",           desc: "Acumule 2000 XP",      cond: d => d.xp >= 2000   },
+  // foco (pomodoros)
+  { cat:"foco", icon:"🍅", name:"Primeira Chama",   desc:"Complete 1 pomodoro",    rarity:"comum",    target:1,   value:d=>d.total_pomodoros },
+  { cat:"foco", icon:"🔥", name:"Pegando Fogo",     desc:"5 pomodoros",            rarity:"comum",    target:5,   value:d=>d.total_pomodoros },
+  { cat:"foco", icon:"💪", name:"Modo Treino",      desc:"20 pomodoros",           rarity:"raro",     target:20,  value:d=>d.total_pomodoros },
+  { cat:"foco", icon:"🚀", name:"Maratonista",      desc:"50 pomodoros",           rarity:"raro",     target:50,  value:d=>d.total_pomodoros },
+  { cat:"foco", icon:"🧠", name:"Cérebro de Aço",   desc:"100 pomodoros",          rarity:"epico",    target:100, value:d=>d.total_pomodoros },
+  { cat:"foco", icon:"🛸", name:"Fora da Órbita",   desc:"250 pomodoros",          rarity:"lendario", target:250, value:d=>d.total_pomodoros },
+  // streak (dias seguidos)
+  { cat:"streak", icon:"⚡", name:"Esquenta",         desc:"3 dias seguidos",      rarity:"comum",    target:3,   value:d=>d.streak },
+  { cat:"streak", icon:"🌟", name:"Semana Perfeita",  desc:"7 dias seguidos",      rarity:"raro",     target:7,   value:d=>d.streak },
+  { cat:"streak", icon:"🌙", name:"Duas Semanas On",  desc:"14 dias seguidos",     rarity:"raro",     target:14,  value:d=>d.streak },
+  { cat:"streak", icon:"👑", name:"Mês de Ouro",      desc:"30 dias seguidos",     rarity:"epico",    target:30,  value:d=>d.streak },
+  { cat:"streak", icon:"💎", name:"Imparável",        desc:"60 dias seguidos",     rarity:"epico",    target:60,  value:d=>d.streak },
+  { cat:"streak", icon:"🐉", name:"Lenda Viva",       desc:"100 dias seguidos",    rarity:"lendario", target:100, value:d=>d.streak },
+  // nível e XP
+  { cat:"nivel", icon:"🥉", name:"Subindo!",          desc:"Alcance o nível 3",    rarity:"comum",    target:3,     value:d=>d.level },
+  { cat:"nivel", icon:"🥈", name:"Nível 5",           desc:"Alcance o nível 5",    rarity:"comum",    target:5,     value:d=>d.level },
+  { cat:"nivel", icon:"🥇", name:"Nível 10",          desc:"Alcance o nível 10",   rarity:"raro",     target:10,    value:d=>d.level },
+  { cat:"nivel", icon:"🏆", name:"Nível 15",          desc:"Alcance o nível 15",   rarity:"epico",    target:15,    value:d=>d.level },
+  { cat:"nivel", icon:"🏅", name:"Nível 20",          desc:"Alcance o nível 20",   rarity:"lendario", target:20,    value:d=>d.level },
+  { cat:"nivel", icon:"✨", name:"500 XP",            desc:"Acumule 500 XP",       rarity:"comum",    target:500,   value:d=>d.xp },
+  { cat:"nivel", icon:"⭐", name:"1.000 XP",          desc:"Acumule 1.000 XP",     rarity:"raro",     target:1000,  value:d=>d.xp },
+  { cat:"nivel", icon:"🌈", name:"2.000 XP",          desc:"Acumule 2.000 XP",     rarity:"raro",     target:2000,  value:d=>d.xp },
+  { cat:"nivel", icon:"☄️", name:"5.000 XP",          desc:"Acumule 5.000 XP",     rarity:"epico",    target:5000,  value:d=>d.xp },
+  { cat:"nivel", icon:"🌌", name:"10.000 XP",         desc:"Acumule 10.000 XP",    rarity:"lendario", target:10000, value:d=>d.xp },
+  // tarefas concluídas
+  { cat:"tarefas", icon:"✅", name:"Primeira Missão",  desc:"Conclua 1 tarefa",    rarity:"comum",    target:1,   value:d=>d.tasks_done },
+  { cat:"tarefas", icon:"📚", name:"Caderno em Dia",   desc:"10 tarefas",          rarity:"comum",    target:10,  value:d=>d.tasks_done },
+  { cat:"tarefas", icon:"🗂️", name:"Organização Pro",  desc:"25 tarefas",          rarity:"raro",     target:25,  value:d=>d.tasks_done },
+  { cat:"tarefas", icon:"🎯", name:"Mestre das Metas", desc:"50 tarefas",          rarity:"epico",    target:50,  value:d=>d.tasks_done },
+  { cat:"tarefas", icon:"🏛️", name:"Produtividade Lendária", desc:"100 tarefas",   rarity:"lendario", target:100, value:d=>d.tasks_done },
+  // jogos (recordes salvos no aparelho)
+  { cat:"jogos", icon:"🐍", name:"Caçador de Frutas", desc:"50 pontos no Snake",     rarity:"comum",    target:50,    value:()=>lsInt("lus-snake-best") },
+  { cat:"jogos", icon:"🐲", name:"Rei da Selva",      desc:"120 pontos no Snake",    rarity:"epico",    target:120,   value:()=>lsInt("lus-snake-best") },
+  { cat:"jogos", icon:"🔢", name:"Número Mágico",     desc:"2.048 pontos no 2048",   rarity:"raro",     target:2048,  value:()=>lsInt("lus-2048-best") },
+  { cat:"jogos", icon:"🤖", name:"Calculadora Humana",desc:"10.000 pontos no 2048",  rarity:"epico",    target:10000, value:()=>lsInt("lus-2048-best") },
+  { cat:"jogos", icon:"🪙", name:"Caça-Moedas",       desc:"25 moedas na Plataforma",rarity:"raro",     target:25,    value:()=>lsInt("lus-plat-coins-best") },
+  { cat:"jogos", icon:"🏁", name:"Zerou o Jogo!",     desc:"Complete as 2 fases da Plataforma", rarity:"lendario", target:1, value:()=>lsInt("lus-plat-clear") },
 ];
 
+function achRank(unlocked) {
+  if (unlocked >= 26) return "🐉 Lenda dos Estudos";
+  if (unlocked >= 16) return "🦸 Super-Estudante";
+  if (unlocked >= 7)  return "⚔️ Explorador(a)";
+  return "🌱 Iniciante";
+}
+
 function renderAchievements() {
-  const grid = document.getElementById("badges-grid");
-  if (!grid) return;
-  grid.innerHTML = BADGES.map(b => {
-    const unlocked = b.cond(statusData);
-    return `<div class="badge ${unlocked ? "unlocked" : ""}">
-      <div class="badge-icon">${b.icon}</div>
-      <div class="badge-name">${b.name}</div>
-      <div class="badge-desc">${b.desc}</div>
-    </div>`;
-  }).join("");
+  const wrap = document.getElementById("ach-groups");
+  if (!wrap) return;
+  const d = statusData || {};
+  let unlocked = 0;
+  const byCat = {};
+
+  BADGES.forEach(b => {
+    const cur = b.value(d) || 0;
+    const done = cur >= b.target;
+    if (done) unlocked++;
+    const pct = Math.min(100, Math.round((cur / b.target) * 100));
+    const r = ACH_RARITY[b.rarity];
+    const html = `
+      <div class="badge ${r.cls}${done ? " unlocked" : ""}">
+        ${done ? '<div class="badge-check">✓</div>' : ""}
+        <div class="badge-icon">${b.icon}</div>
+        <div class="badge-name">${b.name}</div>
+        <div class="badge-desc">${b.desc}</div>
+        <span class="badge-rarity">${r.label}</span>
+        ${done ? "" : `
+        <div class="ach-bar"><div class="ach-bar-fill" style="width:${pct}%"></div></div>
+        <div class="ach-bar-label">${Math.min(cur, b.target)}/${b.target}</div>`}
+      </div>`;
+    (byCat[b.cat] = byCat[b.cat] || []).push(html);
+  });
+
+  wrap.innerHTML = ACH_CATS.map(c => `
+    <div class="ach-cat-title">${c.title}</div>
+    <div class="badges-grid">${(byCat[c.id] || []).join("")}</div>`).join("");
+
+  const sum = document.getElementById("ach-summary");
+  if (sum) {
+    const total = BADGES.length;
+    const pct = Math.round((unlocked / total) * 100);
+    sum.innerHTML = `
+      <div class="ach-rank">${achRank(unlocked)}</div>
+      <div class="ach-count">${unlocked} de ${total} conquistas</div>
+      <div class="ach-total-bar"><div class="ach-total-fill" style="width:${pct}%"></div></div>
+      <div class="ach-pct">${pct}%</div>`;
+  }
 }
 
 // ── TOAST ──────────────────────────────────────────────────────────────────
@@ -2193,40 +2349,173 @@ function breakoutDraw() {
 }
 
 // ── PLATAFORMA (estilo Mario) ────────────────────────────────────────────────
-const PLAT_W = 360, PLAT_H = 260;
-const PLAT_GRAV = 0.55, PLAT_SPEED = 3, PLAT_JUMP = 10.5;
-const PLAT_WORLD_W = 1700;
+const PLAT_W = 600, PLAT_H = 340;
+const PLAT_GRAV = 0.55, PLAT_SPEED = 3.4, PLAT_JUMP = 11.5;
+const PLAT_GROUND_Y = 310;
 
-// chão (com buracos) e plataformas flutuantes
-const PLAT_PLATFORMS = [
-  { x: 0,    y: 230, w: 320, h: 30 },
-  { x: 380,  y: 230, w: 240, h: 30 },
-  { x: 700,  y: 230, w: 300, h: 30 },
-  { x: 1080, y: 230, w: 620, h: 30 },
-  { x: 210,  y: 175, w: 80,  h: 14 },
-  { x: 340,  y: 140, w: 70,  h: 14 },
-  { x: 480,  y: 165, w: 80,  h: 14 },
-  { x: 640,  y: 130, w: 70,  h: 14 },
-  { x: 840,  y: 160, w: 90,  h: 14 },
-  { x: 980,  y: 125, w: 80,  h: 14 },
-  { x: 1180, y: 165, w: 90,  h: 14 },
-  { x: 1340, y: 135, w: 90,  h: 14 },
+// fases: cada uma com cenário (tema), desafios e vilões próprios.
+// enemies: type "walker" (patrulha no chão/plataforma), "bat" (voa em onda)
+// movers: plataformas móveis; "axis" indica o eixo do movimento
+const PLAT_LEVELS = [
+  { // ── FASE 1: Campos Verdes ──────────────────────────────────────────────
+    name: "Campos Verdes",
+    worldW: 3200,
+    theme: {
+      sky: null, // mantém o fundo do tema do site
+      hill: "rgba(76,175,80,.14)", cloud: "rgba(255,255,255,.12)",
+      ground: "#3d8b40", groundTop: "#4caf50",
+      plat: "#a0703c", platTop: "#c08850",
+      spike: "#94a3b8", lava: null,
+    },
+    platforms: [
+      { x: 0,    y: 310, w: 380,  h: 30 },
+      { x: 470,  y: 310, w: 330,  h: 30 },
+      { x: 900,  y: 310, w: 360,  h: 30 },
+      { x: 1360, y: 310, w: 300,  h: 30 },
+      { x: 1755, y: 310, w: 345,  h: 30 },
+      { x: 2200, y: 310, w: 1000, h: 30 },
+      { x: 150,  y: 235, w: 90, h: 14 },
+      { x: 310,  y: 180, w: 80, h: 14 },
+      { x: 500,  y: 240, w: 90, h: 14 },
+      { x: 660,  y: 185, w: 80, h: 14 },
+      { x: 815,  y: 235, w: 75, h: 14 },
+      { x: 960,  y: 180, w: 90, h: 14 },
+      { x: 1120, y: 235, w: 90, h: 14 },
+      { x: 1280, y: 185, w: 80, h: 14 },
+      { x: 1450, y: 240, w: 90, h: 14 },
+      { x: 1600, y: 180, w: 80, h: 14 },
+      { x: 1690, y: 245, w: 70, h: 14 },
+      { x: 1850, y: 235, w: 90, h: 14 },
+      { x: 2010, y: 180, w: 90, h: 14 },
+      { x: 2120, y: 240, w: 80, h: 14 },
+      { x: 2350, y: 225, w: 90, h: 14 },
+      { x: 2530, y: 175, w: 90, h: 14 },
+    ],
+    spikes: [
+      { x: 610,  y: 298, w: 48, h: 12 },
+      { x: 990,  y: 298, w: 56, h: 12 },
+      { x: 1560, y: 298, w: 48, h: 12 },
+      { x: 1960, y: 298, w: 56, h: 12 },
+      { x: 2250, y: 298, w: 48, h: 12 },
+    ],
+    movers: [],
+    coins: [
+      [195,205],[350,150],[545,210],[700,155],[852,205],[1005,150],
+      [1165,205],[1320,155],[1495,210],[1640,150],[1725,215],[1895,205],
+      [2055,150],[2160,210],[2395,195],[2575,145],[2700,280],[2950,280],
+    ],
+    enemies: [
+      { x: 240,  min: 160,  max: 330,  sp: 1.1 },
+      { x: 620,  min: 540,  max: 770,  sp: 1.2 },
+      { x: 1100, min: 1060, max: 1230, sp: 1.3 },
+      { x: 1450, min: 1370, max: 1530, sp: 1.3 },
+      { x: 1800, min: 1760, max: 1930, sp: 1.4 },
+      { x: 2030, min: 2012, max: 2074, sp: 1.0, plat: 180 },
+      { x: 2420, min: 2360, max: 2560, sp: 1.5 },
+    ],
+    boss: { x: 2780, min: 2640, max: 3040, sp: 1.7, hp: 3, w: 46, h: 42, type: "sombra" },
+    checkpoint: { x: 1780, y: 250, w: 14, h: 60 },
+    goal: { x: 3130, y: 250, w: 20, h: 60 },
+  },
+  { // ── FASE 2: Caverna Vulcânica ──────────────────────────────────────────
+    name: "Caverna Vulcânica",
+    worldW: 3400,
+    theme: {
+      sky: ["#2a1020", "#451a14"],
+      hill: "rgba(140,45,30,.28)", cloud: "rgba(255,120,60,.10)",
+      ground: "#4a4a55", groundTop: "#5d5d6b",
+      plat: "#6b4a3f", platTop: "#8a6353",
+      spike: "#f97316", lava: "#ff6d1f",
+    },
+    platforms: [
+      { x: 0,    y: 310, w: 340, h: 30 },
+      { x: 450,  y: 310, w: 300, h: 30 },
+      { x: 860,  y: 310, w: 320, h: 30 },
+      { x: 1290, y: 310, w: 280, h: 30 },
+      { x: 1680, y: 310, w: 320, h: 30 },
+      { x: 2120, y: 310, w: 260, h: 30 },
+      { x: 2500, y: 310, w: 900, h: 30 },
+      { x: 180,  y: 240, w: 80, h: 14 },
+      { x: 330,  y: 185, w: 70, h: 14 },
+      { x: 520,  y: 235, w: 80, h: 14 },
+      { x: 680,  y: 180, w: 70, h: 14 },
+      { x: 770,  y: 245, w: 70, h: 14 },
+      { x: 900,  y: 180, w: 80, h: 14 },
+      { x: 1060, y: 235, w: 80, h: 14 },
+      { x: 1200, y: 190, w: 70, h: 14 },
+      { x: 1340, y: 240, w: 80, h: 14 },
+      { x: 1480, y: 185, w: 70, h: 14 },
+      { x: 1590, y: 245, w: 70, h: 14 },
+      { x: 1730, y: 235, w: 80, h: 14 },
+      { x: 1880, y: 180, w: 80, h: 14 },
+      { x: 2160, y: 235, w: 80, h: 14 },
+      { x: 2300, y: 180, w: 70, h: 14 },
+      { x: 2560, y: 225, w: 80, h: 14 },
+      { x: 2720, y: 170, w: 80, h: 14 },
+    ],
+    spikes: [
+      { x: 620,  y: 298, w: 48, h: 12 },
+      { x: 940,  y: 298, w: 56, h: 12 },
+      { x: 1430, y: 298, w: 48, h: 12 },
+      { x: 1820, y: 298, w: 56, h: 12 },
+      { x: 2250, y: 298, w: 48, h: 12 },
+      { x: 2640, y: 298, w: 56, h: 12 },
+    ],
+    movers: [
+      { x: 2030, y: 280, w: 70, h: 14, axis: "y", min: 170, max: 280, sp: 1.0 },
+      { x: 2390, y: 230, w: 70, h: 14, axis: "x", min: 2390, max: 2440, sp: 1.2 },
+    ],
+    coins: [
+      [220,210],[365,150],[560,205],[715,150],[805,215],[940,150],
+      [1100,205],[1235,160],[1380,210],[1515,150],[1625,215],[1770,205],
+      [1920,150],[2065,140],[2200,205],[2335,150],[2600,195],[2760,140],
+      [2900,280],[3100,280],
+    ],
+    enemies: [
+      { x: 220,  min: 200,  max: 330,  sp: 1.3 },
+      { x: 480,  min: 470,  max: 600,  sp: 1.4 },
+      { x: 1010, min: 1000, max: 1160, sp: 1.4 },
+      { x: 1700, min: 1690, max: 1810, sp: 1.5 },
+      { x: 2520, min: 2510, max: 2620, sp: 1.6 },
+      { x: 1885, min: 1882, max: 1932, sp: 1.0, plat: 180 },
+      { x: 650,  min: 600,  max: 760,  sp: 1.3, type: "bat", baseY: 200, amp: 40 },
+      { x: 1350, min: 1300, max: 1500, sp: 1.5, type: "bat", baseY: 190, amp: 45 },
+      { x: 1950, min: 1900, max: 2100, sp: 1.6, type: "bat", baseY: 180, amp: 50 },
+      { x: 2600, min: 2550, max: 2750, sp: 1.8, type: "bat", baseY: 190, amp: 40 },
+    ],
+    boss: { x: 2950, min: 2750, max: 3220, sp: 2.0, hp: 4, w: 52, h: 46, type: "lava", jumps: true },
+    checkpoint: { x: 1700, y: 250, w: 14, h: 60 },
+    goal: { x: 3330, y: 250, w: 20, h: 60 },
+  },
 ];
-const PLAT_COINS_INIT = [
-  [240,145],[365,110],[505,135],[665,100],[860,130],[1005,95],
-  [430,200],[560,200],[760,200],[1210,135],[1370,105],[1120,200],[1250,200],
-];
-const PLAT_GOAL = { x: 1620, y: 170, w: 20, h: 60 };
 
+let platLevel = 0, platNext = false, platClear = false;
 let platPlayer, platCoins, platCoinsGot, platLives, platCam, platLoop, platRunning, platOver;
+let platEnemies, platBoss, platMovers, platKills = 0, platCheckpointOn = false, platInvuln = 0;
 let platState = "play", platAnimTick = 0, platVictoryRAF = null;
 const platKeys = { left: false, right: false };
 
-// sprites do personagem (tiras horizontais; ver assets/LEIA-ME.txt)
+function platLvl() { return PLAT_LEVELS[platLevel]; }
+// sólidos onde o jogador pisa/esbarra: plataformas fixas + móveis
+function platSolids() { return platLvl().platforms.concat(platMovers); }
+
+// sprites do personagem — recortes medidos pixel a pixel [x, y, w, h]
+// (em pulo.png e vitoria.png os quadros NÃO estão alinhados em grade fixa,
+//  por isso cada quadro tem seu próprio retângulo de origem)
+const HERO_SCALE = 0.20; // 277px de arte ≈ 55px na tela
 const HERO_SPRITES = {
-  run:     { img: new Image(), frames: 8, loaded: false },
-  jump:    { img: new Image(), frames: 6, loaded: false },
-  victory: { img: new Image(), frames: 6, loaded: false },
+  run: { img: new Image(), loaded: false, frames: [
+    [54,63,195,278],[348,63,204,279],[648,64,203,277],[950,64,218,275],
+    [1254,63,191,279],[1551,64,193,277],[1851,64,195,277],[2148,63,215,276],
+  ]},
+  jump: { img: new Image(), loaded: false, frames: [
+    [359,117,197,293],[662,74,198,311],[965,44,204,316],
+    [1251,6,231,319],[1537,79,268,290],[1887,131,186,283],
+  ]},
+  victory: { img: new Image(), loaded: false, frames: [
+    [214,49,187,327],[561,49,247,327],[925,33,245,343],
+    [1288,35,218,341],[1625,47,212,329],[1954,41,243,335],
+  ]},
 };
 HERO_SPRITES.run.img.src     = "assets/corrida.png";
 HERO_SPRITES.jump.img.src    = "assets/pulo.png";
@@ -2236,20 +2525,29 @@ Object.values(HERO_SPRITES).forEach(s => { s.img.onload = () => { s.loaded = tru
 // desenha o herói com sprite animado; retorna false se a imagem ainda não carregou
 function platDrawHero(ctx, sx) {
   const p = platPlayer;
-  let strip, frameDiv = 5, animate = true;
-  if (platState === "victory") { strip = HERO_SPRITES.victory; frameDiv = 6; }
-  else if (!p.onGround)        { strip = HERO_SPRITES.jump; }
-  else if (p.vx !== 0)         { strip = HERO_SPRITES.run; }
-  else                         { strip = HERO_SPRITES.run; animate = false; }
+  let strip, fi;
+  if (platState === "victory") {
+    strip = HERO_SPRITES.victory;
+    fi = Math.floor(platAnimTick / 7) % strip.frames.length;
+  } else if (!p.onGround) {
+    strip = HERO_SPRITES.jump;
+    // pose conforme a fase do pulo: subindo → ápice → caindo → aterrissando
+    if      (p.vy < -7)   fi = 1;
+    else if (p.vy < -2.5) fi = 2;
+    else if (p.vy <  2.5) fi = 3;
+    else if (p.vy <  7)   fi = 4;
+    else                  fi = 5;
+  } else if (p.vx !== 0) {
+    strip = HERO_SPRITES.run;
+    fi = Math.floor(platAnimTick / 4) % strip.frames.length;
+  } else {
+    strip = HERO_SPRITES.run;
+    fi = 0;
+  }
+  if (!strip.loaded || !strip.img.width) return false;
 
-  if (!strip || !strip.loaded || !strip.img.width) return false;
-
-  const fw = strip.img.width / strip.frames;
-  const fh = strip.img.height;
-  const fi = animate ? Math.floor(platAnimTick / frameDiv) % strip.frames : 0;
-
-  // escala mantendo proporção; pés alinhados à base do hitbox
-  const dh = 42, dw = (fw / fh) * dh;
+  const [fx, fy, fw, fh] = strip.frames[fi];
+  const dw = fw * HERO_SCALE, dh = fh * HERO_SCALE;
   const dx = sx + p.w / 2 - dw / 2;
   const dy = p.y + p.h - dh;
 
@@ -2257,9 +2555,9 @@ function platDrawHero(ctx, sx) {
   if (p.face < 0) {
     ctx.translate(dx + dw, dy);
     ctx.scale(-1, 1);
-    ctx.drawImage(strip.img, fi * fw, 0, fw, fh, 0, 0, dw, dh);
+    ctx.drawImage(strip.img, fx, fy, fw, fh, 0, 0, dw, dh);
   } else {
-    ctx.drawImage(strip.img, fi * fw, 0, fw, fh, dx, dy, dw, dh);
+    ctx.drawImage(strip.img, fx, fy, fw, fh, dx, dy, dw, dh);
   }
   ctx.restore();
   return true;
@@ -2267,33 +2565,69 @@ function platDrawHero(ctx, sx) {
 
 function platReset() {
   platStop();
+  platLevel = 0;
+  platNext = false;
+  platClear = false;
   platLives = 3;
   platCoinsGot = 0;
+  platKills = 0;
   platState = "play";
-  platSpawn();
-  platCoins = PLAT_COINS_INIT.map(([x, y]) => ({ x, y, taken: false }));
+  platCheckpointOn = false;
+  platBuildWorld();
+  platSpawn(true);
   const ov = gel("plat-overlay");
   if (ov) { ov.classList.remove("hidden"); gel("plat-overlay-msg").textContent = "Pronto para a aventura?"; }
   platUpdateStats();
   platDraw();
 }
+
+function platBuildWorld() {
+  const lvl = platLvl();
+  platCoins = lvl.coins.map(([x, y]) => ({ x, y, taken: false }));
+  platEnemies = lvl.enemies.map(e => ({
+    type: e.type || "walker",
+    x: e.x, w: 26, h: 22,
+    y: e.type === "bat" ? e.baseY : (e.plat || PLAT_GROUND_Y) - 22,
+    baseY: e.baseY || 0, amp: e.amp || 0, phase: Math.random() * Math.PI * 2,
+    min: e.min, max: e.max, sp: e.sp, dir: 1, alive: true,
+  }));
+  platMovers = lvl.movers.map(m => ({ ...m, dir: 1 }));
+  platBoss = {
+    ...lvl.boss, y: PLAT_GROUND_Y - lvl.boss.h,
+    dir: -1, alive: true, flash: 0, vy: 0, onGround: true, jt: 0,
+  };
+}
+
 function platStop() {
   platRunning = false;
   if (platLoop) { cancelAnimationFrame(platLoop); platLoop = null; }
   if (platVictoryRAF) { cancelAnimationFrame(platVictoryRAF); platVictoryRAF = null; }
 }
 
-function platSpawn() {
-  platPlayer = { x: 30, y: 190, w: 20, h: 20, vx: 0, vy: 0, onGround: false, face: 1 };
-  platCam = 0;
+function platSpawn(fullReset) {
+  const sx = (!fullReset && platCheckpointOn) ? platLvl().checkpoint.x : 30;
+  platPlayer = { x: sx, y: PLAT_GROUND_Y - 34, w: 22, h: 34, vx: 0, vy: 0, onGround: false, face: 1 };
+  platCam = Math.max(0, Math.min(platPlayer.x - PLAT_W / 2, platLvl().worldW - PLAT_W));
+  platInvuln = fullReset ? 0 : 90; // invencível por uns instantes ao voltar
 }
 
 function platStart() {
   const ov = gel("plat-overlay"); if (ov) ov.classList.add("hidden");
-  if (platOver || platLives <= 0) { platLives = 3; platCoinsGot = 0; platCoins = PLAT_COINS_INIT.map(([x, y]) => ({ x, y, taken: false })); }
+  if (platNext) {
+    // venceu a fase anterior: avança mantendo vidas, moedas e vilões
+    platLevel++;
+    platNext = false;
+    platCheckpointOn = false;
+    platBuildWorld();
+    showToast(`🌋 Fase ${platLevel + 1}: ${platLvl().name}!`, "gold");
+  } else if (platOver || platLives <= 0) {
+    if (platClear) { platLevel = 0; platClear = false; } // zerou: recomeça do início
+    platLives = 3; platCoinsGot = 0; platKills = 0; platCheckpointOn = false;
+    platBuildWorld();
+  }
   platOver = false;
   platState = "play";
-  platSpawn();
+  platSpawn(true);
   platUpdateStats();
   platRunning = true;
   platLoop = requestAnimationFrame(platTick);
@@ -2313,16 +2647,35 @@ function rectsHit(a, b) {
 function platTick() {
   if (!platRunning) return;
   platAnimTick++;
+  if (platInvuln > 0) platInvuln--;
   const p = platPlayer;
+  const lvl = platLvl();
+
+  // plataformas móveis: andam e carregam o jogador que estiver em cima
+  for (const m of platMovers) {
+    const riding = Math.abs(p.y + p.h - m.y) < 3 && p.x + p.w > m.x && p.x < m.x + m.w;
+    const d = m.sp * m.dir;
+    if (m.axis === "y") {
+      m.y += d;
+      if (m.y <= m.min) { m.y = m.min; m.dir = 1; }
+      else if (m.y >= m.max) { m.y = m.max; m.dir = -1; }
+      if (riding) p.y = m.y - p.h;
+    } else {
+      m.x += d;
+      if (m.x <= m.min) { m.x = m.min; m.dir = 1; }
+      else if (m.x >= m.max) { m.x = m.max; m.dir = -1; }
+      if (riding) p.x += d;
+    }
+  }
 
   // movimento horizontal
   p.vx = (platKeys.right ? PLAT_SPEED : 0) - (platKeys.left ? PLAT_SPEED : 0);
   if (p.vx !== 0) p.face = p.vx > 0 ? 1 : -1;
   p.x += p.vx;
   if (p.x < 0) p.x = 0;
-  if (p.x + p.w > PLAT_WORLD_W) p.x = PLAT_WORLD_W - p.w;
+  if (p.x + p.w > lvl.worldW) p.x = lvl.worldW - p.w;
   // colisão horizontal
-  for (const pl of PLAT_PLATFORMS) {
+  for (const pl of platSolids()) {
     if (rectsHit(p, pl)) {
       if (p.vx > 0) p.x = pl.x - p.w;
       else if (p.vx < 0) p.x = pl.x + pl.w;
@@ -2333,20 +2686,90 @@ function platTick() {
   p.vy += PLAT_GRAV;
   p.y += p.vy;
   p.onGround = false;
-  for (const pl of PLAT_PLATFORMS) {
+  for (const pl of platSolids()) {
     if (rectsHit(p, pl)) {
       if (p.vy > 0) { p.y = pl.y - p.h; p.vy = 0; p.onGround = true; }
       else if (p.vy < 0) { p.y = pl.y + pl.h; p.vy = 0; }
     }
   }
 
-  // caiu no buraco
-  if (p.y > PLAT_H + 40) {
+  // vilões patrulham (morcegos voam em onda)
+  for (const e of platEnemies) {
+    if (!e.alive) continue;
+    e.x += e.sp * e.dir;
+    if (e.x <= e.min) { e.x = e.min; e.dir = 1; }
+    else if (e.x >= e.max) { e.x = e.max; e.dir = -1; }
+    if (e.type === "bat") e.y = e.baseY + Math.sin(platAnimTick * 0.06 + e.phase) * e.amp;
+  }
+  // chefão patrulha (fica mais rápido a cada pisão; o da lava também pula)
+  const b = platBoss;
+  if (b.alive) {
+    b.x += b.sp * b.dir;
+    if (b.x <= b.min) { b.x = b.min; b.dir = 1; }
+    else if (b.x >= b.max) { b.x = b.max; b.dir = -1; }
+    if (b.flash > 0) b.flash--;
+    if (b.jumps) {
+      b.jt++;
+      if (b.jt > 130 && b.onGround) { b.vy = -9.5; b.onGround = false; b.jt = 0; }
+      b.vy += PLAT_GRAV;
+      b.y += b.vy;
+      if (b.y >= PLAT_GROUND_Y - b.h) { b.y = PLAT_GROUND_Y - b.h; b.vy = 0; b.onGround = true; }
+    }
+  }
+
+  // contato com vilões: pisão na cabeça derrota, encostada machuca
+  let hurt = false;
+  for (const e of platEnemies) {
+    if (!e.alive || !rectsHit(p, e)) continue;
+    if (p.vy > 0 && p.y + p.h - p.vy <= e.y + 8) {
+      e.alive = false;
+      platKills++;
+      platUpdateStats();
+      p.vy = -7.5;
+      playBeep(600);
+    } else if (platInvuln <= 0) { hurt = true; break; }
+  }
+  if (!hurt && b.alive && rectsHit(p, b)) {
+    if (p.vy > 0 && p.y + p.h - p.vy <= b.y + 10) {
+      b.hp--;
+      b.flash = 20;
+      b.sp += 0.6;
+      p.vy = -8.5;
+      playBeep(700);
+      if (b.hp <= 0) {
+        b.alive = false;
+        platKills++;
+        playBeep(880);
+        showToast("👿 Chefão derrotado! A bandeira foi liberada! 🚩", "gold");
+      }
+      platUpdateStats();
+    } else if (platInvuln <= 0) hurt = true;
+  }
+  // espinhos
+  if (!hurt && platInvuln <= 0) {
+    for (const s of lvl.spikes) {
+      if (rectsHit(p, s)) { hurt = true; break; }
+    }
+  }
+  // caiu no buraco (machuca mesmo invencível)
+  if (p.y > PLAT_H + 40) hurt = true;
+
+  if (hurt) {
     platLives--;
     platUpdateStats();
     playBeep(180);
     if (platLives <= 0) { platEnd(false); return; }
-    platSpawn();
+    platSpawn(false);
+    platDraw();
+    platLoop = requestAnimationFrame(platTick);
+    return;
+  }
+
+  // checkpoint: ao passar, vira o novo ponto de retorno
+  if (!platCheckpointOn && p.x >= lvl.checkpoint.x) {
+    platCheckpointOn = true;
+    playBeep(760);
+    showToast("🏳️ Checkpoint ativado!", "green");
   }
 
   // moedas
@@ -2359,38 +2782,48 @@ function platTick() {
     }
   }
 
-  // chegou na bandeira
-  if (rectsHit(p, PLAT_GOAL)) { platEnd(true); return; }
+  // bandeira: só vale depois de derrotar o chefão
+  if (!b.alive && rectsHit(p, lvl.goal)) { platEnd(true); return; }
 
   // câmera segue o jogador
-  platCam = Math.max(0, Math.min(p.x - PLAT_W / 2, PLAT_WORLD_W - PLAT_W));
+  platCam = Math.max(0, Math.min(p.x - PLAT_W / 2, lvl.worldW - PLAT_W));
 
   platDraw();
   platLoop = requestAnimationFrame(platTick);
 }
 
 function platUpdateStats() {
-  const c = gel("plat-coins"), l = gel("plat-lives");
+  const c = gel("plat-coins"), l = gel("plat-lives"), k = gel("plat-kills"), f = gel("plat-level");
   if (c) c.textContent = platCoinsGot;
   if (l) l.textContent = platLives;
+  if (k) k.textContent = platKills;
+  if (f) f.textContent = (platLevel + 1) + "/" + PLAT_LEVELS.length;
 }
 
 function platShowOverlay(won) {
   const ov = gel("plat-overlay");
-  if (ov) {
-    ov.classList.remove("hidden");
-    gel("plat-overlay-msg").textContent = won
-      ? `🏁 Você chegou! Moedas: ${platCoinsGot}`
-      : `💀 Game over! Moedas: ${platCoinsGot}`;
-  }
+  if (!ov) return;
+  ov.classList.remove("hidden");
+  let msg;
+  if (!won)           msg = `💀 Game over! Moedas: ${platCoinsGot} · Vilões: ${platKills}`;
+  else if (platNext)  msg = `🏁 Fase ${platLevel + 1} completa! Aperte ▶ para a Fase ${platLevel + 2}: ${PLAT_LEVELS[platLevel + 1].name}!`;
+  else                msg = `👑 Você zerou o jogo! Moedas: ${platCoinsGot} · Vilões: ${platKills}`;
+  gel("plat-overlay-msg").textContent = msg;
 }
 
 function platEnd(won) {
   platRunning = false;
   if (platLoop) { cancelAnimationFrame(platLoop); platLoop = null; }
   platOver = true;
+  platNext = won && platLevel < PLAT_LEVELS.length - 1;
+  platClear = won && !platNext;
   playBeep(won ? 880 : 200);
-  awardGameXp(platCoinsGot * 2 + (won ? 20 : 0), "Plataforma");
+  awardGameXp(platCoinsGot * 2 + platKills * 3 + (won ? 20 : 0), "Plataforma");
+
+  // recordes para as conquistas
+  if (platClear) localStorage.setItem("lus-plat-clear", "1");
+  if (platCoinsGot > lsInt("lus-plat-coins-best"))
+    localStorage.setItem("lus-plat-coins-best", platCoinsGot);
 
   if (won) {
     // toca a animação de vitória antes de mostrar o overlay
@@ -2401,7 +2834,7 @@ function platEnd(won) {
       platAnimTick++;
       platDraw();
       f++;
-      if (f < 96) platVictoryRAF = requestAnimationFrame(vloop);
+      if (f < 110) platVictoryRAF = requestAnimationFrame(vloop);
       else { platVictoryRAF = null; platShowOverlay(true); }
     };
     vloop();
@@ -2410,34 +2843,212 @@ function platEnd(won) {
   }
 }
 
+// paletas dos vilões comuns: fase 1 = sombras vermelhas, fase 2 = slimes de lava
+const PLAT_ENEMY_SKINS = {
+  walker: { body: "#b91c1c", feet: "#7f1d1d", brow: "#450a0a" },
+  slime:  { body: "#ea580c", feet: "#9a3412", brow: "#7c2d12" },
+};
+
+function platDrawEnemy(ctx, sx, e) {
+  if (e.type === "bat") { platDrawBat(ctx, sx, e); return; }
+  const skin = platLevel === 0 ? PLAT_ENEMY_SKINS.walker : PLAT_ENEMY_SKINS.slime;
+  // corpo
+  ctx.fillStyle = skin.body;
+  roundRect(ctx, sx, e.y + 3, e.w, e.h - 3, 7);
+  ctx.fill();
+  // pés
+  ctx.fillStyle = skin.feet;
+  ctx.fillRect(sx + 3, e.y + e.h - 4, 8, 4);
+  ctx.fillRect(sx + e.w - 11, e.y + e.h - 4, 8, 4);
+  // olhos bravos (pupila olha para onde anda)
+  const ex = e.dir > 0 ? 2 : 0;
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(sx + 5, e.y + 8, 6, 5);
+  ctx.fillRect(sx + e.w - 11, e.y + 8, 6, 5);
+  ctx.fillStyle = "#1a1a2e";
+  ctx.fillRect(sx + 6 + ex, e.y + 9, 3, 3);
+  ctx.fillRect(sx + e.w - 10 + ex, e.y + 9, 3, 3);
+  // sobrancelhas
+  ctx.strokeStyle = skin.brow;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(sx + 4, e.y + 5); ctx.lineTo(sx + 11, e.y + 8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(sx + e.w - 4, e.y + 5); ctx.lineTo(sx + e.w - 11, e.y + 8); ctx.stroke();
+}
+
+function platDrawBat(ctx, sx, e) {
+  const flap = Math.floor(platAnimTick / 6) % 2 === 0 ? -5 : 3; // bate as asas
+  // asas
+  ctx.fillStyle = "#3f3f46";
+  ctx.beginPath();
+  ctx.moveTo(sx + e.w / 2, e.y + 10);
+  ctx.lineTo(sx - 6, e.y + flap);
+  ctx.lineTo(sx + 4, e.y + 14);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(sx + e.w / 2, e.y + 10);
+  ctx.lineTo(sx + e.w + 6, e.y + flap);
+  ctx.lineTo(sx + e.w - 4, e.y + 14);
+  ctx.fill();
+  // corpo
+  ctx.fillStyle = "#27272a";
+  roundRect(ctx, sx + 4, e.y + 4, e.w - 8, e.h - 6, 8);
+  ctx.fill();
+  // orelhas
+  ctx.beginPath(); ctx.moveTo(sx + 8, e.y + 6); ctx.lineTo(sx + 10, e.y - 2); ctx.lineTo(sx + 13, e.y + 5); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(sx + e.w - 8, e.y + 6); ctx.lineTo(sx + e.w - 10, e.y - 2); ctx.lineTo(sx + e.w - 13, e.y + 5); ctx.fill();
+  // olhos vermelhos
+  ctx.fillStyle = "#ef4444";
+  ctx.fillRect(sx + 8, e.y + 9, 4, 4);
+  ctx.fillRect(sx + e.w - 12, e.y + 9, 4, 4);
+}
+
+function platDrawBoss(ctx, sx) {
+  const b = platBoss;
+  const flash = b.flash > 0 && Math.floor(platAnimTick / 3) % 2 === 0;
+  const isLava = b.type === "lava";
+  // chifres (sombra) ou coroa (rei da lava)
+  if (isLava) {
+    ctx.fillStyle = flash ? "#fef08a" : "#fbbf24";
+    ctx.beginPath();
+    ctx.moveTo(sx + 8, b.y + 2);
+    ctx.lineTo(sx + 8, b.y - 10);  ctx.lineTo(sx + 15, b.y - 3);
+    ctx.lineTo(sx + b.w / 2, b.y - 12); ctx.lineTo(sx + b.w - 15, b.y - 3);
+    ctx.lineTo(sx + b.w - 8, b.y - 10); ctx.lineTo(sx + b.w - 8, b.y + 2);
+    ctx.fill();
+  } else {
+    ctx.fillStyle = flash ? "#fca5a5" : "#581c87";
+    ctx.beginPath(); ctx.moveTo(sx + 6, b.y + 8); ctx.lineTo(sx + 12, b.y - 9); ctx.lineTo(sx + 19, b.y + 5); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(sx + b.w - 6, b.y + 8); ctx.lineTo(sx + b.w - 12, b.y - 9); ctx.lineTo(sx + b.w - 19, b.y + 5); ctx.fill();
+  }
+  // corpo
+  ctx.fillStyle = flash ? "#f87171" : (isLava ? "#c2410c" : "#6b21a8");
+  roundRect(ctx, sx, b.y, b.w, b.h, 9);
+  ctx.fill();
+  if (isLava) { // rachaduras de lava no corpo
+    ctx.strokeStyle = "#fdba74";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(sx + 8, b.y + b.h - 6); ctx.lineTo(sx + 16, b.y + b.h - 16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(sx + b.w - 8, b.y + b.h - 6); ctx.lineTo(sx + b.w - 18, b.y + b.h - 14); ctx.stroke();
+  }
+  // olhos
+  const ex = b.dir > 0 ? 3 : 0;
+  ctx.fillStyle = isLava ? "#fef9c3" : "#fbbf24";
+  ctx.fillRect(sx + 9, b.y + 12, 9, 7);
+  ctx.fillRect(sx + b.w - 18, b.y + 12, 9, 7);
+  ctx.fillStyle = "#dc2626";
+  ctx.fillRect(sx + 10 + ex, b.y + 13, 4, 5);
+  ctx.fillRect(sx + b.w - 17 + ex, b.y + 13, 4, 5);
+  // boca com dentes
+  ctx.fillStyle = "#1a1a2e";
+  ctx.fillRect(sx + 10, b.y + 27, b.w - 20, 7);
+  ctx.fillStyle = "#fff";
+  for (let i = 0; i < 4; i++) ctx.fillRect(sx + 12 + i * 6, b.y + 27, 3, 3);
+  // vida do chefão
+  ctx.font = "11px sans-serif";
+  ctx.fillStyle = "#ef4444";
+  ctx.textAlign = "center";
+  ctx.fillText("❤".repeat(b.hp), sx + b.w / 2, b.y - 16);
+  ctx.textAlign = "left";
+}
+
 function platDraw() {
   const cv = gel("plat-canvas");
   if (!cv) return;
   const ctx = cv.getContext("2d");
   const cam = platCam;
+  const th = platLvl().theme;
   ctx.clearRect(0, 0, PLAT_W, PLAT_H);
 
-  // nuvens decorativas (parallax leve)
-  ctx.fillStyle = "rgba(255,255,255,.12)";
-  for (let i = 0; i < 5; i++) {
-    const cx = ((i * 400 - cam * 0.4) % (PLAT_W + 120)) - 60;
+  // céu da fase (a fase 1 usa o fundo do tema do site)
+  if (th.sky) {
+    const grad = ctx.createLinearGradient(0, 0, 0, PLAT_H);
+    grad.addColorStop(0, th.sky[0]);
+    grad.addColorStop(1, th.sky[1]);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, PLAT_W, PLAT_H);
+  }
+
+  // morros/montanhas distantes (parallax)
+  ctx.fillStyle = th.hill;
+  for (let i = 0; i < 6; i++) {
+    const hx = ((i * 520 - cam * 0.25) % (PLAT_W + 300)) - 150;
     ctx.beginPath();
-    ctx.arc(cx, 40 + (i % 2) * 25, 18, 0, Math.PI * 2);
-    ctx.arc(cx + 20, 40 + (i % 2) * 25, 22, 0, Math.PI * 2);
-    ctx.arc(cx + 42, 40 + (i % 2) * 25, 16, 0, Math.PI * 2);
+    ctx.arc(hx, PLAT_H, 130, Math.PI, 0);
     ctx.fill();
   }
 
-  // plataformas
-  PLAT_PLATFORMS.forEach(pl => {
+  // nuvens/fumaça (parallax leve)
+  ctx.fillStyle = th.cloud;
+  for (let i = 0; i < 6; i++) {
+    const cx = ((i * 400 - cam * 0.4) % (PLAT_W + 120)) - 60;
+    ctx.beginPath();
+    ctx.arc(cx, 45 + (i % 2) * 30, 18, 0, Math.PI * 2);
+    ctx.arc(cx + 20, 45 + (i % 2) * 30, 22, 0, Math.PI * 2);
+    ctx.arc(cx + 42, 45 + (i % 2) * 30, 16, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // lava no fundo dos buracos (só na fase vulcânica)
+  if (th.lava) {
+    const bob = Math.sin(platAnimTick * 0.08) * 2;
+    ctx.fillStyle = th.lava;
+    ctx.fillRect(0, PLAT_H - 18 + bob, PLAT_W, 18 - bob + 2);
+    ctx.fillStyle = "#ffd166";
+    for (let i = 0; i < 8; i++) {
+      const bx = ((i * 90 - cam) % (PLAT_W + 40) + PLAT_W + 40) % (PLAT_W + 40) - 20;
+      ctx.beginPath();
+      ctx.arc(bx, PLAT_H - 14 + bob + Math.sin(platAnimTick * 0.1 + i) * 3, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // plataformas fixas e móveis
+  platSolids().forEach(pl => {
     const sx = pl.x - cam;
     if (sx + pl.w < 0 || sx > PLAT_W) return;
     const isGround = pl.h > 20;
-    ctx.fillStyle = isGround ? "#3d8b40" : "#a0703c";
+    ctx.fillStyle = isGround ? th.ground : th.plat;
     ctx.fillRect(sx, pl.y, pl.w, pl.h);
-    ctx.fillStyle = isGround ? "#4caf50" : "#c08850";
+    ctx.fillStyle = isGround ? th.groundTop : th.platTop;
     ctx.fillRect(sx, pl.y, pl.w, 5);
+    if (pl.axis) { // detalhe nas plataformas móveis: setas do trilho
+      ctx.fillStyle = "rgba(255,255,255,.35)";
+      ctx.font = "9px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(pl.axis === "y" ? "⇅" : "⇄", sx + pl.w / 2, pl.y + 11);
+      ctx.textAlign = "left";
+    }
   });
+
+  // espinhos
+  platLvl().spikes.forEach(s => {
+    const sx = s.x - cam;
+    if (sx + s.w < 0 || sx > PLAT_W) return;
+    const n = Math.round(s.w / 12);
+    ctx.fillStyle = th.spike;
+    for (let i = 0; i < n; i++) {
+      const x0 = sx + i * (s.w / n);
+      ctx.beginPath();
+      ctx.moveTo(x0, s.y + s.h);
+      ctx.lineTo(x0 + s.w / n / 2, s.y);
+      ctx.lineTo(x0 + s.w / n, s.y + s.h);
+      ctx.fill();
+    }
+  });
+
+  // checkpoint
+  const cp = platLvl().checkpoint;
+  const cpx = cp.x - cam;
+  if (cpx > -30 && cpx < PLAT_W + 30) {
+    ctx.fillStyle = "#cbd5e1";
+    ctx.fillRect(cpx, cp.y, 3, cp.h);
+    ctx.fillStyle = platCheckpointOn ? "#22c55e" : "#64748b";
+    ctx.beginPath();
+    ctx.moveTo(cpx + 3, cp.y);
+    ctx.lineTo(cpx + 19, cp.y + 7);
+    ctx.lineTo(cpx + 3, cp.y + 14);
+    ctx.fill();
+  }
 
   // moedas
   platCoins.forEach(c => {
@@ -2445,7 +3056,7 @@ function platDraw() {
     const sx = c.x - cam;
     if (sx < -10 || sx > PLAT_W + 10) return;
     ctx.beginPath();
-    ctx.arc(sx, c.y, 7, 0, Math.PI * 2);
+    ctx.arc(sx, c.y, 8, 0, Math.PI * 2);
     ctx.fillStyle = "#fbbf24";
     ctx.fill();
     ctx.strokeStyle = "#d97706";
@@ -2453,28 +3064,52 @@ function platDraw() {
     ctx.stroke();
   });
 
-  // bandeira (goal)
-  const gx = PLAT_GOAL.x - cam;
-  if (gx < PLAT_W + 20) {
+  // bandeira (goal) — travada enquanto o chefão estiver vivo
+  const goal = platLvl().goal;
+  const gx = goal.x - cam;
+  if (gx > -40 && gx < PLAT_W + 20) {
+    const unlocked = !platBoss.alive;
     ctx.fillStyle = "#e2e8f0";
-    ctx.fillRect(gx, PLAT_GOAL.y, 3, PLAT_GOAL.h);
-    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(gx, goal.y, 3, goal.h);
+    ctx.fillStyle = unlocked ? "#ef4444" : "#64748b";
     ctx.beginPath();
-    ctx.moveTo(gx + 3, PLAT_GOAL.y);
-    ctx.lineTo(gx + 22, PLAT_GOAL.y + 8);
-    ctx.lineTo(gx + 3, PLAT_GOAL.y + 16);
+    ctx.moveTo(gx + 3, goal.y);
+    ctx.lineTo(gx + 22, goal.y + 8);
+    ctx.lineTo(gx + 3, goal.y + 16);
     ctx.fill();
+    if (!unlocked) {
+      ctx.font = "11px sans-serif";
+      ctx.fillStyle = "#fbbf24";
+      ctx.textAlign = "center";
+      ctx.fillText("🔒 Derrote o chefão!", gx + 10, goal.y - 10);
+      ctx.textAlign = "left";
+    }
   }
 
-  // jogador — sprite animado, com fallback para o quadrado vermelho
+  // vilões
+  platEnemies.forEach(e => {
+    if (!e.alive) return;
+    const sx = e.x - cam;
+    if (sx + e.w < 0 || sx > PLAT_W) return;
+    platDrawEnemy(ctx, sx, e);
+  });
+
+  // chefão
+  if (platBoss.alive) {
+    const bx = platBoss.x - cam;
+    if (bx + platBoss.w > 0 && bx < PLAT_W) platDrawBoss(ctx, bx);
+  }
+
+  // jogador — pisca enquanto invencível; fallback para o quadrado vermelho
   const px = platPlayer.x - cam;
-  if (!platDrawHero(ctx, px)) {
+  const blink = platInvuln > 0 && Math.floor(platAnimTick / 4) % 2 === 0;
+  if (!blink && !platDrawHero(ctx, px)) {
     ctx.fillStyle = "#ef4444";
     ctx.fillRect(px, platPlayer.y, platPlayer.w, platPlayer.h);
     ctx.fillStyle = "#fbbf24";
-    ctx.fillRect(px + 3, platPlayer.y + 4, platPlayer.w - 6, 7);
+    ctx.fillRect(px + 3, platPlayer.y + 5, platPlayer.w - 6, 9);
     ctx.fillStyle = "#1a1a2e";
-    ctx.fillRect(px + (platPlayer.face > 0 ? platPlayer.w - 7 : 3), platPlayer.y + 5, 3, 3);
+    ctx.fillRect(px + (platPlayer.face > 0 ? platPlayer.w - 8 : 4), platPlayer.y + 7, 4, 4);
   }
 }
 
