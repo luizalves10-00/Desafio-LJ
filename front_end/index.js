@@ -2228,9 +2228,9 @@ const HERO_SPRITES = {
   jump:    { img: new Image(), frames: 6, loaded: false },
   victory: { img: new Image(), frames: 6, loaded: false },
 };
-HERO_SPRITES.run.img.src     = "assets/hero_run.png";
-HERO_SPRITES.jump.img.src    = "assets/hero_jump.png";
-HERO_SPRITES.victory.img.src = "assets/hero_victory.png";
+HERO_SPRITES.run.img.src     = "assets/corrida.png";
+HERO_SPRITES.jump.img.src    = "assets/pulo.png";
+HERO_SPRITES.victory.img.src = "assets/vitoria.png";
 Object.values(HERO_SPRITES).forEach(s => { s.img.onload = () => { s.loaded = true; }; });
 
 // desenha o herói com sprite animado; retorna false se a imagem ainda não carregou

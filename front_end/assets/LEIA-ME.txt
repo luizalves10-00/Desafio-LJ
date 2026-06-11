@@ -1,12 +1,11 @@
 SPRITES DO PERSONAGEM — Jogo de Plataforma (LevelUp Study)
 ===========================================================
 
-Coloque AQUI três imagens PNG, cada uma sendo uma "tira" com os quadros
-da animação lado a lado (na horizontal), SEM títulos e SEM rótulos:
+Sprites usados pelo jogo (tiras horizontais, quadros lado a lado):
 
-  1) hero_run.png      -> 8 quadros (animação de corrida)
-  2) hero_jump.png     -> 6 quadros (animação de pulo)
-  3) hero_victory.png  -> 6 quadros (animação de vitória)
+  1) corrida.png  -> 8 quadros (animação de corrida)
+  2) pulo.png     -> 6 quadros (animação de pulo)
+  3) vitoria.png  -> 6 quadros (animação de vitória)
 
 REGRAS IMPORTANTES:
 - Todos os quadros de uma tira devem ter a MESMA largura e altura.
