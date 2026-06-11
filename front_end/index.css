@@ -877,3 +877,138 @@ select option { background: var(--surface2); }
   color: var(--accent2);
   font-weight: 700;
 }
+
+/* ═══════════════════════════════════════════════
+   GAME TABS & PANES
+═══════════════════════════════════════════════ */
+.game-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.game-tab {
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.game-tab:hover { color: var(--text); border-color: var(--accent); }
+.game-tab.active {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-color: transparent;
+}
+.game-pane { display: none; }
+.game-pane.active { display: block; }
+.game-desc {
+  color: var(--muted);
+  font-size: .85rem;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════
+   2048
+═══════════════════════════════════════════════ */
+.g2048-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.g2048-board-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.g2048-board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 8px;
+  width: 300px;
+  height: 300px;
+  padding: 8px;
+  background: var(--border);
+  border-radius: 12px;
+}
+.g2048-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: var(--surface2);
+  color: var(--text);
+  transition: transform .1s;
+}
+.g2048-cell.pop { animation: g2048-pop .18s ease; }
+@keyframes g2048-pop {
+  0% { transform: scale(.6); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+/* cores dos números */
+.g2048-cell[data-v="2"]    { background:#3b3b58; }
+.g2048-cell[data-v="4"]    { background:#46467a; }
+.g2048-cell[data-v="8"]    { background:#7c3aed; color:#fff; }
+.g2048-cell[data-v="16"]   { background:#9333ea; color:#fff; }
+.g2048-cell[data-v="32"]   { background:#a855f7; color:#fff; }
+.g2048-cell[data-v="64"]   { background:#c026d3; color:#fff; }
+.g2048-cell[data-v="128"]  { background:#db2777; color:#fff; font-size:1.3rem; }
+.g2048-cell[data-v="256"]  { background:#e11d48; color:#fff; font-size:1.3rem; }
+.g2048-cell[data-v="512"]  { background:#f59e0b; color:#1a0a00; font-size:1.3rem; }
+.g2048-cell[data-v="1024"] { background:#f97316; color:#fff; font-size:1.05rem; }
+.g2048-cell[data-v="2048"] { background:#fbbf24; color:#1a0a00; font-size:1.05rem; box-shadow:0 0 20px #fbbf24; }
+
+/* ═══════════════════════════════════════════════
+   MEMÓRIA
+═══════════════════════════════════════════════ */
+.mem-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.mem-board-wrap { position: relative; }
+.mem-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  width: 300px;
+}
+.mem-card {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .2s, background .2s;
+  transform: rotateY(0deg);
+}
+.mem-card:hover { transform: scale(1.04); }
+.mem-card.flipped {
+  background: var(--surface2);
+  cursor: default;
+}
+.mem-card.flipped:hover { transform: none; }
+.mem-card.matched {
+  background: var(--surface2);
+  opacity: .45;
+  cursor: default;
+}
+.mem-card .mem-face { display: none; }
+.mem-card.flipped .mem-face,
+.mem-card.matched .mem-face { display: block; }

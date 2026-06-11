@@ -243,40 +243,86 @@
     <!-- ══ JOGOS ══ -->
     <section class="section" id="section-jogos">
       <div class="card">
-        <div class="card-title">🎮 Snake — Jogo da Cobrinha</div>
-        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">
-          Relaxe nas pausas! Use as <strong>setas do teclado</strong> ou os botões. Coma as frutas 🍎 e cresça sem bater nas paredes ou em si mesmo.
-        </p>
+        <div class="card-title">🎮 Jogos das pausas</div>
 
-        <div class="snake-wrap">
-          <div class="snake-stats">
-            <div class="snake-stat">
-              <span class="snake-stat-label">Pontos</span>
-              <span class="snake-stat-val" id="snake-score">0</span>
-            </div>
-            <div class="snake-stat">
-              <span class="snake-stat-label">Recorde</span>
-              <span class="snake-stat-val gold" id="snake-best">0</span>
-            </div>
-          </div>
+        <!-- abas de jogos -->
+        <div class="game-tabs" id="game-tabs">
+          <button class="game-tab active" data-game="snake"   onclick="selectGame('snake', this)">🐍 Snake</button>
+          <button class="game-tab"        data-game="2048"    onclick="selectGame('2048', this)">🔢 2048</button>
+          <button class="game-tab"        data-game="memoria" onclick="selectGame('memoria', this)">🧠 Memória</button>
+        </div>
 
-          <div class="snake-board-wrap">
-            <canvas id="snake-canvas" width="360" height="360"></canvas>
-            <div class="snake-overlay" id="snake-overlay">
-              <div class="snake-overlay-msg" id="snake-overlay-msg">Pronto para jogar?</div>
-              <button class="btn btn-primary" id="snake-start-btn" onclick="snakeStart()">▶ Começar</button>
+        <!-- ── SNAKE ── -->
+        <div class="game-pane active" id="game-pane-snake">
+          <p class="game-desc">Use as <strong>setas / WASD</strong> ou os botões. Coma as frutas 🍎 e cresça sem bater nas paredes.</p>
+          <div class="snake-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="snake-score">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="snake-best">0</span></div>
             </div>
-          </div>
-
-          <div class="snake-controls">
-            <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
-            <div class="snake-dpad-row">
-              <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
-              <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
-              <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+            <div class="snake-board-wrap">
+              <canvas id="snake-canvas" width="360" height="360"></canvas>
+              <div class="snake-overlay" id="snake-overlay">
+                <div class="snake-overlay-msg" id="snake-overlay-msg">Pronto para jogar?</div>
+                <button class="btn btn-primary" onclick="snakeStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
+                <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
+                <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+              </div>
             </div>
           </div>
         </div>
+
+        <!-- ── 2048 ── -->
+        <div class="game-pane" id="game-pane-2048">
+          <p class="game-desc">Use as <strong>setas / WASD</strong> ou os botões. Junte os números iguais até chegar no <strong>2048</strong>!</p>
+          <div class="g2048-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="g2048-score">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="g2048-best">0</span></div>
+            </div>
+            <div class="g2048-board-wrap">
+              <div class="g2048-board" id="g2048-board"></div>
+              <div class="snake-overlay hidden" id="g2048-overlay">
+                <div class="snake-overlay-msg" id="g2048-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="g2048Start()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onclick="g2048Move('up')">▲</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="g2048Move('left')">◀</button>
+                <button class="snake-dpad" onclick="g2048Move('down')">▼</button>
+                <button class="snake-dpad" onclick="g2048Move('right')">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── MEMÓRIA ── -->
+        <div class="game-pane" id="game-pane-memoria">
+          <p class="game-desc">Vire as cartas e encontre todos os <strong>pares</strong> com o menor número de jogadas!</p>
+          <div class="mem-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="mem-moves">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Pares</span><span class="snake-stat-val gold" id="mem-pairs">0/8</span></div>
+            </div>
+            <div class="mem-board-wrap">
+              <div class="mem-grid" id="mem-grid"></div>
+              <div class="snake-overlay hidden" id="mem-overlay">
+                <div class="snake-overlay-msg" id="mem-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="memStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="memStart()">🔀 Embaralhar</button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -370,35 +416,81 @@
       <button class="btn btn-secondary btn-sm" onclick="closeBreakModal()">✕ Fechar</button>
     </div>
 
-    <div class="snake-wrap">
-      <div class="snake-stats">
-        <div class="snake-stat">
-          <span class="snake-stat-label">Pontos</span>
-          <span class="snake-stat-val" id="snake-score-modal">0</span>
-        </div>
-        <div class="snake-stat">
-          <span class="snake-stat-label">Recorde</span>
-          <span class="snake-stat-val gold" id="snake-best-modal">0</span>
-        </div>
-      </div>
+    <!-- abas de jogos (modal) -->
+    <div class="game-tabs" id="game-tabs-modal">
+      <button class="game-tab active" data-game="snake"   onclick="selectGame('snake', this)">🐍 Snake</button>
+      <button class="game-tab"        data-game="2048"    onclick="selectGame('2048', this)">🔢 2048</button>
+      <button class="game-tab"        data-game="memoria" onclick="selectGame('memoria', this)">🧠 Memória</button>
+    </div>
 
-      <div class="snake-board-wrap">
-        <canvas id="snake-canvas-modal" width="320" height="320"></canvas>
-        <div class="snake-overlay" id="snake-overlay-modal">
-          <div class="snake-overlay-msg" id="snake-overlay-msg-modal">Jogue enquanto descansa! 🐍</div>
-          <button class="btn btn-primary" onclick="snakeStart()">▶ Começar</button>
+    <!-- ── SNAKE (modal) ── -->
+    <div class="game-pane active" id="game-pane-snake-modal">
+      <div class="snake-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="snake-score-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="snake-best-modal">0</span></div>
         </div>
-      </div>
-
-      <div class="snake-controls">
-        <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
-        <div class="snake-dpad-row">
-          <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
-          <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
-          <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+        <div class="snake-board-wrap">
+          <canvas id="snake-canvas-modal" width="300" height="300"></canvas>
+          <div class="snake-overlay" id="snake-overlay-modal">
+            <div class="snake-overlay-msg" id="snake-overlay-msg-modal">Jogue enquanto descansa! 🐍</div>
+            <button class="btn btn-primary" onclick="snakeStart()">▶ Começar</button>
+          </div>
+        </div>
+        <div class="snake-controls">
+          <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
+          <div class="snake-dpad-row">
+            <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
+            <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
+            <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- ── 2048 (modal) ── -->
+    <div class="game-pane" id="game-pane-2048-modal">
+      <div class="g2048-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="g2048-score-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="g2048-best-modal">0</span></div>
+        </div>
+        <div class="g2048-board-wrap">
+          <div class="g2048-board" id="g2048-board-modal"></div>
+          <div class="snake-overlay hidden" id="g2048-overlay-modal">
+            <div class="snake-overlay-msg" id="g2048-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="g2048Start()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <div class="snake-controls">
+          <button class="snake-dpad" onclick="g2048Move('up')">▲</button>
+          <div class="snake-dpad-row">
+            <button class="snake-dpad" onclick="g2048Move('left')">◀</button>
+            <button class="snake-dpad" onclick="g2048Move('down')">▼</button>
+            <button class="snake-dpad" onclick="g2048Move('right')">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MEMÓRIA (modal) ── -->
+    <div class="game-pane" id="game-pane-memoria-modal">
+      <div class="mem-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="mem-moves-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Pares</span><span class="snake-stat-val gold" id="mem-pairs-modal">0/8</span></div>
+        </div>
+        <div class="mem-board-wrap">
+          <div class="mem-grid" id="mem-grid-modal"></div>
+          <div class="snake-overlay hidden" id="mem-overlay-modal">
+            <div class="snake-overlay-msg" id="mem-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="memStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="memStart()">🔀 Embaralhar</button>
+      </div>
+    </div>
+
   </div>
 </div>
 

@@ -30,7 +30,7 @@ function navigate(name, btn) {
   if (name === "tarefas")    loadTasks();
   if (name === "conquistas") renderAchievements();
   if (name === "dashboard")  loadSuggest();
-  if (name === "jogos")      snakeReset();
+  if (name === "jogos")      startCurrentGame();
 }
 
 // ── SIDEBAR MOBILE ─────────────────────────────────────────────────────────
@@ -386,14 +386,50 @@ function setTopbarDate() {
     now.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long" });
 }
 
+// ── SELETOR DE JOGOS ─────────────────────────────────────────────────────────
+let currentGame = "snake";
+
+function selectGame(name, btn) {
+  currentGame = name;
+  const inModal = !!btn.closest(".break-modal");
+  const suffix = inModal ? "-modal" : "";
+  // troca aba ativa no grupo clicado
+  btn.parentElement.querySelectorAll(".game-tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.game === name));
+  // troca painel ativo na localização correta
+  ["snake", "2048", "memoria"].forEach(g => {
+    const pane = document.getElementById("game-pane-" + g + suffix);
+    if (pane) pane.classList.toggle("active", g === name);
+  });
+  stopAllGames();
+  startCurrentGame();
+}
+
+function stopAllGames() {
+  snakeStop();
+}
+
+function startCurrentGame() {
+  if (currentGame === "snake")        snakeReset();
+  else if (currentGame === "2048")    g2048Start();
+  else if (currentGame === "memoria") memStart();
+}
+
 // ── BREAK MODAL ──────────────────────────────────────────────────────────────
 function openBreakModal() {
   document.getElementById("break-modal").classList.add("show");
-  snakeReset();
+  // sincroniza abas/painéis do modal com o jogo atual
+  document.querySelectorAll("#game-tabs-modal .game-tab").forEach(t =>
+    t.classList.toggle("active", t.dataset.game === currentGame));
+  ["snake", "2048", "memoria"].forEach(g => {
+    const pane = document.getElementById("game-pane-" + g + "-modal");
+    if (pane) pane.classList.toggle("active", g === currentGame);
+  });
+  startCurrentGame();
 }
 function closeBreakModal() {
   document.getElementById("break-modal").classList.remove("show");
-  snakeStop();
+  stopAllGames();
 }
 
 // ── SNAKE GAME ───────────────────────────────────────────────────────────────
@@ -577,15 +613,252 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-// teclado
+// teclado — roteia para o jogo atual
 document.addEventListener("keydown", (e) => {
   const keys = {
     ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
     w: "up", s: "down", a: "left", d: "right",
+    W: "up", S: "down", A: "left", D: "right",
   };
   const dir = keys[e.key];
-  if (dir && snakeRunning) { e.preventDefault(); snakeSetDir(dir); }
+  if (!dir) return;
+  if (currentGame === "snake" && snakeRunning) { e.preventDefault(); snakeSetDir(dir); }
+  else if (currentGame === "2048") { e.preventDefault(); g2048Move(dir); }
 });
+
+// ── 2048 ─────────────────────────────────────────────────────────────────────
+let g2048Grid = [];
+let g2048Score = 0;
+let g2048Best = parseInt(localStorage.getItem("lus-2048-best") || "0", 10);
+let g2048Over = false;
+let g2048LastAdded = null;
+
+function g2048Targets() {
+  const modalOpen = document.getElementById("break-modal").classList.contains("show");
+  const suffix = modalOpen ? "-modal" : "";
+  return {
+    board:      document.getElementById("g2048-board" + suffix),
+    scoreEl:    document.getElementById("g2048-score" + suffix),
+    bestEl:     document.getElementById("g2048-best" + suffix),
+    overlay:    document.getElementById("g2048-overlay" + suffix),
+    overlayMsg: document.getElementById("g2048-overlay-msg" + suffix),
+  };
+}
+
+function g2048Start() {
+  g2048Grid = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]];
+  g2048Score = 0;
+  g2048Over = false;
+  g2048AddTile();
+  g2048AddTile();
+  const t = g2048Targets();
+  if (t.overlay) t.overlay.classList.add("hidden");
+  g2048Render();
+}
+
+function g2048AddTile() {
+  const empty = [];
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++)
+      if (g2048Grid[i][j] === 0) empty.push([i, j]);
+  if (!empty.length) return;
+  const [i, j] = empty[Math.floor(Math.random() * empty.length)];
+  g2048Grid[i][j] = Math.random() < 0.9 ? 2 : 4;
+  g2048LastAdded = i * 4 + j;
+}
+
+function g2048Slide(line) {
+  let arr = line.filter(v => v);
+  let gained = 0;
+  for (let i = 0; i < arr.length - 1; i++) {
+    if (arr[i] === arr[i + 1]) {
+      arr[i] *= 2;
+      gained += arr[i];
+      arr.splice(i + 1, 1);
+    }
+  }
+  while (arr.length < 4) arr.push(0);
+  return { line: arr, gained };
+}
+
+function g2048Move(dir) {
+  if (g2048Over) return;
+  const before = JSON.stringify(g2048Grid);
+  let gained = 0;
+  for (let i = 0; i < 4; i++) {
+    let line = [];
+    for (let j = 0; j < 4; j++) {
+      if (dir === "left")       line.push(g2048Grid[i][j]);
+      else if (dir === "right") line.push(g2048Grid[i][3 - j]);
+      else if (dir === "up")    line.push(g2048Grid[j][i]);
+      else                      line.push(g2048Grid[3 - j][i]);
+    }
+    const r = g2048Slide(line);
+    gained += r.gained;
+    line = r.line;
+    for (let j = 0; j < 4; j++) {
+      if (dir === "left")       g2048Grid[i][j] = line[j];
+      else if (dir === "right") g2048Grid[i][3 - j] = line[j];
+      else if (dir === "up")    g2048Grid[j][i] = line[j];
+      else                      g2048Grid[3 - j][i] = line[j];
+    }
+  }
+  if (JSON.stringify(g2048Grid) === before) return; // nada mudou
+
+  g2048Score += gained;
+  if (g2048Score > g2048Best) {
+    g2048Best = g2048Score;
+    localStorage.setItem("lus-2048-best", g2048Best);
+  }
+  g2048AddTile();
+  if (gained > 0) playBeep(620);
+  g2048Render();
+
+  if (g2048HasWon())       g2048End("🎉 Você chegou no 2048!");
+  else if (g2048IsStuck()) g2048End("💀 Fim de jogo! Pontos: " + g2048Score);
+}
+
+function g2048HasWon() {
+  return g2048Grid.some(row => row.some(v => v >= 2048));
+}
+
+function g2048IsStuck() {
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++) {
+      if (g2048Grid[i][j] === 0) return false;
+      if (j < 3 && g2048Grid[i][j] === g2048Grid[i][j + 1]) return false;
+      if (i < 3 && g2048Grid[i][j] === g2048Grid[i + 1][j]) return false;
+    }
+  return true;
+}
+
+function g2048End(msg) {
+  g2048Over = true;
+  const t = g2048Targets();
+  if (t.overlay) {
+    t.overlay.classList.remove("hidden");
+    if (t.overlayMsg) t.overlayMsg.textContent = msg;
+  }
+  playBeep(g2048HasWon() ? 880 : 200);
+}
+
+function g2048Render() {
+  const t = g2048Targets();
+  if (!t.board) return;
+  t.board.innerHTML = "";
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++) {
+      const v = g2048Grid[i][j];
+      const cell = document.createElement("div");
+      cell.className = "g2048-cell";
+      if (v) {
+        cell.dataset.v = v;
+        cell.textContent = v;
+        if (i * 4 + j === g2048LastAdded) cell.classList.add("pop");
+      }
+      t.board.appendChild(cell);
+    }
+  if (t.scoreEl) t.scoreEl.textContent = g2048Score;
+  if (t.bestEl)  t.bestEl.textContent = g2048Best;
+}
+
+// ── JOGO DA MEMÓRIA ──────────────────────────────────────────────────────────
+const MEM_EMOJIS = ["🍎", "🚀", "⭐", "🔥", "💎", "🎯", "🧠", "🏆"];
+let memCards = [];
+let memFirst = null;
+let memLock = false;
+let memMoves = 0;
+let memPairs = 0;
+
+function memTargets() {
+  const modalOpen = document.getElementById("break-modal").classList.contains("show");
+  const suffix = modalOpen ? "-modal" : "";
+  return {
+    grid:       document.getElementById("mem-grid" + suffix),
+    movesEl:    document.getElementById("mem-moves" + suffix),
+    pairsEl:    document.getElementById("mem-pairs" + suffix),
+    overlay:    document.getElementById("mem-overlay" + suffix),
+    overlayMsg: document.getElementById("mem-overlay-msg" + suffix),
+  };
+}
+
+function memStart() {
+  const deck = [...MEM_EMOJIS, ...MEM_EMOJIS]
+    .map(e => ({ emoji: e, flipped: false, matched: false }));
+  // embaralha (Fisher-Yates)
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  memCards = deck;
+  memFirst = null;
+  memLock = false;
+  memMoves = 0;
+  memPairs = 0;
+  const t = memTargets();
+  if (t.overlay) t.overlay.classList.add("hidden");
+  memRender();
+}
+
+function memRender() {
+  const t = memTargets();
+  if (!t.grid) return;
+  t.grid.innerHTML = "";
+  memCards.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "mem-card" + (c.flipped ? " flipped" : "") + (c.matched ? " matched" : "");
+    div.innerHTML = `<span class="mem-face">${c.emoji}</span>`;
+    div.onclick = () => memFlip(i);
+    t.grid.appendChild(div);
+  });
+  if (t.movesEl) t.movesEl.textContent = memMoves;
+  if (t.pairsEl) t.pairsEl.textContent = memPairs + "/8";
+}
+
+function memFlip(i) {
+  if (memLock) return;
+  const card = memCards[i];
+  if (card.flipped || card.matched) return;
+
+  card.flipped = true;
+  memRender();
+
+  if (memFirst === null) {
+    memFirst = i;
+    return;
+  }
+
+  memMoves++;
+  const first = memCards[memFirst];
+  if (first.emoji === card.emoji) {
+    first.matched = true;
+    card.matched = true;
+    memPairs++;
+    memFirst = null;
+    playBeep(660);
+    memRender();
+    if (memPairs === 8) memWin();
+  } else {
+    memLock = true;
+    memRender();
+    setTimeout(() => {
+      first.flipped = false;
+      card.flipped = false;
+      memFirst = null;
+      memLock = false;
+      memRender();
+    }, 750);
+  }
+}
+
+function memWin() {
+  const t = memTargets();
+  if (t.overlay) {
+    t.overlay.classList.remove("hidden");
+    if (t.overlayMsg) t.overlayMsg.textContent = `🎉 Você venceu em ${memMoves} jogadas!`;
+  }
+  playBeep(880);
+}
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
