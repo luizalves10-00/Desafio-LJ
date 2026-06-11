@@ -242,8 +242,50 @@
 
     <!-- ══ JOGOS ══ -->
     <section class="section" id="section-jogos">
-      <div class="card">
-        <div class="card-title">🎮 Jogos das pausas</div>
+
+      <!-- TELA DE SELEÇÃO -->
+      <div class="card" id="game-menu">
+        <div class="card-title">🎮 Escolha um jogo</div>
+        <p class="game-desc" style="margin-bottom:18px;">Jogue nas pausas e ganhe XP de verdade! (até 150 XP de jogos por dia)</p>
+        <div class="game-menu-grid">
+          <div class="game-menu-card" onclick="openGameFromMenu('snake')">
+            <div class="gmc-icon">🐍</div><div class="gmc-name">Snake</div>
+            <div class="gmc-desc">Coma as frutas e cresça sem bater</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('2048')">
+            <div class="gmc-icon">🔢</div><div class="gmc-name">2048</div>
+            <div class="gmc-desc">Junte os números até 2048</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('memoria')">
+            <div class="gmc-icon">🧠</div><div class="gmc-name">Memória</div>
+            <div class="gmc-desc">Encontre todos os pares</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('minado')">
+            <div class="gmc-icon">💣</div><div class="gmc-name">Campo Minado</div>
+            <div class="gmc-desc">Revele as casas sem tocar nas minas</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('velha')">
+            <div class="gmc-icon">⭕</div><div class="gmc-name">Jogo da Velha</div>
+            <div class="gmc-desc">Vença a CPU imbatível</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('desliza')">
+            <div class="gmc-icon">🧩</div><div class="gmc-name">Deslizante</div>
+            <div class="gmc-desc">Ordene as peças de 1 a 15</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('wordle')">
+            <div class="gmc-icon">🔤</div><div class="gmc-name">Wordle</div>
+            <div class="gmc-desc">Adivinhe a palavra de 5 letras</div>
+          </div>
+          <div class="game-menu-card highlight" onclick="openGameFromMenu('quiz')">
+            <div class="gmc-icon">📚</div><div class="gmc-name">Quiz</div>
+            <div class="gmc-desc">Estude jogando — perguntas das matérias</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÁREA DO JOGO (aberta ao escolher um card) -->
+      <div class="card hidden" id="game-area">
+        <button class="btn btn-secondary btn-sm" style="margin-bottom:16px;" onclick="backToMenu()">← Voltar aos jogos</button>
 
         <!-- abas de jogos -->
         <div class="game-tabs" id="game-tabs">

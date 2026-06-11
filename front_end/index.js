@@ -30,7 +30,7 @@ function navigate(name, btn) {
   if (name === "tarefas")    loadTasks();
   if (name === "conquistas") renderAchievements();
   if (name === "dashboard")  loadSuggest();
-  if (name === "jogos")      startCurrentGame();
+  if (name === "jogos")      showGameMenu();
 }
 
 // ── SIDEBAR MOBILE ─────────────────────────────────────────────────────────
@@ -202,6 +202,26 @@ function renderDots() {
 // ── API HELPERS ────────────────────────────────────────────────────────────
 function apiFetch(url, opts = {}) {
   return fetch(url, { credentials: "include", ...opts });
+}
+
+// concede XP por desempenho em jogos (servidor aplica teto diário)
+async function awardGameXp(amount, label) {
+  if (!amount || amount < 1) return;
+  try {
+    const res = await apiFetch(`${API}/game/reward`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amount: Math.round(amount) }),
+    });
+    if (res.status === 401) { redirectLogin(); return; }
+    const d = await res.json();
+    if (d.xp_gained > 0) {
+      showToast(`🎮 +${d.xp_gained} XP — ${label}!`, "gold");
+      loadStatus();
+    } else if (d.daily_remaining === 0) {
+      showToast("🎮 Limite diário de XP de jogos atingido. Volte amanhã!", "");
+    }
+  } catch (e) {}
 }
 
 async function completePomodoro() {
@@ -389,20 +409,46 @@ function setTopbarDate() {
 // ── SELETOR DE JOGOS ─────────────────────────────────────────────────────────
 let currentGame = "snake";
 
-function selectGame(name, btn) {
+const GAME_LIST = ["snake","2048","memoria","minado","velha","desliza","wordle","quiz"];
+
+// núcleo: ativa um jogo numa localização (seção: "" ou modal: "-modal")
+function activateGame(name, suffix) {
   currentGame = name;
-  const inModal = !!btn.closest(".break-modal");
-  const suffix = inModal ? "-modal" : "";
-  // troca aba ativa no grupo clicado
-  btn.parentElement.querySelectorAll(".game-tab").forEach(t =>
+  const tabsId = suffix === "-modal" ? "game-tabs-modal" : "game-tabs";
+  document.querySelectorAll("#" + tabsId + " .game-tab").forEach(t =>
     t.classList.toggle("active", t.dataset.game === name));
-  // troca painel ativo na localização correta
-  ["snake","2048","memoria","minado","velha","desliza","wordle","quiz"].forEach(g => {
+  GAME_LIST.forEach(g => {
     const pane = document.getElementById("game-pane-" + g + suffix);
     if (pane) pane.classList.toggle("active", g === name);
   });
   stopAllGames();
   startCurrentGame();
+}
+
+// clique numa aba (seção ou modal)
+function selectGame(name, btn) {
+  activateGame(name, btn.closest(".break-modal") ? "-modal" : "");
+}
+
+// clique num card da tela de seleção → abre a área do jogo
+function openGameFromMenu(name) {
+  document.getElementById("game-menu").classList.add("hidden");
+  document.getElementById("game-area").classList.remove("hidden");
+  activateGame(name, "");
+}
+
+// volta para a tela de seleção de jogos
+function backToMenu() {
+  stopAllGames();
+  document.getElementById("game-area").classList.add("hidden");
+  document.getElementById("game-menu").classList.remove("hidden");
+}
+
+// exibe a tela de seleção (ao entrar na seção Jogos)
+function showGameMenu() {
+  stopAllGames();
+  document.getElementById("game-area").classList.add("hidden");
+  document.getElementById("game-menu").classList.remove("hidden");
 }
 
 function stopAllGames() {
@@ -573,6 +619,7 @@ function snakeGameOver() {
   }
   snakeBody = [];
   playBeep(200);
+  awardGameXp(Math.floor(snakeScore / 10), "Snake"); // 1 XP por fruta
 }
 
 function snakeDraw() {
@@ -754,6 +801,7 @@ function g2048End(msg) {
     if (t.overlayMsg) t.overlayMsg.textContent = msg;
   }
   playBeep(g2048HasWon() ? 880 : 200);
+  awardGameXp(Math.floor(g2048Score / 100), "2048"); // 1 XP por 100 pontos
 }
 
 function g2048Render() {
@@ -872,6 +920,7 @@ function memWin() {
     if (t.overlayMsg) t.overlayMsg.textContent = `🎉 Você venceu em ${memMoves} jogadas!`;
   }
   playBeep(880);
+  awardGameXp(Math.max(5, 25 - memMoves), "Memória"); // quanto menos jogadas, mais XP
 }
 
 // ── CAMPO MINADO ─────────────────────────────────────────────────────────────
@@ -970,6 +1019,7 @@ function mineWin() {
   if (ov) ov.classList.remove("hidden");
   if (msg) msg.textContent = "🎉 Você limpou o campo!";
   playBeep(880);
+  awardGameXp(25, "Campo Minado");
 }
 
 function mineRender() {
@@ -1049,6 +1099,7 @@ function velhaCheckEnd() {
     if (ov) ov.classList.remove("hidden");
     if (msg) msg.textContent = win.who === "❌" ? "🎉 Você venceu!" : "🤖 A CPU venceu!";
     playBeep(win.who === "❌" ? 880 : 200);
+    if (win.who === "❌") awardGameXp(20, "Velha"); // venceu a IA imbatível
     return true;
   }
   if (velhaBoard.every(v => v)) {
@@ -1172,6 +1223,7 @@ function deslizaWin() {
   if (ov) ov.classList.remove("hidden");
   if (msg) msg.textContent = `🎉 Resolvido em ${deslizaMoves} jogadas!`;
   playBeep(880);
+  awardGameXp(20, "Deslizante");
 }
 
 function deslizaRender() {
@@ -1257,6 +1309,7 @@ function wordleKey(e) {
     if (msg) msg.textContent = "🎉 Acertou!";
     inp.disabled = true;
     playBeep(880);
+    awardGameXp(30 - (wordleRow - 1) * 4, "Wordle"); // menos tentativas = mais XP
   } else if (wordleRow >= 6) {
     wordleDone = true;
     if (msg) msg.textContent = `😢 A palavra era ${wordleTarget}`;
@@ -1424,6 +1477,7 @@ function quizEnd() {
   gel("quiz-result-icon").textContent = icon;
   gel("quiz-result-msg").textContent = `${msg}\nVocê acertou ${quizScore} de ${total} perguntas.`;
   playBeep(pct >= 0.5 ? 880 : 330);
+  awardGameXp(quizScore * 5, "Quiz"); // 5 XP por acerto (10/10 = 50 XP)
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
