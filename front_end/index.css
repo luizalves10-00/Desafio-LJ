@@ -1486,3 +1486,17 @@ select option { background: var(--surface2); }
   border-radius: 8px;
   display: block;
 }
+
+/* ═══════════════════════════════════════════════
+   PLATAFORMA
+═══════════════════════════════════════════════ */
+#plat-canvas, #plat-canvas-modal {
+  background: linear-gradient(180deg, #1e2a4a 0%, #16213e 100%);
+  border-radius: 8px;
+  display: block;
+  max-width: 100%;
+}
+[data-theme="light"] #plat-canvas,
+[data-theme="light"] #plat-canvas-modal {
+  background: linear-gradient(180deg, #bfe3ff 0%, #e8f6ff 100%);
+}

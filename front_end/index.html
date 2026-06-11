@@ -316,6 +316,10 @@
             <div class="gmc-icon">🏓</div><div class="gmc-name">Breakout</div>
             <div class="gmc-desc">Quebre todos os blocos</div>
           </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('plataforma')">
+            <div class="gmc-icon">🍄</div><div class="gmc-name">Plataforma</div>
+            <div class="gmc-desc">Pule, pegue moedas e chegue à bandeira</div>
+          </div>
         </div>
       </div>
 
@@ -342,6 +346,7 @@
           <button class="game-tab"        data-game="tetris" onclick="selectGame('tetris', this)">🧱 Tetris</button>
           <button class="game-tab"        data-game="lig4" onclick="selectGame('lig4', this)">🔴 Lig 4</button>
           <button class="game-tab"        data-game="breakout" onclick="selectGame('breakout', this)">🏓 Breakout</button>
+          <button class="game-tab"        data-game="plataforma" onclick="selectGame('plataforma', this)">🍄 Plataforma</button>
         </div>
 
         <!-- ── SNAKE ── -->
@@ -689,6 +694,29 @@
           </div>
         </div>
 
+        <!-- ── PLATAFORMA ── -->
+        <div class="game-pane" id="game-pane-plataforma">
+          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙 e chegue à bandeira 🚩.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Moedas</span><span class="snake-stat-val gold" id="plat-coins">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="plat-lives">3</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="plat-canvas" width="360" height="260"></canvas>
+              <div class="snake-overlay" id="plat-overlay">
+                <div class="snake-overlay-msg" id="plat-overlay-msg">Pronto para a aventura?</div>
+                <button class="btn btn-primary" onclick="platStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
+              <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
+              <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -801,6 +829,7 @@
           <button class="game-tab"        data-game="tetris" onclick="selectGame('tetris', this)">🧱 Tetris</button>
           <button class="game-tab"        data-game="lig4" onclick="selectGame('lig4', this)">🔴 Lig 4</button>
           <button class="game-tab"        data-game="breakout" onclick="selectGame('breakout', this)">🏓 Breakout</button>
+          <button class="game-tab"        data-game="plataforma" onclick="selectGame('plataforma', this)">🍄 Plataforma</button>
     </div>
 
     <!-- ── SNAKE (modal) ── -->
@@ -1136,6 +1165,29 @@
                 <button class="snake-dpad" onclick="breakoutMove(-1)">◀</button>
                 <button class="snake-dpad" onclick="breakoutMove(1)">▶</button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLATAFORMA ── -->
+        <div class="game-pane" id="game-pane-plataforma-modal">
+          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙 e chegue à bandeira 🚩.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Moedas</span><span class="snake-stat-val gold" id="plat-coins-modal">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="plat-lives-modal">3</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="plat-canvas-modal" width="360" height="260"></canvas>
+              <div class="snake-overlay" id="plat-overlay-modal">
+                <div class="snake-overlay-msg" id="plat-overlay-msg-modal">Pronto para a aventura?</div>
+                <button class="btn btn-primary" onclick="platStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
+              <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
+              <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
             </div>
           </div>
         </div>

@@ -410,7 +410,7 @@ function setTopbarDate() {
 let currentGame = "snake";
 
 const GAME_LIST = ["snake","2048","memoria","minado","velha","desliza","wordle","quiz",
-  "forca","relampago","associacao","anagrama","vf","simon","tetris","lig4","breakout"];
+  "forca","relampago","associacao","anagrama","vf","simon","tetris","lig4","breakout","plataforma"];
 
 // embaralha um array no lugar (Fisher-Yates)
 function shuffle(a) {
@@ -467,6 +467,7 @@ function stopAllGames() {
   simonStop();
   tetrisStop();
   breakoutStop();
+  platStop();
 }
 
 function startCurrentGame() {
@@ -487,6 +488,7 @@ function startCurrentGame() {
   else if (currentGame === "tetris")     tetrisReset();
   else if (currentGame === "lig4")       lig4Start();
   else if (currentGame === "breakout")   breakoutReset();
+  else if (currentGame === "plataforma") platReset();
 }
 
 // helpers genéricos: resolvem o elemento da localização ativa (seção ou modal)
@@ -2189,6 +2191,230 @@ function breakoutDraw() {
   ctx.fillStyle = "#fff";
   ctx.fill();
 }
+
+// ── PLATAFORMA (estilo Mario) ────────────────────────────────────────────────
+const PLAT_W = 360, PLAT_H = 260;
+const PLAT_GRAV = 0.55, PLAT_SPEED = 3, PLAT_JUMP = 10.5;
+const PLAT_WORLD_W = 1700;
+
+// chão (com buracos) e plataformas flutuantes
+const PLAT_PLATFORMS = [
+  { x: 0,    y: 230, w: 320, h: 30 },
+  { x: 380,  y: 230, w: 240, h: 30 },
+  { x: 700,  y: 230, w: 300, h: 30 },
+  { x: 1080, y: 230, w: 620, h: 30 },
+  { x: 210,  y: 175, w: 80,  h: 14 },
+  { x: 340,  y: 140, w: 70,  h: 14 },
+  { x: 480,  y: 165, w: 80,  h: 14 },
+  { x: 640,  y: 130, w: 70,  h: 14 },
+  { x: 840,  y: 160, w: 90,  h: 14 },
+  { x: 980,  y: 125, w: 80,  h: 14 },
+  { x: 1180, y: 165, w: 90,  h: 14 },
+  { x: 1340, y: 135, w: 90,  h: 14 },
+];
+const PLAT_COINS_INIT = [
+  [240,145],[365,110],[505,135],[665,100],[860,130],[1005,95],
+  [430,200],[560,200],[760,200],[1210,135],[1370,105],[1120,200],[1250,200],
+];
+const PLAT_GOAL = { x: 1620, y: 170, w: 20, h: 60 };
+
+let platPlayer, platCoins, platCoinsGot, platLives, platCam, platLoop, platRunning, platOver;
+const platKeys = { left: false, right: false };
+
+function platReset() {
+  platStop();
+  platLives = 3;
+  platCoinsGot = 0;
+  platSpawn();
+  platCoins = PLAT_COINS_INIT.map(([x, y]) => ({ x, y, taken: false }));
+  const ov = gel("plat-overlay");
+  if (ov) { ov.classList.remove("hidden"); gel("plat-overlay-msg").textContent = "Pronto para a aventura?"; }
+  platUpdateStats();
+  platDraw();
+}
+function platStop() { platRunning = false; if (platLoop) { cancelAnimationFrame(platLoop); platLoop = null; } }
+
+function platSpawn() {
+  platPlayer = { x: 30, y: 190, w: 20, h: 20, vx: 0, vy: 0, onGround: false, face: 1 };
+  platCam = 0;
+}
+
+function platStart() {
+  const ov = gel("plat-overlay"); if (ov) ov.classList.add("hidden");
+  if (platOver || platLives <= 0) { platLives = 3; platCoinsGot = 0; platCoins = PLAT_COINS_INIT.map(([x, y]) => ({ x, y, taken: false })); }
+  platOver = false;
+  platSpawn();
+  platUpdateStats();
+  platRunning = true;
+  platLoop = requestAnimationFrame(platTick);
+}
+
+function platHold(dir, val) { platKeys[dir] = val; }
+
+function platJump() {
+  if (!platRunning || !platPlayer) return;
+  if (platPlayer.onGround) { platPlayer.vy = -PLAT_JUMP; platPlayer.onGround = false; playBeep(520); }
+}
+
+function rectsHit(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function platTick() {
+  if (!platRunning) return;
+  const p = platPlayer;
+
+  // movimento horizontal
+  p.vx = (platKeys.right ? PLAT_SPEED : 0) - (platKeys.left ? PLAT_SPEED : 0);
+  if (p.vx !== 0) p.face = p.vx > 0 ? 1 : -1;
+  p.x += p.vx;
+  if (p.x < 0) p.x = 0;
+  if (p.x + p.w > PLAT_WORLD_W) p.x = PLAT_WORLD_W - p.w;
+  // colisão horizontal
+  for (const pl of PLAT_PLATFORMS) {
+    if (rectsHit(p, pl)) {
+      if (p.vx > 0) p.x = pl.x - p.w;
+      else if (p.vx < 0) p.x = pl.x + pl.w;
+    }
+  }
+
+  // gravidade / vertical
+  p.vy += PLAT_GRAV;
+  p.y += p.vy;
+  p.onGround = false;
+  for (const pl of PLAT_PLATFORMS) {
+    if (rectsHit(p, pl)) {
+      if (p.vy > 0) { p.y = pl.y - p.h; p.vy = 0; p.onGround = true; }
+      else if (p.vy < 0) { p.y = pl.y + pl.h; p.vy = 0; }
+    }
+  }
+
+  // caiu no buraco
+  if (p.y > PLAT_H + 40) {
+    platLives--;
+    platUpdateStats();
+    playBeep(180);
+    if (platLives <= 0) { platEnd(false); return; }
+    platSpawn();
+  }
+
+  // moedas
+  for (const c of platCoins) {
+    if (!c.taken && rectsHit(p, { x: c.x - 8, y: c.y - 8, w: 16, h: 16 })) {
+      c.taken = true;
+      platCoinsGot++;
+      platUpdateStats();
+      playBeep(740);
+    }
+  }
+
+  // chegou na bandeira
+  if (rectsHit(p, PLAT_GOAL)) { platEnd(true); return; }
+
+  // câmera segue o jogador
+  platCam = Math.max(0, Math.min(p.x - PLAT_W / 2, PLAT_WORLD_W - PLAT_W));
+
+  platDraw();
+  platLoop = requestAnimationFrame(platTick);
+}
+
+function platUpdateStats() {
+  const c = gel("plat-coins"), l = gel("plat-lives");
+  if (c) c.textContent = platCoinsGot;
+  if (l) l.textContent = platLives;
+}
+
+function platEnd(won) {
+  platStop();
+  platOver = true;
+  const ov = gel("plat-overlay");
+  if (ov) {
+    ov.classList.remove("hidden");
+    gel("plat-overlay-msg").textContent = won
+      ? `🏁 Você chegou! Moedas: ${platCoinsGot}`
+      : `💀 Game over! Moedas: ${platCoinsGot}`;
+  }
+  playBeep(won ? 880 : 200);
+  awardGameXp(platCoinsGot * 2 + (won ? 20 : 0), "Plataforma");
+}
+
+function platDraw() {
+  const cv = gel("plat-canvas");
+  if (!cv) return;
+  const ctx = cv.getContext("2d");
+  const cam = platCam;
+  ctx.clearRect(0, 0, PLAT_W, PLAT_H);
+
+  // nuvens decorativas (parallax leve)
+  ctx.fillStyle = "rgba(255,255,255,.12)";
+  for (let i = 0; i < 5; i++) {
+    const cx = ((i * 400 - cam * 0.4) % (PLAT_W + 120)) - 60;
+    ctx.beginPath();
+    ctx.arc(cx, 40 + (i % 2) * 25, 18, 0, Math.PI * 2);
+    ctx.arc(cx + 20, 40 + (i % 2) * 25, 22, 0, Math.PI * 2);
+    ctx.arc(cx + 42, 40 + (i % 2) * 25, 16, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // plataformas
+  PLAT_PLATFORMS.forEach(pl => {
+    const sx = pl.x - cam;
+    if (sx + pl.w < 0 || sx > PLAT_W) return;
+    const isGround = pl.h > 20;
+    ctx.fillStyle = isGround ? "#3d8b40" : "#a0703c";
+    ctx.fillRect(sx, pl.y, pl.w, pl.h);
+    ctx.fillStyle = isGround ? "#4caf50" : "#c08850";
+    ctx.fillRect(sx, pl.y, pl.w, 5);
+  });
+
+  // moedas
+  platCoins.forEach(c => {
+    if (c.taken) return;
+    const sx = c.x - cam;
+    if (sx < -10 || sx > PLAT_W + 10) return;
+    ctx.beginPath();
+    ctx.arc(sx, c.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = "#fbbf24";
+    ctx.fill();
+    ctx.strokeStyle = "#d97706";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // bandeira (goal)
+  const gx = PLAT_GOAL.x - cam;
+  if (gx < PLAT_W + 20) {
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillRect(gx, PLAT_GOAL.y, 3, PLAT_GOAL.h);
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath();
+    ctx.moveTo(gx + 3, PLAT_GOAL.y);
+    ctx.lineTo(gx + 22, PLAT_GOAL.y + 8);
+    ctx.lineTo(gx + 3, PLAT_GOAL.y + 16);
+    ctx.fill();
+  }
+
+  // jogador
+  const px = platPlayer.x - cam;
+  ctx.fillStyle = "#ef4444";
+  ctx.fillRect(px, platPlayer.y, platPlayer.w, platPlayer.h);
+  ctx.fillStyle = "#fbbf24"; // "rosto"
+  ctx.fillRect(px + 3, platPlayer.y + 4, platPlayer.w - 6, 7);
+  ctx.fillStyle = "#1a1a2e"; // olho (direção)
+  ctx.fillRect(px + (platPlayer.face > 0 ? platPlayer.w - 7 : 3), platPlayer.y + 5, 3, 3);
+}
+
+// teclado da plataforma (movimento contínuo + pulo)
+document.addEventListener("keydown", (e) => {
+  if (currentGame !== "plataforma") return;
+  if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") { platKeys.left = true; e.preventDefault(); }
+  else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") { platKeys.right = true; e.preventDefault(); }
+  else if (e.key === "ArrowUp" || e.key === "w" || e.key === "W" || e.key === " ") { platJump(); e.preventDefault(); }
+});
+document.addEventListener("keyup", (e) => {
+  if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") platKeys.left = false;
+  else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") platKeys.right = false;
+});
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
