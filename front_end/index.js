@@ -397,7 +397,7 @@ function selectGame(name, btn) {
   btn.parentElement.querySelectorAll(".game-tab").forEach(t =>
     t.classList.toggle("active", t.dataset.game === name));
   // troca painel ativo na localização correta
-  ["snake","2048","memoria","minado","velha","desliza","wordle"].forEach(g => {
+  ["snake","2048","memoria","minado","velha","desliza","wordle","quiz"].forEach(g => {
     const pane = document.getElementById("game-pane-" + g + suffix);
     if (pane) pane.classList.toggle("active", g === name);
   });
@@ -417,6 +417,7 @@ function startCurrentGame() {
   else if (currentGame === "velha")   velhaStart();
   else if (currentGame === "desliza") deslizaStart();
   else if (currentGame === "wordle")  wordleStart();
+  else if (currentGame === "quiz")    quizReset();
 }
 
 // helpers genéricos: resolvem o elemento da localização ativa (seção ou modal)
@@ -433,7 +434,7 @@ function openBreakModal() {
   // sincroniza abas/painéis do modal com o jogo atual
   document.querySelectorAll("#game-tabs-modal .game-tab").forEach(t =>
     t.classList.toggle("active", t.dataset.game === currentGame));
-  ["snake","2048","memoria","minado","velha","desliza","wordle"].forEach(g => {
+  ["snake","2048","memoria","minado","velha","desliza","wordle","quiz"].forEach(g => {
     const pane = document.getElementById("game-pane-" + g + "-modal");
     if (pane) pane.classList.toggle("active", g === currentGame);
   });
@@ -1280,6 +1281,149 @@ function wordleEvaluate(guess, target) {
     if (idx !== -1) { states[i] = "present"; t[idx] = null; }
   }
   return states;
+}
+
+// ── QUIZ DAS MATÉRIAS ────────────────────────────────────────────────────────
+const QUIZ_BANK = [
+  // ── Matemática ──
+  { s:"Matemática", q:"Quanto é 7 × 8?", o:["54","56","64","48"], a:1 },
+  { s:"Matemática", q:"Qual é a raiz quadrada de 144?", o:["12","14","16","11"], a:0 },
+  { s:"Matemática", q:"Quanto é 15% de 200?", o:["20","30","15","45"], a:1 },
+  { s:"Matemática", q:"Um triângulo tem quantos lados?", o:["4","3","5","6"], a:1 },
+  { s:"Matemática", q:"Quanto é 3⁴ (3 elevado a 4)?", o:["12","64","81","27"], a:2 },
+  { s:"Matemática", q:"Qual fração equivale a 0,5?", o:["1/2","1/4","1/3","2/3"], a:0 },
+  { s:"Matemática", q:"Quanto é 144 ÷ 12?", o:["10","11","12","13"], a:2 },
+  // ── Português ──
+  { s:"Português", q:"Qual é o plural de 'cidadão'?", o:["cidadões","cidadãos","cidadães","cidadons"], a:1 },
+  { s:"Português", q:"'Casa' é uma palavra do tipo:", o:["verbo","substantivo","adjetivo","advérbio"], a:1 },
+  { s:"Português", q:"Qual palavra está escrita corretamente?", o:["excessão","exceção","esceção","excesão"], a:1 },
+  { s:"Português", q:"O antônimo de 'alegre' é:", o:["feliz","contente","triste","animado"], a:2 },
+  { s:"Português", q:"Quantas sílabas tem a palavra 'abacaxi'?", o:["3","4","5","2"], a:1 },
+  { s:"Português", q:"'Rapidamente' é um:", o:["substantivo","advérbio","adjetivo","pronome"], a:1 },
+  // ── História ──
+  { s:"História", q:"Em que ano o Brasil foi 'descoberto'?", o:["1500","1492","1822","1888"], a:0 },
+  { s:"História", q:"Quem proclamou a Independência do Brasil?", o:["Tiradentes","Dom Pedro I","Getúlio Vargas","Dom João VI"], a:1 },
+  { s:"História", q:"A Lei Áurea (1888) tratava da:", o:["independência","abolição da escravidão","proclamação da república","constituição"], a:1 },
+  { s:"História", q:"Quem foi o primeiro presidente do Brasil?", o:["Deodoro da Fonseca","Getúlio Vargas","Floriano Peixoto","Prudente de Morais"], a:0 },
+  { s:"História", q:"A Revolução Francesa começou em:", o:["1789","1822","1500","1914"], a:0 },
+  { s:"História", q:"A Segunda Guerra Mundial terminou em:", o:["1918","1945","1939","1950"], a:1 },
+  // ── Geografia ──
+  { s:"Geografia", q:"Qual é a capital do Brasil?", o:["Rio de Janeiro","São Paulo","Brasília","Salvador"], a:2 },
+  { s:"Geografia", q:"Qual é o maior rio do Brasil?", o:["São Francisco","Amazonas","Paraná","Tietê"], a:1 },
+  { s:"Geografia", q:"Quantos estados tem o Brasil?", o:["26","27","25","24"], a:0 },
+  { s:"Geografia", q:"Qual é o maior continente do mundo?", o:["África","Ásia","Europa","América"], a:1 },
+  { s:"Geografia", q:"A Linha do Equador divide a Terra em:", o:["leste e oeste","norte e sul","dois polos","quatro partes"], a:1 },
+  { s:"Geografia", q:"Qual oceano banha o litoral brasileiro?", o:["Pacífico","Índico","Atlântico","Ártico"], a:2 },
+  // ── Ciências ──
+  { s:"Ciências", q:"Qual é o planeta mais próximo do Sol?", o:["Vênus","Mercúrio","Marte","Terra"], a:1 },
+  { s:"Ciências", q:"Qual gás as plantas absorvem na fotossíntese?", o:["oxigênio","gás carbônico","nitrogênio","hidrogênio"], a:1 },
+  { s:"Ciências", q:"Quantos ossos tem o corpo humano adulto?", o:["206","300","150","250"], a:0 },
+  { s:"Ciências", q:"A água é formada por hidrogênio e:", o:["carbono","oxigênio","nitrogênio","enxofre"], a:1 },
+  { s:"Ciências", q:"Qual é o maior órgão do corpo humano?", o:["fígado","coração","pele","pulmão"], a:2 },
+  { s:"Ciências", q:"Qual animal é um mamífero?", o:["tubarão","golfinho","tartaruga","sapo"], a:1 },
+];
+
+const QUIZ_LEN = 10;
+let quizQuestions = [];
+let quizIndex = 0;
+let quizScore = 0;
+let quizLocked = false;
+
+function quizReset() {
+  // volta para a tela de seleção de matéria
+  gel("quiz-setup").classList.remove("hidden");
+  gel("quiz-game").classList.add("hidden");
+  gel("quiz-result").classList.add("hidden");
+}
+
+function quizStart() {
+  const subject = gel("quiz-subject").value;
+  let pool = subject === "todas"
+    ? [...QUIZ_BANK]
+    : QUIZ_BANK.filter(q => q.s === subject);
+  // embaralha
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  quizQuestions = pool.slice(0, Math.min(QUIZ_LEN, pool.length));
+  quizIndex = 0;
+  quizScore = 0;
+  quizLocked = false;
+  gel("quiz-setup").classList.add("hidden");
+  gel("quiz-result").classList.add("hidden");
+  gel("quiz-game").classList.remove("hidden");
+  quizRenderQuestion();
+}
+
+function quizRenderQuestion() {
+  const item = quizQuestions[quizIndex];
+  quizLocked = false;
+  gel("quiz-progress").textContent = `${quizIndex + 1} / ${quizQuestions.length}`;
+  gel("quiz-score").textContent = `${quizScore} acertos`;
+  gel("quiz-question").textContent = item.q;
+
+  // embaralha as opções mantendo o índice da correta
+  const opts = item.o.map((text, i) => ({ text, correct: i === item.a }));
+  for (let i = opts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [opts[i], opts[j]] = [opts[j], opts[i]];
+  }
+
+  const box = gel("quiz-options");
+  box.innerHTML = "";
+  opts.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "quiz-option";
+    btn.textContent = opt.text;
+    btn.onclick = () => quizAnswer(btn, opt.correct);
+    box.appendChild(btn);
+  });
+}
+
+function quizAnswer(btn, correct) {
+  if (quizLocked) return;
+  quizLocked = true;
+  const box = gel("quiz-options");
+  const buttons = box.querySelectorAll(".quiz-option");
+
+  buttons.forEach(b => b.classList.add("disabled"));
+
+  if (correct) {
+    btn.classList.add("correct");
+    quizScore++;
+    playBeep(660);
+  } else {
+    btn.classList.add("wrong");
+    // destaca a correta
+    buttons.forEach(b => {
+      const item = quizQuestions[quizIndex];
+      if (b.textContent === item.o[item.a]) b.classList.add("correct");
+    });
+    playBeep(200);
+  }
+  gel("quiz-score").textContent = `${quizScore} acertos`;
+
+  setTimeout(() => {
+    quizIndex++;
+    if (quizIndex < quizQuestions.length) quizRenderQuestion();
+    else quizEnd();
+  }, 1100);
+}
+
+function quizEnd() {
+  gel("quiz-game").classList.add("hidden");
+  gel("quiz-result").classList.remove("hidden");
+  const total = quizQuestions.length;
+  const pct = total ? quizScore / total : 0;
+  let icon, msg;
+  if (pct === 1)        { icon = "🏆"; msg = "Perfeito! Você acertou tudo!"; }
+  else if (pct >= 0.7)  { icon = "🎉"; msg = "Muito bem! Você mandou bem!"; }
+  else if (pct >= 0.5)  { icon = "👍"; msg = "Bom trabalho! Dá pra melhorar."; }
+  else                  { icon = "📖"; msg = "Continue estudando, você consegue!"; }
+  gel("quiz-result-icon").textContent = icon;
+  gel("quiz-result-msg").textContent = `${msg}\nVocê acertou ${quizScore} de ${total} perguntas.`;
+  playBeep(pct >= 0.5 ? 880 : 330);
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────

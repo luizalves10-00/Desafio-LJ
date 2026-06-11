@@ -254,6 +254,7 @@
           <button class="game-tab"        data-game="velha"   onclick="selectGame('velha', this)">⭕ Velha</button>
           <button class="game-tab"        data-game="desliza" onclick="selectGame('desliza', this)">🧩 Deslizante</button>
           <button class="game-tab"        data-game="wordle"  onclick="selectGame('wordle', this)">🔤 Wordle</button>
+          <button class="game-tab"        data-game="quiz"    onclick="selectGame('quiz', this)">📚 Quiz</button>
         </div>
 
         <!-- ── SNAKE ── -->
@@ -395,6 +396,40 @@
           </div>
         </div>
 
+        <!-- ── QUIZ ── -->
+        <div class="game-pane" id="game-pane-quiz">
+          <p class="game-desc">Estude jogando! Escolha a matéria e responda 10 perguntas.</p>
+          <div class="quiz-wrap">
+            <div class="quiz-setup" id="quiz-setup">
+              <label class="quiz-label">Matéria:</label>
+              <select id="quiz-subject" class="quiz-select">
+                <option value="todas">📚 Todas as matérias</option>
+                <option value="Matemática">🔢 Matemática</option>
+                <option value="Português">📖 Português</option>
+                <option value="História">🏛 História</option>
+                <option value="Geografia">🌍 Geografia</option>
+                <option value="Ciências">🔬 Ciências</option>
+              </select>
+              <button class="btn btn-primary btn-full" onclick="quizStart()">▶ Começar quiz</button>
+            </div>
+
+            <div class="quiz-game hidden" id="quiz-game">
+              <div class="quiz-topbar">
+                <span class="quiz-progress" id="quiz-progress">1 / 10</span>
+                <span class="quiz-score" id="quiz-score">0 acertos</span>
+              </div>
+              <div class="quiz-question" id="quiz-question"></div>
+              <div class="quiz-options" id="quiz-options"></div>
+            </div>
+
+            <div class="quiz-result hidden" id="quiz-result">
+              <div class="quiz-result-icon" id="quiz-result-icon">🎉</div>
+              <div class="quiz-result-msg" id="quiz-result-msg"></div>
+              <button class="btn btn-primary btn-full" onclick="quizReset()">↺ Jogar de novo</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -497,6 +532,7 @@
       <button class="game-tab"        data-game="velha"   onclick="selectGame('velha', this)">⭕ Velha</button>
       <button class="game-tab"        data-game="desliza" onclick="selectGame('desliza', this)">🧩 Deslizante</button>
       <button class="game-tab"        data-game="wordle"  onclick="selectGame('wordle', this)">🔤 Wordle</button>
+      <button class="game-tab"        data-game="quiz"    onclick="selectGame('quiz', this)">📚 Quiz</button>
     </div>
 
     <!-- ── SNAKE (modal) ── -->
@@ -628,6 +664,39 @@
         <input class="wordle-input" id="wordle-input-modal" maxlength="5" placeholder="Digite e aperte Enter" autocomplete="off" onkeydown="wordleKey(event)" />
         <div class="wordle-msg" id="wordle-msg-modal"></div>
         <button class="btn btn-secondary btn-sm" onclick="wordleStart()">🔄 Nova palavra</button>
+      </div>
+    </div>
+
+    <!-- ── QUIZ (modal) ── -->
+    <div class="game-pane" id="game-pane-quiz-modal">
+      <div class="quiz-wrap">
+        <div class="quiz-setup" id="quiz-setup-modal">
+          <label class="quiz-label">Matéria:</label>
+          <select id="quiz-subject-modal" class="quiz-select">
+            <option value="todas">📚 Todas as matérias</option>
+            <option value="Matemática">🔢 Matemática</option>
+            <option value="Português">📖 Português</option>
+            <option value="História">🏛 História</option>
+            <option value="Geografia">🌍 Geografia</option>
+            <option value="Ciências">🔬 Ciências</option>
+          </select>
+          <button class="btn btn-primary btn-full" onclick="quizStart()">▶ Começar quiz</button>
+        </div>
+
+        <div class="quiz-game hidden" id="quiz-game-modal">
+          <div class="quiz-topbar">
+            <span class="quiz-progress" id="quiz-progress-modal">1 / 10</span>
+            <span class="quiz-score" id="quiz-score-modal">0 acertos</span>
+          </div>
+          <div class="quiz-question" id="quiz-question-modal"></div>
+          <div class="quiz-options" id="quiz-options-modal"></div>
+        </div>
+
+        <div class="quiz-result hidden" id="quiz-result-modal">
+          <div class="quiz-result-icon" id="quiz-result-icon-modal">🎉</div>
+          <div class="quiz-result-msg" id="quiz-result-msg-modal"></div>
+          <button class="btn btn-primary btn-full" onclick="quizReset()">↺ Jogar de novo</button>
+        </div>
       </div>
     </div>
 
