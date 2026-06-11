@@ -1314,3 +1314,175 @@ select option { background: var(--surface2); }
   color: var(--muted);
   line-height: 1.35;
 }
+
+/* ═══════════════════════════════════════════════
+   FORCA
+═══════════════════════════════════════════════ */
+.forca-hangman { font-size: 3.5rem; line-height: 1; }
+.forca-stat { font-size: .85rem; color: var(--muted); font-weight: 700; }
+.forca-word {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: var(--text);
+  min-height: 40px;
+}
+.forca-letters {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 5px;
+  max-width: 360px;
+}
+.forca-key {
+  aspect-ratio: 1;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: background .12s;
+}
+.forca-key:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.forca-key:disabled { opacity: .3; cursor: default; }
+
+/* ═══════════════════════════════════════════════
+   DESAFIO RELÂMPAGO
+═══════════════════════════════════════════════ */
+.relamp-problem {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--text);
+  margin: 6px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════
+   ASSOCIAÇÃO
+═══════════════════════════════════════════════ */
+.assoc-cols { display: flex; gap: 16px; width: 100%; max-width: 440px; }
+.assoc-col { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.assoc-item {
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background .12s, border-color .12s, opacity .2s;
+}
+.assoc-item:hover { border-color: var(--accent); }
+.assoc-item.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+.assoc-item.matched { opacity: .35; pointer-events: none; border-color: var(--green); }
+
+/* ═══════════════════════════════════════════════
+   ANAGRAMA
+═══════════════════════════════════════════════ */
+.anag-letters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.anag-tile {
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════
+   VERDADEIRO OU FALSO
+═══════════════════════════════════════════════ */
+.vf-statement {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  line-height: 1.4;
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vf-buttons { display: flex; gap: 12px; }
+.vf-buttons .btn { padding: 12px 28px; font-size: 1rem; }
+
+/* ═══════════════════════════════════════════════
+   SIMON
+═══════════════════════════════════════════════ */
+.simon-pad {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  width: 220px;
+  height: 220px;
+}
+.simon-btn {
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  opacity: .55;
+  transition: opacity .15s, transform .1s;
+}
+.simon-btn:active { transform: scale(.97); }
+.simon-btn.lit { opacity: 1; box-shadow: 0 0 24px currentColor; }
+.simon-0 { background: #ef4444; color: #ef4444; }
+.simon-1 { background: #22c55e; color: #22c55e; }
+.simon-2 { background: #3b82f6; color: #3b82f6; }
+.simon-3 { background: #eab308; color: #eab308; }
+
+/* ═══════════════════════════════════════════════
+   TETRIS
+═══════════════════════════════════════════════ */
+#tetris-canvas, #tetris-canvas-modal {
+  background: var(--surface2);
+  border-radius: 8px;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════
+   LIG 4
+═══════════════════════════════════════════════ */
+.lig4-board {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  background: var(--accent);
+  padding: 8px;
+  border-radius: 12px;
+}
+.lig4-cell {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--surface2);
+  cursor: pointer;
+  transition: transform .1s;
+}
+.lig4-cell:hover { transform: scale(1.08); }
+.lig4-cell.p1 { background: #ef4444; }
+.lig4-cell.p2 { background: #eab308; }
+.lig4-cell.win { box-shadow: 0 0 14px #fff; }
+
+/* ═══════════════════════════════════════════════
+   BREAKOUT
+═══════════════════════════════════════════════ */
+#breakout-canvas, #breakout-canvas-modal {
+  background: var(--surface2);
+  border-radius: 8px;
+  display: block;
+}

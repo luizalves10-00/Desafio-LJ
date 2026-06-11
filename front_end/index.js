@@ -409,7 +409,17 @@ function setTopbarDate() {
 // ── SELETOR DE JOGOS ─────────────────────────────────────────────────────────
 let currentGame = "snake";
 
-const GAME_LIST = ["snake","2048","memoria","minado","velha","desliza","wordle","quiz"];
+const GAME_LIST = ["snake","2048","memoria","minado","velha","desliza","wordle","quiz",
+  "forca","relampago","associacao","anagrama","vf","simon","tetris","lig4","breakout"];
+
+// embaralha um array no lugar (Fisher-Yates)
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 // núcleo: ativa um jogo numa localização (seção: "" ou modal: "-modal")
 function activateGame(name, suffix) {
@@ -453,6 +463,10 @@ function showGameMenu() {
 
 function stopAllGames() {
   snakeStop();
+  relampStop();
+  simonStop();
+  tetrisStop();
+  breakoutStop();
 }
 
 function startCurrentGame() {
@@ -464,6 +478,15 @@ function startCurrentGame() {
   else if (currentGame === "desliza") deslizaStart();
   else if (currentGame === "wordle")  wordleStart();
   else if (currentGame === "quiz")    quizReset();
+  else if (currentGame === "forca")      forcaStart();
+  else if (currentGame === "relampago")  relampReset();
+  else if (currentGame === "associacao") assocStart();
+  else if (currentGame === "anagrama")   anagStart();
+  else if (currentGame === "vf")         vfStart();
+  else if (currentGame === "simon")      simonReset();
+  else if (currentGame === "tetris")     tetrisReset();
+  else if (currentGame === "lig4")       lig4Start();
+  else if (currentGame === "breakout")   breakoutReset();
 }
 
 // helpers genéricos: resolvem o elemento da localização ativa (seção ou modal)
@@ -685,6 +708,17 @@ document.addEventListener("keydown", (e) => {
   if (currentGame === "snake" && snakeRunning) { e.preventDefault(); snakeSetDir(dir); }
   else if (currentGame === "2048") { e.preventDefault(); g2048Move(dir); }
   else if (currentGame === "desliza") { e.preventDefault(); deslizaArrow(dir); }
+  else if (currentGame === "tetris") {
+    e.preventDefault();
+    if (dir === "left") tetrisMove(-1);
+    else if (dir === "right") tetrisMove(1);
+    else if (dir === "up") tetrisRotate();
+    else if (dir === "down") tetrisDrop();
+  }
+  else if (currentGame === "breakout") {
+    if (dir === "left") { e.preventDefault(); breakoutMove(-1); }
+    else if (dir === "right") { e.preventDefault(); breakoutMove(1); }
+  }
 });
 
 // ── 2048 ─────────────────────────────────────────────────────────────────────
@@ -1478,6 +1512,682 @@ function quizEnd() {
   gel("quiz-result-msg").textContent = `${msg}\nVocê acertou ${quizScore} de ${total} perguntas.`;
   playBeep(pct >= 0.5 ? 880 : 330);
   awardGameXp(quizScore * 5, "Quiz"); // 5 XP por acerto (10/10 = 50 XP)
+}
+
+// ── FORCA ────────────────────────────────────────────────────────────────────
+const FORCA_FACES = ["😀", "🙂", "😐", "😟", "😣", "😨", "💀"];
+let forcaWord = "", forcaGuessed = new Set(), forcaErrors = 0, forcaDone = false;
+
+function forcaStart() {
+  forcaWord = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+  forcaGuessed = new Set();
+  forcaErrors = 0;
+  forcaDone = false;
+  const ov = gel("forca-overlay"); if (ov) ov.classList.add("hidden");
+  forcaRender();
+}
+
+function forcaRender() {
+  gel("forca-hangman").textContent = FORCA_FACES[forcaErrors];
+  gel("forca-errors").textContent = `Erros: ${forcaErrors} / 6`;
+  gel("forca-word").textContent = forcaWord.split("").map(c => forcaGuessed.has(c) ? c : "_").join(" ");
+  const box = gel("forca-letters");
+  box.innerHTML = "";
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(L => {
+    const b = document.createElement("button");
+    b.className = "forca-key";
+    b.textContent = L;
+    b.disabled = forcaGuessed.has(L) || forcaDone;
+    b.onclick = () => forcaGuess(L);
+    box.appendChild(b);
+  });
+}
+
+function forcaGuess(L) {
+  if (forcaDone || forcaGuessed.has(L)) return;
+  forcaGuessed.add(L);
+  if (!forcaWord.includes(L)) { forcaErrors++; playBeep(200); }
+  else playBeep(620);
+  forcaRender();
+  if (forcaWord.split("").every(c => forcaGuessed.has(c))) forcaEnd(true);
+  else if (forcaErrors >= 6) forcaEnd(false);
+}
+
+function forcaEnd(won) {
+  forcaDone = true;
+  const ov = gel("forca-overlay"), m = gel("forca-overlay-msg");
+  if (ov) ov.classList.remove("hidden");
+  if (m) m.textContent = won ? `🎉 Acertou: ${forcaWord}` : `💀 A palavra era: ${forcaWord}`;
+  playBeep(won ? 880 : 200);
+  if (won) awardGameXp(15, "Forca");
+}
+
+// ── DESAFIO RELÂMPAGO ────────────────────────────────────────────────────────
+let relampScore = 0, relampTime = 60, relampTimer = null, relampAns = 0;
+
+function relampReset() {
+  relampStop();
+  gel("relamp-setup").classList.remove("hidden");
+  gel("relamp-game").classList.add("hidden");
+  gel("relamp-result").classList.add("hidden");
+}
+function relampStop() { if (relampTimer) { clearInterval(relampTimer); relampTimer = null; } }
+
+function relampStart() {
+  relampScore = 0;
+  relampTime = 60;
+  gel("relamp-setup").classList.add("hidden");
+  gel("relamp-result").classList.add("hidden");
+  gel("relamp-game").classList.remove("hidden");
+  gel("relamp-score").textContent = "0";
+  gel("relamp-time").textContent = "60";
+  relampNext();
+  gel("relamp-input").focus();
+  relampTimer = setInterval(() => {
+    relampTime--;
+    const t = gel("relamp-time"); if (t) t.textContent = relampTime;
+    if (relampTime <= 0) relampEnd();
+  }, 1000);
+}
+
+function relampNext() {
+  const ops = ["+", "-", "×"];
+  const op = ops[Math.floor(Math.random() * ops.length)];
+  let a, b;
+  if (op === "×") { a = 2 + Math.floor(Math.random() * 9); b = 2 + Math.floor(Math.random() * 9); relampAns = a * b; }
+  else if (op === "+") { a = 2 + Math.floor(Math.random() * 49); b = 2 + Math.floor(Math.random() * 49); relampAns = a + b; }
+  else { a = 10 + Math.floor(Math.random() * 40); b = 1 + Math.floor(Math.random() * a); relampAns = a - b; }
+  gel("relamp-problem").textContent = `${a} ${op} ${b}`;
+  gel("relamp-input").value = "";
+}
+
+function relampKey(e) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const v = parseInt(gel("relamp-input").value, 10);
+  if (v === relampAns) { relampScore++; gel("relamp-score").textContent = relampScore; playBeep(660); }
+  else playBeep(200);
+  relampNext();
+}
+
+function relampEnd() {
+  relampStop();
+  gel("relamp-game").classList.add("hidden");
+  gel("relamp-result").classList.remove("hidden");
+  gel("relamp-result-msg").textContent = `Você acertou ${relampScore} contas em 60 segundos!`;
+  playBeep(880);
+  awardGameXp(relampScore * 2, "Relâmpago");
+}
+
+// ── ASSOCIAÇÃO ───────────────────────────────────────────────────────────────
+const ASSOC_BANK = [
+  [["Brasil","Brasília"],["França","Paris"],["Japão","Tóquio"],["Itália","Roma"],["Egito","Cairo"]],
+  [["H₂O","Água"],["O₂","Oxigênio"],["CO₂","Gás carbônico"],["NaCl","Sal"],["CH₄","Metano"]],
+  [["2 × 6","12"],["15 + 9","24"],["100 ÷ 4","25"],["8 × 8","64"],["50 − 17","33"]],
+  [["Coração","Bombear sangue"],["Pulmão","Respiração"],["Estômago","Digestão"],["Cérebro","Pensar"],["Rim","Filtrar"]],
+];
+let assocPairs = [], assocSelLeft = null, assocMatched = 0;
+
+function assocStart() {
+  assocPairs = ASSOC_BANK[Math.floor(Math.random() * ASSOC_BANK.length)];
+  assocSelLeft = null;
+  assocMatched = 0;
+  const lefts = shuffle(assocPairs.map((p, i) => ({ t: p[0], i })));
+  const rights = shuffle(assocPairs.map((p, i) => ({ t: p[1], i })));
+  assocRenderCol("assoc-left", lefts, "L");
+  assocRenderCol("assoc-right", rights, "R");
+  gel("assoc-msg").textContent = "";
+}
+
+function assocRenderCol(baseId, items, side) {
+  const col = gel(baseId);
+  col.innerHTML = "";
+  items.forEach(it => {
+    const d = document.createElement("div");
+    d.className = "assoc-item";
+    d.textContent = it.t;
+    d.dataset.i = it.i;
+    d.onclick = () => side === "L" ? assocPickLeft(it.i, d) : assocPickRight(it.i, d);
+    col.appendChild(d);
+  });
+}
+
+function assocPickLeft(i, el) {
+  if (el.classList.contains("matched")) return;
+  gel("assoc-left").querySelectorAll(".assoc-item").forEach(x => x.classList.remove("selected"));
+  el.classList.add("selected");
+  assocSelLeft = i;
+}
+
+function assocPickRight(i, el) {
+  if (assocSelLeft === null || el.classList.contains("matched")) return;
+  if (i === assocSelLeft) {
+    el.classList.add("matched");
+    gel("assoc-left").querySelectorAll(".assoc-item").forEach(x => {
+      if (parseInt(x.dataset.i, 10) === i) { x.classList.add("matched"); x.classList.remove("selected"); }
+    });
+    assocSelLeft = null;
+    assocMatched++;
+    playBeep(660);
+    gel("assoc-msg").textContent = "";
+    if (assocMatched === assocPairs.length) {
+      gel("assoc-msg").textContent = "🎉 Você ligou todos os pares!";
+      playBeep(880);
+      awardGameXp(15, "Associação");
+    }
+  } else {
+    gel("assoc-msg").textContent = "❌ Não é esse par, tente de novo.";
+    playBeep(200);
+    gel("assoc-left").querySelectorAll(".assoc-item").forEach(x => x.classList.remove("selected"));
+    assocSelLeft = null;
+  }
+}
+
+// ── ANAGRAMA ─────────────────────────────────────────────────────────────────
+let anagWord = "", anagScore = 0;
+
+function anagStart() {
+  anagScore = 0;
+  gel("anag-score").textContent = "0";
+  anagNext();
+}
+
+function anagNext() {
+  anagWord = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+  let scrambled;
+  do { scrambled = shuffle(anagWord.split("")).join(""); } while (scrambled === anagWord);
+  const box = gel("anag-letters");
+  box.innerHTML = "";
+  scrambled.split("").forEach(L => {
+    const t = document.createElement("div");
+    t.className = "anag-tile";
+    t.textContent = L;
+    box.appendChild(t);
+  });
+  gel("anag-input").value = "";
+  gel("anag-msg").textContent = "";
+}
+
+function anagKey(e) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const v = (gel("anag-input").value || "").toUpperCase().trim();
+  if (v === anagWord) {
+    anagScore++;
+    gel("anag-score").textContent = anagScore;
+    gel("anag-msg").textContent = "🎉 Acertou!";
+    playBeep(660);
+    awardGameXp(5, "Anagrama");
+    setTimeout(anagNext, 800);
+  } else {
+    gel("anag-msg").textContent = "❌ Tente de novo.";
+    playBeep(200);
+  }
+}
+
+function anagSkip() {
+  gel("anag-msg").textContent = `A palavra era: ${anagWord}`;
+  setTimeout(anagNext, 900);
+}
+
+// ── VERDADEIRO OU FALSO ──────────────────────────────────────────────────────
+const VF_BANK = [
+  ["A Terra é o terceiro planeta a partir do Sol.", true],
+  ["O Sol gira em torno da Terra.", false],
+  ["A água ferve a 100°C ao nível do mar.", true],
+  ["Os morcegos são aves.", false],
+  ["O Brasil é o maior país da América do Sul.", true],
+  ["O coração bombeia sangue pelo corpo.", true],
+  ["As aranhas são insetos.", false],
+  ["A Lua tem luz própria.", false],
+  ["O oxigênio é essencial para a respiração humana.", true],
+  ["Os dinossauros conviveram com os primeiros humanos.", false],
+  ["1 quilômetro equivale a 100 metros.", false],
+  ["As plantas produzem oxigênio na fotossíntese.", true],
+  ["O gelo é a água no estado sólido.", true],
+  ["A baleia é um peixe.", false],
+  ["O Brasil foi colonizado por Portugal.", true],
+  ["Um triângulo tem quatro lados.", false],
+];
+let vfQ = [], vfIdx = 0, vfScore = 0;
+
+function vfStart() {
+  vfQ = shuffle(VF_BANK.slice()).slice(0, 10);
+  vfIdx = 0;
+  vfScore = 0;
+  gel("vf-game").classList.remove("hidden");
+  gel("vf-result").classList.add("hidden");
+  vfRender();
+}
+
+function vfRender() {
+  gel("vf-progress").textContent = `${vfIdx + 1} / ${vfQ.length}`;
+  gel("vf-score").textContent = `${vfScore} acertos`;
+  gel("vf-statement").textContent = vfQ[vfIdx][0];
+  gel("vf-msg").textContent = "";
+}
+
+function vfAnswer(ans) {
+  if (vfIdx >= vfQ.length) return;
+  const correct = vfQ[vfIdx][1] === ans;
+  if (correct) { vfScore++; gel("vf-msg").textContent = "✅ Certo!"; playBeep(660); }
+  else { gel("vf-msg").textContent = "❌ Errado!"; playBeep(200); }
+  gel("vf-score").textContent = `${vfScore} acertos`;
+  vfIdx++;
+  setTimeout(() => { if (vfIdx < vfQ.length) vfRender(); else vfEnd(); }, 750);
+}
+
+function vfEnd() {
+  gel("vf-game").classList.add("hidden");
+  gel("vf-result").classList.remove("hidden");
+  gel("vf-result-icon").textContent = vfScore >= 7 ? "🎉" : vfScore >= 5 ? "👍" : "📖";
+  gel("vf-result-msg").textContent = `Você acertou ${vfScore} de ${vfQ.length}!`;
+  playBeep(vfScore >= 5 ? 880 : 330);
+  awardGameXp(vfScore * 3, "V ou F");
+}
+
+// ── SIMON ────────────────────────────────────────────────────────────────────
+const SIMON_TONES = [330, 440, 550, 660];
+let simonSeq = [], simonInput = 0, simonLevel = 0, simonPlaying = false, simonTimeouts = [];
+
+function simonReset() {
+  simonStop();
+  simonSeq = [];
+  simonLevel = 0;
+  const lv = gel("simon-level"); if (lv) lv.textContent = "0";
+  const msg = gel("simon-msg"); if (msg) msg.textContent = "Clique em Começar";
+}
+function simonStop() {
+  simonPlaying = false;
+  simonTimeouts.forEach(clearTimeout);
+  simonTimeouts = [];
+}
+
+function simonStart() {
+  simonReset();
+  simonNext();
+}
+
+function simonNext() {
+  simonInput = 0;
+  simonLevel++;
+  gel("simon-level").textContent = simonLevel;
+  simonSeq.push(Math.floor(Math.random() * 4));
+  gel("simon-msg").textContent = "Observe a sequência...";
+  simonPlaying = true;
+  simonSeq.forEach((c, i) => {
+    simonTimeouts.push(setTimeout(() => simonFlash(c), 650 * (i + 1)));
+  });
+  simonTimeouts.push(setTimeout(() => {
+    simonPlaying = false;
+    const msg = gel("simon-msg"); if (msg) msg.textContent = "Sua vez!";
+  }, 650 * (simonSeq.length + 1)));
+}
+
+function simonFlash(c) {
+  const btn = gel("simon-" + c);
+  if (!btn) return;
+  btn.classList.add("lit");
+  playBeep(SIMON_TONES[c]);
+  setTimeout(() => btn.classList.remove("lit"), 350);
+}
+
+function simonClick(c) {
+  if (simonPlaying || simonSeq.length === 0) return;
+  simonFlash(c);
+  if (c === simonSeq[simonInput]) {
+    simonInput++;
+    if (simonInput === simonSeq.length) {
+      gel("simon-msg").textContent = "✅ Boa! Próximo nível...";
+      setTimeout(simonNext, 850);
+    }
+  } else {
+    gel("simon-msg").textContent = `💀 Errou! Você chegou ao nível ${simonLevel}`;
+    playBeep(180);
+    simonStop();
+    awardGameXp(simonLevel * 2, "Simon");
+    simonSeq = [];
+  }
+}
+
+// ── TETRIS ───────────────────────────────────────────────────────────────────
+const TET_COLS = 10, TET_ROWS = 20;
+const TET_SHAPES = [
+  [[1,1,1,1]],
+  [[1,1],[1,1]],
+  [[0,1,0],[1,1,1]],
+  [[1,0,0],[1,1,1]],
+  [[0,0,1],[1,1,1]],
+  [[0,1,1],[1,1,0]],
+  [[1,1,0],[0,1,1]],
+];
+const TET_COLORS = ["#22d3ee","#fbbf24","#c084fc","#3b82f6","#fb923c","#22c55e","#ef4444"];
+let tetGrid = [], tetPiece = null, tetPX = 0, tetPY = 0, tetColor = 0;
+let tetLoop = null, tetScore = 0, tetLines = 0, tetRunning = false;
+
+function tetrisReset() {
+  tetrisStop();
+  tetGrid = Array.from({ length: TET_ROWS }, () => Array(TET_COLS).fill(0));
+  tetPiece = null;
+  tetScore = 0; tetLines = 0;
+  const ov = gel("tetris-overlay");
+  if (ov) { ov.classList.remove("hidden"); gel("tetris-overlay-msg").textContent = "Pronto?"; }
+  tetUpdateStats();
+  tetDraw();
+}
+function tetrisStop() { tetRunning = false; if (tetLoop) { clearInterval(tetLoop); tetLoop = null; } }
+
+function tetrisStart() {
+  tetGrid = Array.from({ length: TET_ROWS }, () => Array(TET_COLS).fill(0));
+  tetScore = 0; tetLines = 0;
+  tetUpdateStats();
+  const ov = gel("tetris-overlay"); if (ov) ov.classList.add("hidden");
+  tetSpawn();
+  tetRunning = true;
+  tetLoop = setInterval(tetTick, 500);
+}
+
+function tetSpawn() {
+  const idx = Math.floor(Math.random() * TET_SHAPES.length);
+  tetPiece = TET_SHAPES[idx].map(r => r.slice());
+  tetColor = idx;
+  tetPX = Math.floor((TET_COLS - tetPiece[0].length) / 2);
+  tetPY = 0;
+  if (tetCollide(tetPX, tetPY, tetPiece)) tetrisOver();
+}
+
+function tetCollide(px, py, piece) {
+  for (let r = 0; r < piece.length; r++)
+    for (let c = 0; c < piece[r].length; c++) {
+      if (!piece[r][c]) continue;
+      const x = px + c, y = py + r;
+      if (x < 0 || x >= TET_COLS || y >= TET_ROWS) return true;
+      if (y >= 0 && tetGrid[y][x]) return true;
+    }
+  return false;
+}
+
+function tetMerge() {
+  tetPiece.forEach((row, r) => row.forEach((v, c) => {
+    if (v) { const y = tetPY + r, x = tetPX + c; if (y >= 0) tetGrid[y][x] = tetColor + 1; }
+  }));
+}
+
+function tetClear() {
+  let cleared = 0;
+  for (let r = TET_ROWS - 1; r >= 0; r--) {
+    if (tetGrid[r].every(v => v)) {
+      tetGrid.splice(r, 1);
+      tetGrid.unshift(Array(TET_COLS).fill(0));
+      cleared++; r++;
+    }
+  }
+  if (cleared) {
+    tetLines += cleared;
+    tetScore += [0, 40, 100, 300, 1200][cleared];
+    tetUpdateStats();
+    playBeep(660);
+  }
+}
+
+function tetTick() {
+  if (!tetRunning) return;
+  if (!tetCollide(tetPX, tetPY + 1, tetPiece)) tetPY++;
+  else { tetMerge(); tetClear(); tetSpawn(); }
+  tetDraw();
+}
+
+function tetrisMove(dx) {
+  if (!tetRunning || !tetPiece) return;
+  if (!tetCollide(tetPX + dx, tetPY, tetPiece)) { tetPX += dx; tetDraw(); }
+}
+function tetrisRotate() {
+  if (!tetRunning || !tetPiece) return;
+  const rot = tetPiece[0].map((_, i) => tetPiece.map(r => r[i]).reverse());
+  if (!tetCollide(tetPX, tetPY, rot)) { tetPiece = rot; tetDraw(); }
+}
+function tetrisDrop() {
+  if (!tetRunning || !tetPiece) return;
+  while (!tetCollide(tetPX, tetPY + 1, tetPiece)) tetPY++;
+  tetMerge(); tetClear(); tetSpawn(); tetDraw();
+}
+
+function tetUpdateStats() {
+  const s = gel("tetris-score"), l = gel("tetris-lines");
+  if (s) s.textContent = tetScore;
+  if (l) l.textContent = tetLines;
+}
+
+function tetrisOver() {
+  tetrisStop();
+  const ov = gel("tetris-overlay");
+  if (ov) { ov.classList.remove("hidden"); gel("tetris-overlay-msg").textContent = `💀 Game over! Linhas: ${tetLines}`; }
+  playBeep(200);
+  awardGameXp(tetLines * 5 + Math.floor(tetScore / 100), "Tetris");
+}
+
+function tetDraw() {
+  const cv = gel("tetris-canvas");
+  if (!cv) return;
+  const ctx = cv.getContext("2d");
+  const cell = cv.width / TET_COLS;
+  const css = getComputedStyle(document.documentElement);
+  ctx.fillStyle = css.getPropertyValue("--surface2").trim() || "#16213e";
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  for (let r = 0; r < TET_ROWS; r++)
+    for (let c = 0; c < TET_COLS; c++)
+      if (tetGrid[r][c]) { ctx.fillStyle = TET_COLORS[tetGrid[r][c] - 1]; ctx.fillRect(c * cell + 1, r * cell + 1, cell - 2, cell - 2); }
+  if (tetPiece)
+    tetPiece.forEach((row, r) => row.forEach((v, c) => {
+      if (v) { ctx.fillStyle = TET_COLORS[tetColor]; ctx.fillRect((tetPX + c) * cell + 1, (tetPY + r) * cell + 1, cell - 2, cell - 2); }
+    }));
+}
+
+// ── LIG 4 (Connect 4) ────────────────────────────────────────────────────────
+const L4_COLS = 7, L4_ROWS = 6;
+let l4Grid = [], l4Over = false;
+
+function lig4Start() {
+  l4Grid = Array.from({ length: L4_ROWS }, () => Array(L4_COLS).fill(0));
+  l4Over = false;
+  const ov = gel("lig4-overlay"); if (ov) ov.classList.add("hidden");
+  lig4Render();
+}
+
+function l4DropRow(col) {
+  for (let r = L4_ROWS - 1; r >= 0; r--) if (!l4Grid[r][col]) return r;
+  return -1;
+}
+function l4Full() { return l4Grid[0].every(v => v); }
+
+function lig4Drop(col) {
+  if (l4Over) return;
+  let r = l4DropRow(col);
+  if (r < 0) return;
+  l4Grid[r][col] = 1;
+  lig4Render();
+  if (lig4CheckWin(1)) { lig4End("🎉 Você venceu!", true); awardGameXp(20, "Lig 4"); return; }
+  if (l4Full()) { lig4End("🤝 Empate!", false); return; }
+  // CPU
+  const cpuCol = l4BestMove();
+  l4Grid[l4DropRow(cpuCol)][cpuCol] = 2;
+  lig4Render();
+  if (lig4CheckWin(2)) { lig4End("🤖 A CPU venceu!", false); return; }
+  if (l4Full()) lig4End("🤝 Empate!", false);
+}
+
+function l4BestMove() {
+  // 1) tenta vencer  2) bloqueia o jogador  3) aleatório
+  for (const p of [2, 1]) {
+    for (let c = 0; c < L4_COLS; c++) {
+      const r = l4DropRow(c);
+      if (r < 0) continue;
+      l4Grid[r][c] = p;
+      const win = lig4CheckWin(p);
+      l4Grid[r][c] = 0;
+      if (win) return c;
+    }
+  }
+  const valid = [];
+  for (let c = 0; c < L4_COLS; c++) if (l4DropRow(c) >= 0) valid.push(c);
+  return valid[Math.floor(Math.random() * valid.length)];
+}
+
+function lig4CheckWin(p) {
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for (let r = 0; r < L4_ROWS; r++)
+    for (let c = 0; c < L4_COLS; c++) {
+      if (l4Grid[r][c] !== p) continue;
+      for (const [dr, dc] of dirs) {
+        let k = 1;
+        while (k < 4) {
+          const nr = r + dr * k, nc = c + dc * k;
+          if (nr < 0 || nr >= L4_ROWS || nc < 0 || nc >= L4_COLS || l4Grid[nr][nc] !== p) break;
+          k++;
+        }
+        if (k === 4) return true;
+      }
+    }
+  return false;
+}
+
+function lig4End(msg, won) {
+  l4Over = true;
+  const ov = gel("lig4-overlay"), m = gel("lig4-overlay-msg");
+  if (ov) ov.classList.remove("hidden");
+  if (m) m.textContent = msg;
+  playBeep(won ? 880 : 300);
+}
+
+function lig4Render() {
+  const b = gel("lig4-board");
+  if (!b) return;
+  b.innerHTML = "";
+  for (let r = 0; r < L4_ROWS; r++)
+    for (let c = 0; c < L4_COLS; c++) {
+      const d = document.createElement("div");
+      d.className = "lig4-cell" + (l4Grid[r][c] === 1 ? " p1" : l4Grid[r][c] === 2 ? " p2" : "");
+      d.onclick = () => lig4Drop(c);
+      b.appendChild(d);
+    }
+}
+
+// ── BREAKOUT ─────────────────────────────────────────────────────────────────
+const BK_W = 300, BK_H = 300;
+let bkBall, bkPaddle, bkBricks = [], bkScore = 0, bkLives = 3, bkLoop = null, bkRunning = false;
+
+function breakoutReset() {
+  breakoutStop();
+  bkScore = 0; bkLives = 3;
+  breakoutSetup();
+  const ov = gel("breakout-overlay");
+  if (ov) { ov.classList.remove("hidden"); gel("breakout-overlay-msg").textContent = "Pronto?"; }
+  bkUpdateStats();
+  breakoutDraw();
+}
+function breakoutStop() { bkRunning = false; if (bkLoop) { cancelAnimationFrame(bkLoop); bkLoop = null; } }
+
+function breakoutSetup() {
+  bkPaddle = { x: BK_W / 2 - 30, w: 60, h: 10 };
+  bkBall = { x: BK_W / 2, y: BK_H - 30, dx: 2.5, dy: -2.5, r: 6 };
+  bkBricks = [];
+  const cols = 7, rows = 4, bw = 38, bh = 14, pad = 4, offX = 8, offY = 24;
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++)
+      bkBricks.push({ x: offX + c * (bw + pad), y: offY + r * (bh + pad), w: bw, h: bh, alive: true, col: r });
+}
+
+function breakoutStart() {
+  const ov = gel("breakout-overlay"); if (ov) ov.classList.add("hidden");
+  if (!bkBricks.length || bkBricks.every(b => !b.alive)) { bkScore = 0; bkLives = 3; breakoutSetup(); bkUpdateStats(); }
+  const cv = gel("breakout-canvas");
+  if (cv) cv.onmousemove = (e) => {
+    const rect = cv.getBoundingClientRect();
+    bkPaddle.x = (e.clientX - rect.left) * (BK_W / rect.width) - bkPaddle.w / 2;
+    bkClampPaddle();
+  };
+  bkRunning = true;
+  breakoutLoop();
+}
+
+function breakoutMove(dir) {
+  if (!bkPaddle) return;
+  bkPaddle.x += dir * 24;
+  bkClampPaddle();
+  if (!bkRunning) breakoutDraw();
+}
+function bkClampPaddle() { bkPaddle.x = Math.max(0, Math.min(BK_W - bkPaddle.w, bkPaddle.x)); }
+
+function breakoutLoop() {
+  if (!bkRunning) return;
+  bkStep();
+  breakoutDraw();
+  bkLoop = requestAnimationFrame(breakoutLoop);
+}
+
+function bkStep() {
+  const ball = bkBall;
+  ball.x += ball.dx;
+  ball.y += ball.dy;
+  if (ball.x < ball.r || ball.x > BK_W - ball.r) ball.dx *= -1;
+  if (ball.y < ball.r) ball.dy *= -1;
+  // raquete
+  if (ball.y > BK_H - 20 - ball.r && ball.y < BK_H - 10 &&
+      ball.x > bkPaddle.x && ball.x < bkPaddle.x + bkPaddle.w && ball.dy > 0) {
+    ball.dy *= -1;
+    ball.dx = ((ball.x - (bkPaddle.x + bkPaddle.w / 2)) / (bkPaddle.w / 2)) * 3.5;
+  }
+  // caiu embaixo
+  if (ball.y > BK_H) {
+    bkLives--;
+    bkUpdateStats();
+    if (bkLives <= 0) { breakoutOver(false); return; }
+    ball.x = BK_W / 2; ball.y = BK_H - 30; ball.dx = 2.5; ball.dy = -2.5;
+  }
+  // blocos
+  for (const br of bkBricks) {
+    if (!br.alive) continue;
+    if (ball.x > br.x && ball.x < br.x + br.w && ball.y > br.y && ball.y < br.y + br.h) {
+      br.alive = false;
+      ball.dy *= -1;
+      bkScore += 10;
+      bkUpdateStats();
+      playBeep(500 + br.col * 60);
+      break;
+    }
+  }
+  if (bkBricks.every(b => !b.alive)) breakoutOver(true);
+}
+
+function bkUpdateStats() {
+  const s = gel("breakout-score"), l = gel("breakout-lives");
+  if (s) s.textContent = bkScore;
+  if (l) l.textContent = bkLives;
+}
+
+function breakoutOver(won) {
+  breakoutStop();
+  const ov = gel("breakout-overlay");
+  if (ov) { ov.classList.remove("hidden"); gel("breakout-overlay-msg").textContent = won ? `🎉 Venceu! Pontos: ${bkScore}` : `💀 Game over! Pontos: ${bkScore}`; }
+  playBeep(won ? 880 : 200);
+  awardGameXp(Math.floor(bkScore / 10), "Breakout");
+}
+
+function breakoutDraw() {
+  const cv = gel("breakout-canvas");
+  if (!cv) return;
+  const ctx = cv.getContext("2d");
+  const css = getComputedStyle(document.documentElement);
+  ctx.fillStyle = css.getPropertyValue("--surface2").trim() || "#16213e";
+  ctx.fillRect(0, 0, BK_W, BK_H);
+  const colors = ["#ef4444", "#fb923c", "#fbbf24", "#22c55e"];
+  bkBricks.forEach(br => { if (br.alive) { ctx.fillStyle = colors[br.col % colors.length]; ctx.fillRect(br.x, br.y, br.w, br.h); } });
+  ctx.fillStyle = css.getPropertyValue("--accent2").trim() || "#a855f7";
+  ctx.fillRect(bkPaddle.x, BK_H - 20, bkPaddle.w, bkPaddle.h);
+  ctx.beginPath();
+  ctx.arc(bkBall.x, bkBall.y, bkBall.r, 0, Math.PI * 2);
+  ctx.fillStyle = "#fff";
+  ctx.fill();
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
