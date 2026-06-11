@@ -250,6 +250,10 @@
           <button class="game-tab active" data-game="snake"   onclick="selectGame('snake', this)">🐍 Snake</button>
           <button class="game-tab"        data-game="2048"    onclick="selectGame('2048', this)">🔢 2048</button>
           <button class="game-tab"        data-game="memoria" onclick="selectGame('memoria', this)">🧠 Memória</button>
+          <button class="game-tab"        data-game="minado"  onclick="selectGame('minado', this)">💣 Campo Minado</button>
+          <button class="game-tab"        data-game="velha"   onclick="selectGame('velha', this)">⭕ Velha</button>
+          <button class="game-tab"        data-game="desliza" onclick="selectGame('desliza', this)">🧩 Deslizante</button>
+          <button class="game-tab"        data-game="wordle"  onclick="selectGame('wordle', this)">🔤 Wordle</button>
         </div>
 
         <!-- ── SNAKE ── -->
@@ -320,6 +324,74 @@
               </div>
             </div>
             <button class="btn btn-secondary btn-sm" onclick="memStart()">🔀 Embaralhar</button>
+          </div>
+        </div>
+
+        <!-- ── CAMPO MINADO ── -->
+        <div class="game-pane" id="game-pane-minado">
+          <p class="game-desc">Revele as casas sem tocar nas 💣! Ative o <strong>modo bandeira</strong> para marcar suspeitas.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Minas</span><span class="snake-stat-val" id="mine-count">10</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Status</span><span class="snake-stat-val gold" id="mine-status">🙂</span></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="mine-flag-btn" onclick="mineToggleFlag()">🚩 Bandeira: OFF</button>
+            <div class="board-overlay-wrap">
+              <div class="mine-grid" id="mine-grid"></div>
+              <div class="snake-overlay hidden" id="mine-overlay">
+                <div class="snake-overlay-msg" id="mine-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="mineStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="mineStart()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── JOGO DA VELHA ── -->
+        <div class="game-pane" id="game-pane-velha">
+          <p class="game-desc">Você é o <strong>❌</strong>. Faça uma linha de três antes do <strong>⭕</strong> (CPU)!</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Vitórias</span><span class="snake-stat-val" id="velha-wins">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Derrotas</span><span class="snake-stat-val gold" id="velha-losses">0</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <div class="velha-grid" id="velha-grid"></div>
+              <div class="snake-overlay hidden" id="velha-overlay">
+                <div class="snake-overlay-msg" id="velha-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="velhaStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="velhaStart()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── QUEBRA-CABEÇA DESLIZANTE ── -->
+        <div class="game-pane" id="game-pane-desliza">
+          <p class="game-desc">Ordene os números de <strong>1 a 15</strong>. Clique numa peça vizinha do espaço vazio.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="desliza-moves">0</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <div class="desliza-grid" id="desliza-grid"></div>
+              <div class="snake-overlay hidden" id="desliza-overlay">
+                <div class="snake-overlay-msg" id="desliza-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="deslizaStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="deslizaStart()">🔀 Embaralhar</button>
+          </div>
+        </div>
+
+        <!-- ── WORDLE ── -->
+        <div class="game-pane" id="game-pane-wordle">
+          <p class="game-desc">Adivinhe a palavra de <strong>5 letras</strong> em 6 tentativas. 🟩 certa · 🟨 lugar errado · ⬛ não tem.</p>
+          <div class="wordle-wrap">
+            <div class="wordle-board" id="wordle-board"></div>
+            <input class="wordle-input" id="wordle-input" maxlength="5" placeholder="Digite e aperte Enter" autocomplete="off" onkeydown="wordleKey(event)" />
+            <div class="wordle-msg" id="wordle-msg"></div>
+            <button class="btn btn-secondary btn-sm" onclick="wordleStart()">🔄 Nova palavra</button>
           </div>
         </div>
 
@@ -421,6 +493,10 @@
       <button class="game-tab active" data-game="snake"   onclick="selectGame('snake', this)">🐍 Snake</button>
       <button class="game-tab"        data-game="2048"    onclick="selectGame('2048', this)">🔢 2048</button>
       <button class="game-tab"        data-game="memoria" onclick="selectGame('memoria', this)">🧠 Memória</button>
+      <button class="game-tab"        data-game="minado"  onclick="selectGame('minado', this)">💣 Minado</button>
+      <button class="game-tab"        data-game="velha"   onclick="selectGame('velha', this)">⭕ Velha</button>
+      <button class="game-tab"        data-game="desliza" onclick="selectGame('desliza', this)">🧩 Deslizante</button>
+      <button class="game-tab"        data-game="wordle"  onclick="selectGame('wordle', this)">🔤 Wordle</button>
     </div>
 
     <!-- ── SNAKE (modal) ── -->
@@ -488,6 +564,70 @@
           </div>
         </div>
         <button class="btn btn-secondary btn-sm" onclick="memStart()">🔀 Embaralhar</button>
+      </div>
+    </div>
+
+    <!-- ── CAMPO MINADO (modal) ── -->
+    <div class="game-pane" id="game-pane-minado-modal">
+      <div class="mini-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Minas</span><span class="snake-stat-val" id="mine-count-modal">10</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Status</span><span class="snake-stat-val gold" id="mine-status-modal">🙂</span></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="mine-flag-btn-modal" onclick="mineToggleFlag()">🚩 Bandeira: OFF</button>
+        <div class="board-overlay-wrap">
+          <div class="mine-grid" id="mine-grid-modal"></div>
+          <div class="snake-overlay hidden" id="mine-overlay-modal">
+            <div class="snake-overlay-msg" id="mine-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="mineStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="mineStart()">🔄 Novo jogo</button>
+      </div>
+    </div>
+
+    <!-- ── JOGO DA VELHA (modal) ── -->
+    <div class="game-pane" id="game-pane-velha-modal">
+      <div class="mini-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Vitórias</span><span class="snake-stat-val" id="velha-wins-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Derrotas</span><span class="snake-stat-val gold" id="velha-losses-modal">0</span></div>
+        </div>
+        <div class="board-overlay-wrap">
+          <div class="velha-grid" id="velha-grid-modal"></div>
+          <div class="snake-overlay hidden" id="velha-overlay-modal">
+            <div class="snake-overlay-msg" id="velha-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="velhaStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="velhaStart()">🔄 Novo jogo</button>
+      </div>
+    </div>
+
+    <!-- ── DESLIZANTE (modal) ── -->
+    <div class="game-pane" id="game-pane-desliza-modal">
+      <div class="mini-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="desliza-moves-modal">0</span></div>
+        </div>
+        <div class="board-overlay-wrap">
+          <div class="desliza-grid" id="desliza-grid-modal"></div>
+          <div class="snake-overlay hidden" id="desliza-overlay-modal">
+            <div class="snake-overlay-msg" id="desliza-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="deslizaStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="deslizaStart()">🔀 Embaralhar</button>
+      </div>
+    </div>
+
+    <!-- ── WORDLE (modal) ── -->
+    <div class="game-pane" id="game-pane-wordle-modal">
+      <div class="wordle-wrap">
+        <div class="wordle-board" id="wordle-board-modal"></div>
+        <input class="wordle-input" id="wordle-input-modal" maxlength="5" placeholder="Digite e aperte Enter" autocomplete="off" onkeydown="wordleKey(event)" />
+        <div class="wordle-msg" id="wordle-msg-modal"></div>
+        <button class="btn btn-secondary btn-sm" onclick="wordleStart()">🔄 Nova palavra</button>
       </div>
     </div>
 

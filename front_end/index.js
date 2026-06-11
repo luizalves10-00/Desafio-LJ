@@ -397,7 +397,7 @@ function selectGame(name, btn) {
   btn.parentElement.querySelectorAll(".game-tab").forEach(t =>
     t.classList.toggle("active", t.dataset.game === name));
   // troca painel ativo na localização correta
-  ["snake", "2048", "memoria"].forEach(g => {
+  ["snake","2048","memoria","minado","velha","desliza","wordle"].forEach(g => {
     const pane = document.getElementById("game-pane-" + g + suffix);
     if (pane) pane.classList.toggle("active", g === name);
   });
@@ -413,6 +413,18 @@ function startCurrentGame() {
   if (currentGame === "snake")        snakeReset();
   else if (currentGame === "2048")    g2048Start();
   else if (currentGame === "memoria") memStart();
+  else if (currentGame === "minado")  mineStart();
+  else if (currentGame === "velha")   velhaStart();
+  else if (currentGame === "desliza") deslizaStart();
+  else if (currentGame === "wordle")  wordleStart();
+}
+
+// helpers genéricos: resolvem o elemento da localização ativa (seção ou modal)
+function gameSuffix() {
+  return document.getElementById("break-modal").classList.contains("show") ? "-modal" : "";
+}
+function gel(baseId) {
+  return document.getElementById(baseId + gameSuffix());
 }
 
 // ── BREAK MODAL ──────────────────────────────────────────────────────────────
@@ -421,7 +433,7 @@ function openBreakModal() {
   // sincroniza abas/painéis do modal com o jogo atual
   document.querySelectorAll("#game-tabs-modal .game-tab").forEach(t =>
     t.classList.toggle("active", t.dataset.game === currentGame));
-  ["snake", "2048", "memoria"].forEach(g => {
+  ["snake","2048","memoria","minado","velha","desliza","wordle"].forEach(g => {
     const pane = document.getElementById("game-pane-" + g + "-modal");
     if (pane) pane.classList.toggle("active", g === currentGame);
   });
@@ -624,6 +636,7 @@ document.addEventListener("keydown", (e) => {
   if (!dir) return;
   if (currentGame === "snake" && snakeRunning) { e.preventDefault(); snakeSetDir(dir); }
   else if (currentGame === "2048") { e.preventDefault(); g2048Move(dir); }
+  else if (currentGame === "desliza") { e.preventDefault(); deslizaArrow(dir); }
 });
 
 // ── 2048 ─────────────────────────────────────────────────────────────────────
@@ -858,6 +871,415 @@ function memWin() {
     if (t.overlayMsg) t.overlayMsg.textContent = `🎉 Você venceu em ${memMoves} jogadas!`;
   }
   playBeep(880);
+}
+
+// ── CAMPO MINADO ─────────────────────────────────────────────────────────────
+const MINE_SIZE = 9;
+const MINE_TOTAL = 10;
+let mineGrid = [];        // {mine, revealed, flag, n}
+let mineFlagMode = false;
+let mineOver = false;
+let mineRevealedCount = 0;
+
+function mineStart() {
+  mineOver = false;
+  mineRevealedCount = 0;
+  mineGrid = [];
+  for (let i = 0; i < MINE_SIZE * MINE_SIZE; i++)
+    mineGrid.push({ mine: false, revealed: false, flag: false, n: 0 });
+  // posiciona minas
+  let placed = 0;
+  while (placed < MINE_TOTAL) {
+    const idx = Math.floor(Math.random() * mineGrid.length);
+    if (!mineGrid[idx].mine) { mineGrid[idx].mine = true; placed++; }
+  }
+  // calcula números
+  for (let i = 0; i < mineGrid.length; i++) {
+    if (mineGrid[i].mine) continue;
+    mineGrid[i].n = mineNeighbors(i).filter(j => mineGrid[j].mine).length;
+  }
+  const ov = gel("mine-overlay");
+  if (ov) ov.classList.add("hidden");
+  const st = gel("mine-status");
+  if (st) st.textContent = "🙂";
+  const cnt = gel("mine-count");
+  if (cnt) cnt.textContent = MINE_TOTAL;
+  mineRender();
+}
+
+function mineNeighbors(idx) {
+  const r = Math.floor(idx / MINE_SIZE), c = idx % MINE_SIZE;
+  const out = [];
+  for (let dr = -1; dr <= 1; dr++)
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = r + dr, nc = c + dc;
+      if (nr >= 0 && nr < MINE_SIZE && nc >= 0 && nc < MINE_SIZE)
+        out.push(nr * MINE_SIZE + nc);
+    }
+  return out;
+}
+
+function mineToggleFlag() {
+  mineFlagMode = !mineFlagMode;
+  ["mine-flag-btn", "mine-flag-btn-modal"].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.textContent = `🚩 Bandeira: ${mineFlagMode ? "ON" : "OFF"}`;
+  });
+}
+
+function mineClick(idx) {
+  if (mineOver) return;
+  const cell = mineGrid[idx];
+  if (mineFlagMode) {
+    if (!cell.revealed) cell.flag = !cell.flag;
+    mineRender();
+    return;
+  }
+  if (cell.flag || cell.revealed) return;
+  if (cell.mine) { mineLose(); return; }
+  mineReveal(idx);
+  if (mineRevealedCount === mineGrid.length - MINE_TOTAL) mineWin();
+  mineRender();
+}
+
+function mineReveal(idx) {
+  const cell = mineGrid[idx];
+  if (cell.revealed || cell.flag || cell.mine) return;
+  cell.revealed = true;
+  mineRevealedCount++;
+  if (cell.n === 0) mineNeighbors(idx).forEach(mineReveal); // flood fill
+}
+
+function mineLose() {
+  mineOver = true;
+  mineGrid.forEach(c => { if (c.mine) c.revealed = true; });
+  const st = gel("mine-status"); if (st) st.textContent = "💥";
+  mineRender();
+  const ov = gel("mine-overlay"), msg = gel("mine-overlay-msg");
+  if (ov) ov.classList.remove("hidden");
+  if (msg) msg.textContent = "💣 Boom! Você perdeu.";
+  playBeep(200);
+}
+
+function mineWin() {
+  mineOver = true;
+  const st = gel("mine-status"); if (st) st.textContent = "😎";
+  const ov = gel("mine-overlay"), msg = gel("mine-overlay-msg");
+  if (ov) ov.classList.remove("hidden");
+  if (msg) msg.textContent = "🎉 Você limpou o campo!";
+  playBeep(880);
+}
+
+function mineRender() {
+  const grid = gel("mine-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  mineGrid.forEach((c, i) => {
+    const div = document.createElement("div");
+    div.className = "mine-cell";
+    if (c.revealed) {
+      div.classList.add("revealed");
+      if (c.mine) { div.classList.add("mine"); div.textContent = "💣"; }
+      else if (c.n > 0) { div.dataset.n = c.n; div.textContent = c.n; }
+    } else if (c.flag) {
+      div.classList.add("flag");
+      div.textContent = "🚩";
+    }
+    div.onclick = () => mineClick(i);
+    div.oncontextmenu = (e) => { e.preventDefault(); if (!mineOver && !c.revealed) { c.flag = !c.flag; mineRender(); } };
+    grid.appendChild(div);
+  });
+}
+
+// ── JOGO DA VELHA ────────────────────────────────────────────────────────────
+let velhaBoard = [];
+let velhaOver = false;
+let velhaWins = parseInt(localStorage.getItem("lus-velha-wins") || "0", 10);
+let velhaLosses = parseInt(localStorage.getItem("lus-velha-losses") || "0", 10);
+const VELHA_LINES = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6],
+];
+
+function velhaStart() {
+  velhaBoard = Array(9).fill("");
+  velhaOver = false;
+  const ov = gel("velha-overlay");
+  if (ov) ov.classList.add("hidden");
+  velhaUpdateStats();
+  velhaRender();
+}
+
+function velhaUpdateStats() {
+  const w = gel("velha-wins"), l = gel("velha-losses");
+  if (w) w.textContent = velhaWins;
+  if (l) l.textContent = velhaLosses;
+}
+
+function velhaClick(i) {
+  if (velhaOver || velhaBoard[i]) return;
+  velhaBoard[i] = "❌";
+  playBeep(520);
+  if (velhaCheckEnd()) return;
+  // jogada da CPU
+  const move = velhaBestMove();
+  if (move != null) velhaBoard[move] = "⭕";
+  velhaCheckEnd();
+  velhaRender();
+}
+
+function velhaWinner(b) {
+  for (const [a, c, d] of VELHA_LINES)
+    if (b[a] && b[a] === b[c] && b[a] === b[d]) return { who: b[a], line: [a, c, d] };
+  return null;
+}
+
+function velhaCheckEnd() {
+  const win = velhaWinner(velhaBoard);
+  if (win) {
+    velhaOver = true;
+    if (win.who === "❌") { velhaWins++; localStorage.setItem("lus-velha-wins", velhaWins); }
+    else { velhaLosses++; localStorage.setItem("lus-velha-losses", velhaLosses); }
+    velhaUpdateStats();
+    velhaRender(win.line);
+    const ov = gel("velha-overlay"), msg = gel("velha-overlay-msg");
+    if (ov) ov.classList.remove("hidden");
+    if (msg) msg.textContent = win.who === "❌" ? "🎉 Você venceu!" : "🤖 A CPU venceu!";
+    playBeep(win.who === "❌" ? 880 : 200);
+    return true;
+  }
+  if (velhaBoard.every(v => v)) {
+    velhaOver = true;
+    const ov = gel("velha-overlay"), msg = gel("velha-overlay-msg");
+    if (ov) ov.classList.remove("hidden");
+    if (msg) msg.textContent = "🤝 Deu velha (empate)!";
+    return true;
+  }
+  return false;
+}
+
+// IA: minimax simples
+function velhaBestMove() {
+  let bestScore = -Infinity, best = null;
+  for (let i = 0; i < 9; i++) {
+    if (!velhaBoard[i]) {
+      velhaBoard[i] = "⭕";
+      const score = velhaMinimax(velhaBoard, 0, false);
+      velhaBoard[i] = "";
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+  }
+  return best;
+}
+
+function velhaMinimax(b, depth, isMax) {
+  const win = velhaWinner(b);
+  if (win) return win.who === "⭕" ? 10 - depth : depth - 10;
+  if (b.every(v => v)) return 0;
+  if (isMax) {
+    let best = -Infinity;
+    for (let i = 0; i < 9; i++)
+      if (!b[i]) { b[i] = "⭕"; best = Math.max(best, velhaMinimax(b, depth + 1, false)); b[i] = ""; }
+    return best;
+  } else {
+    let best = Infinity;
+    for (let i = 0; i < 9; i++)
+      if (!b[i]) { b[i] = "❌"; best = Math.min(best, velhaMinimax(b, depth + 1, true)); b[i] = ""; }
+    return best;
+  }
+}
+
+function velhaRender(winLine) {
+  const grid = gel("velha-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  velhaBoard.forEach((v, i) => {
+    const div = document.createElement("div");
+    div.className = "velha-cell" + (v ? " filled" : "") + (winLine && winLine.includes(i) ? " win" : "");
+    div.textContent = v;
+    div.onclick = () => velhaClick(i);
+    grid.appendChild(div);
+  });
+}
+
+// ── QUEBRA-CABEÇA DESLIZANTE ─────────────────────────────────────────────────
+let deslizaTiles = [];   // 0..15, 0 = vazio
+let deslizaMoves = 0;
+
+function deslizaStart() {
+  // gera embaralhamento resolvível
+  do {
+    deslizaTiles = [...Array(16).keys()]; // 0..15
+    for (let i = deslizaTiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deslizaTiles[i], deslizaTiles[j]] = [deslizaTiles[j], deslizaTiles[i]];
+    }
+  } while (!deslizaSolvable(deslizaTiles) || deslizaWon());
+  deslizaMoves = 0;
+  const ov = gel("desliza-overlay");
+  if (ov) ov.classList.add("hidden");
+  deslizaRender();
+}
+
+function deslizaSolvable(arr) {
+  let inv = 0;
+  const a = arr.filter(v => v !== 0);
+  for (let i = 0; i < a.length; i++)
+    for (let j = i + 1; j < a.length; j++)
+      if (a[i] > a[j]) inv++;
+  const emptyRow = Math.floor(arr.indexOf(0) / 4); // de cima
+  const rowFromBottom = 4 - emptyRow;
+  // 4x4: resolvível se (inv par e linha-de-baixo ímpar) ou (inv ímpar e linha-de-baixo par)
+  return (rowFromBottom % 2 === 0) ? (inv % 2 === 1) : (inv % 2 === 0);
+}
+
+function deslizaClick(i) {
+  const empty = deslizaTiles.indexOf(0);
+  const r = Math.floor(i / 4), c = i % 4;
+  const er = Math.floor(empty / 4), ec = empty % 4;
+  if ((Math.abs(r - er) === 1 && c === ec) || (Math.abs(c - ec) === 1 && r === er)) {
+    [deslizaTiles[empty], deslizaTiles[i]] = [deslizaTiles[i], deslizaTiles[empty]];
+    deslizaMoves++;
+    playBeep(500);
+    deslizaRender();
+    if (deslizaWon()) deslizaWin();
+  }
+}
+
+function deslizaArrow(dir) {
+  // move a peça adjacente ao vazio na direção indicada
+  const empty = deslizaTiles.indexOf(0);
+  const er = Math.floor(empty / 4), ec = empty % 4;
+  let tr = er, tc = ec;
+  if (dir === "up")    tr = er + 1;
+  if (dir === "down")  tr = er - 1;
+  if (dir === "left")  tc = ec + 1;
+  if (dir === "right") tc = ec - 1;
+  if (tr < 0 || tr > 3 || tc < 0 || tc > 3) return;
+  deslizaClick(tr * 4 + tc);
+}
+
+function deslizaWon() {
+  for (let i = 0; i < 15; i++) if (deslizaTiles[i] !== i + 1) return false;
+  return deslizaTiles[15] === 0;
+}
+
+function deslizaWin() {
+  const ov = gel("desliza-overlay"), msg = gel("desliza-overlay-msg");
+  if (ov) ov.classList.remove("hidden");
+  if (msg) msg.textContent = `🎉 Resolvido em ${deslizaMoves} jogadas!`;
+  playBeep(880);
+}
+
+function deslizaRender() {
+  const grid = gel("desliza-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+  const mv = gel("desliza-moves");
+  if (mv) mv.textContent = deslizaMoves;
+  deslizaTiles.forEach((v, i) => {
+    const div = document.createElement("div");
+    div.className = "desliza-cell" + (v === 0 ? " empty" : "");
+    div.textContent = v === 0 ? "" : v;
+    if (v !== 0) div.onclick = () => deslizaClick(i);
+    grid.appendChild(div);
+  });
+}
+
+// ── WORDLE ───────────────────────────────────────────────────────────────────
+const WORDLE_WORDS = [
+  "TERRA","PRATO","LIVRO","VERDE","PONTE","CARRO","FESTA","MUNDO","PLANO","FORTE",
+  "NOITE","TINTA","BARCO","CAMPO","DENTE","GRADE","JOGAR","LEITE","MORTE","NUVEM",
+  "PEDRA","RATOS","SALTO","TIGRE","VOLTA","ZEBRA","BANCO","CHUVA","FRUTA","HORAS",
+  "LARGO","METRO","NOBRE","OLHOS","PAPEL","RISCO","SONHO","TURMA","VIDRO","FOLHA",
+  "GANSO","MEDOS","PEIXE","QUEDA","RAMOS","SUCO","TROCA","VENTO","NAVIO","DOCES",
+];
+let wordleTarget = "";
+let wordleRow = 0;
+let wordleDone = false;
+
+function wordleStart() {
+  wordleTarget = WORDLE_WORDS[Math.floor(Math.random() * WORDLE_WORDS.length)];
+  wordleRow = 0;
+  wordleDone = false;
+  const inp = gel("wordle-input");
+  if (inp) { inp.value = ""; inp.disabled = false; }
+  const msg = gel("wordle-msg");
+  if (msg) msg.textContent = "";
+  wordleRenderBoard();
+}
+
+function wordleRenderBoard(rows) {
+  const board = gel("wordle-board");
+  if (!board) return;
+  board.innerHTML = "";
+  for (let r = 0; r < 6; r++) {
+    const row = document.createElement("div");
+    row.className = "wordle-row";
+    for (let c = 0; c < 5; c++) {
+      const tile = document.createElement("div");
+      tile.className = "wordle-tile";
+      if (rows && rows[r]) {
+        tile.textContent = rows[r].letters[c];
+        tile.classList.add(rows[r].states[c]);
+      }
+      row.appendChild(tile);
+    }
+    board.appendChild(row);
+  }
+}
+
+let wordleGuesses = [];
+
+function wordleKey(e) {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  if (wordleDone) return;
+  const inp = gel("wordle-input");
+  const guess = (inp.value || "").toUpperCase().replace(/[^A-Z]/g, "");
+  const msg = gel("wordle-msg");
+  if (guess.length !== 5) {
+    if (msg) msg.textContent = "Digite uma palavra de 5 letras!";
+    return;
+  }
+  // avalia
+  const states = wordleEvaluate(guess, wordleTarget);
+  wordleGuesses[wordleRow] = { letters: guess.split(""), states };
+  wordleRenderBoard(wordleGuesses);
+  inp.value = "";
+  wordleRow++;
+
+  if (guess === wordleTarget) {
+    wordleDone = true;
+    if (msg) msg.textContent = "🎉 Acertou!";
+    inp.disabled = true;
+    playBeep(880);
+  } else if (wordleRow >= 6) {
+    wordleDone = true;
+    if (msg) msg.textContent = `😢 A palavra era ${wordleTarget}`;
+    inp.disabled = true;
+    playBeep(200);
+  } else {
+    playBeep(520);
+  }
+}
+
+function wordleEvaluate(guess, target) {
+  const states = Array(5).fill("absent");
+  const t = target.split("");
+  // primeira passada: letras corretas
+  for (let i = 0; i < 5; i++) {
+    if (guess[i] === t[i]) { states[i] = "correct"; t[i] = null; }
+  }
+  // segunda passada: letras presentes em outra posição
+  for (let i = 0; i < 5; i++) {
+    if (states[i] === "correct") continue;
+    const idx = t.indexOf(guess[i]);
+    if (idx !== -1) { states[i] = "present"; t[idx] = null; }
+  }
+  return states;
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────

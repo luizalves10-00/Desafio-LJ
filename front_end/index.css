@@ -1012,3 +1012,168 @@ select option { background: var(--surface2); }
 .mem-card .mem-face { display: none; }
 .mem-card.flipped .mem-face,
 .mem-card.matched .mem-face { display: block; }
+
+/* ═══════════════════════════════════════════════
+   GENÉRICO p/ jogos de tabuleiro
+═══════════════════════════════════════════════ */
+.mini-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.board-overlay-wrap { position: relative; }
+
+/* ═══════════════════════════════════════════════
+   CAMPO MINADO
+═══════════════════════════════════════════════ */
+.mine-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 3px;
+  background: var(--border);
+  padding: 6px;
+  border-radius: 10px;
+}
+.mine-cell {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: .95rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s;
+}
+.mine-cell:hover { background: var(--accent2); }
+.mine-cell.revealed {
+  background: var(--surface2);
+  cursor: default;
+}
+.mine-cell.mine { background: var(--red); }
+.mine-cell.flag { background: var(--gold); }
+.mine-cell[data-n="1"] { color:#60a5fa; }
+.mine-cell[data-n="2"] { color:#4ade80; }
+.mine-cell[data-n="3"] { color:#f87171; }
+.mine-cell[data-n="4"] { color:#c084fc; }
+.mine-cell[data-n="5"] { color:#fb923c; }
+.mine-cell[data-n="6"] { color:#22d3ee; }
+.mine-cell[data-n="7"] { color:#e879f9; }
+.mine-cell[data-n="8"] { color:#94a3b8; }
+
+/* ═══════════════════════════════════════════════
+   JOGO DA VELHA
+═══════════════════════════════════════════════ */
+.velha-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--border);
+  padding: 8px;
+  border-radius: 12px;
+}
+.velha-cell {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--surface2);
+  font-size: 2.6rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background .12s, transform .1s;
+}
+.velha-cell:hover { background: var(--surface); }
+.velha-cell.filled { cursor: default; }
+.velha-cell.win { background: var(--green); }
+
+/* ═══════════════════════════════════════════════
+   QUEBRA-CABEÇA DESLIZANTE
+═══════════════════════════════════════════════ */
+.desliza-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  background: var(--border);
+  padding: 6px;
+  border-radius: 12px;
+  width: 280px;
+  height: 280px;
+}
+.desliza-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  transition: transform .1s, opacity .15s;
+}
+.desliza-cell:hover { transform: scale(1.04); }
+.desliza-cell.empty {
+  background: transparent;
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════
+   WORDLE
+═══════════════════════════════════════════════ */
+.wordle-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.wordle-board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 6px;
+}
+.wordle-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.wordle-tile {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text);
+  background: var(--surface2);
+}
+.wordle-tile.correct { background:#16a34a; border-color:#16a34a; color:#fff; }
+.wordle-tile.present { background:#f59e0b; border-color:#f59e0b; color:#fff; }
+.wordle-tile.absent  { background:var(--surface); border-color:var(--border); color:var(--muted); }
+.wordle-input {
+  width: 280px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: .3em;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.wordle-msg {
+  font-size: .9rem;
+  font-weight: 700;
+  min-height: 22px;
+  color: var(--accent2);
+  text-align: center;
+}
