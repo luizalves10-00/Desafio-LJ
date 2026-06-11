@@ -2219,12 +2219,57 @@ const PLAT_COINS_INIT = [
 const PLAT_GOAL = { x: 1620, y: 170, w: 20, h: 60 };
 
 let platPlayer, platCoins, platCoinsGot, platLives, platCam, platLoop, platRunning, platOver;
+let platState = "play", platAnimTick = 0, platVictoryRAF = null;
 const platKeys = { left: false, right: false };
+
+// sprites do personagem (tiras horizontais; ver assets/LEIA-ME.txt)
+const HERO_SPRITES = {
+  run:     { img: new Image(), frames: 8, loaded: false },
+  jump:    { img: new Image(), frames: 6, loaded: false },
+  victory: { img: new Image(), frames: 6, loaded: false },
+};
+HERO_SPRITES.run.img.src     = "assets/hero_run.png";
+HERO_SPRITES.jump.img.src    = "assets/hero_jump.png";
+HERO_SPRITES.victory.img.src = "assets/hero_victory.png";
+Object.values(HERO_SPRITES).forEach(s => { s.img.onload = () => { s.loaded = true; }; });
+
+// desenha o herói com sprite animado; retorna false se a imagem ainda não carregou
+function platDrawHero(ctx, sx) {
+  const p = platPlayer;
+  let strip, frameDiv = 5, animate = true;
+  if (platState === "victory") { strip = HERO_SPRITES.victory; frameDiv = 6; }
+  else if (!p.onGround)        { strip = HERO_SPRITES.jump; }
+  else if (p.vx !== 0)         { strip = HERO_SPRITES.run; }
+  else                         { strip = HERO_SPRITES.run; animate = false; }
+
+  if (!strip || !strip.loaded || !strip.img.width) return false;
+
+  const fw = strip.img.width / strip.frames;
+  const fh = strip.img.height;
+  const fi = animate ? Math.floor(platAnimTick / frameDiv) % strip.frames : 0;
+
+  // escala mantendo proporção; pés alinhados à base do hitbox
+  const dh = 42, dw = (fw / fh) * dh;
+  const dx = sx + p.w / 2 - dw / 2;
+  const dy = p.y + p.h - dh;
+
+  ctx.save();
+  if (p.face < 0) {
+    ctx.translate(dx + dw, dy);
+    ctx.scale(-1, 1);
+    ctx.drawImage(strip.img, fi * fw, 0, fw, fh, 0, 0, dw, dh);
+  } else {
+    ctx.drawImage(strip.img, fi * fw, 0, fw, fh, dx, dy, dw, dh);
+  }
+  ctx.restore();
+  return true;
+}
 
 function platReset() {
   platStop();
   platLives = 3;
   platCoinsGot = 0;
+  platState = "play";
   platSpawn();
   platCoins = PLAT_COINS_INIT.map(([x, y]) => ({ x, y, taken: false }));
   const ov = gel("plat-overlay");
@@ -2232,7 +2277,11 @@ function platReset() {
   platUpdateStats();
   platDraw();
 }
-function platStop() { platRunning = false; if (platLoop) { cancelAnimationFrame(platLoop); platLoop = null; } }
+function platStop() {
+  platRunning = false;
+  if (platLoop) { cancelAnimationFrame(platLoop); platLoop = null; }
+  if (platVictoryRAF) { cancelAnimationFrame(platVictoryRAF); platVictoryRAF = null; }
+}
 
 function platSpawn() {
   platPlayer = { x: 30, y: 190, w: 20, h: 20, vx: 0, vy: 0, onGround: false, face: 1 };
@@ -2243,6 +2292,7 @@ function platStart() {
   const ov = gel("plat-overlay"); if (ov) ov.classList.add("hidden");
   if (platOver || platLives <= 0) { platLives = 3; platCoinsGot = 0; platCoins = PLAT_COINS_INIT.map(([x, y]) => ({ x, y, taken: false })); }
   platOver = false;
+  platState = "play";
   platSpawn();
   platUpdateStats();
   platRunning = true;
@@ -2262,6 +2312,7 @@ function rectsHit(a, b) {
 
 function platTick() {
   if (!platRunning) return;
+  platAnimTick++;
   const p = platPlayer;
 
   // movimento horizontal
@@ -2324,9 +2375,7 @@ function platUpdateStats() {
   if (l) l.textContent = platLives;
 }
 
-function platEnd(won) {
-  platStop();
-  platOver = true;
+function platShowOverlay(won) {
   const ov = gel("plat-overlay");
   if (ov) {
     ov.classList.remove("hidden");
@@ -2334,8 +2383,31 @@ function platEnd(won) {
       ? `🏁 Você chegou! Moedas: ${platCoinsGot}`
       : `💀 Game over! Moedas: ${platCoinsGot}`;
   }
+}
+
+function platEnd(won) {
+  platRunning = false;
+  if (platLoop) { cancelAnimationFrame(platLoop); platLoop = null; }
+  platOver = true;
   playBeep(won ? 880 : 200);
   awardGameXp(platCoinsGot * 2 + (won ? 20 : 0), "Plataforma");
+
+  if (won) {
+    // toca a animação de vitória antes de mostrar o overlay
+    platState = "victory";
+    platAnimTick = 0;
+    let f = 0;
+    const vloop = () => {
+      platAnimTick++;
+      platDraw();
+      f++;
+      if (f < 96) platVictoryRAF = requestAnimationFrame(vloop);
+      else { platVictoryRAF = null; platShowOverlay(true); }
+    };
+    vloop();
+  } else {
+    platShowOverlay(false);
+  }
 }
 
 function platDraw() {
@@ -2394,14 +2466,16 @@ function platDraw() {
     ctx.fill();
   }
 
-  // jogador
+  // jogador — sprite animado, com fallback para o quadrado vermelho
   const px = platPlayer.x - cam;
-  ctx.fillStyle = "#ef4444";
-  ctx.fillRect(px, platPlayer.y, platPlayer.w, platPlayer.h);
-  ctx.fillStyle = "#fbbf24"; // "rosto"
-  ctx.fillRect(px + 3, platPlayer.y + 4, platPlayer.w - 6, 7);
-  ctx.fillStyle = "#1a1a2e"; // olho (direção)
-  ctx.fillRect(px + (platPlayer.face > 0 ? platPlayer.w - 7 : 3), platPlayer.y + 5, 3, 3);
+  if (!platDrawHero(ctx, px)) {
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(px, platPlayer.y, platPlayer.w, platPlayer.h);
+    ctx.fillStyle = "#fbbf24";
+    ctx.fillRect(px + 3, platPlayer.y + 4, platPlayer.w - 6, 7);
+    ctx.fillStyle = "#1a1a2e";
+    ctx.fillRect(px + (platPlayer.face > 0 ? platPlayer.w - 7 : 3), platPlayer.y + 5, 3, 3);
+  }
 }
 
 // teclado da plataforma (movimento contínuo + pulo)
