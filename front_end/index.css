@@ -739,3 +739,141 @@ select option { background: var(--surface2); }
 @media (max-width: 480px) {
   .timer-display { font-size: 3.5rem; }
 }
+
+/* ═══════════════════════════════════════════════
+   SNAKE GAME
+═══════════════════════════════════════════════ */
+.snake-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.snake-stats {
+  display: flex;
+  gap: 28px;
+}
+.snake-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.snake-stat-label {
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+.snake-stat-val {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.snake-stat-val.gold { color: var(--gold); }
+
+.snake-board-wrap {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  box-shadow: 0 0 24px var(--accent-glow);
+  line-height: 0;
+}
+#snake-canvas, #snake-canvas-modal {
+  background: var(--surface2);
+  display: block;
+}
+
+.snake-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 16px;
+}
+.snake-overlay.hidden { display: none; }
+.snake-overlay-msg {
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.snake-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.snake-dpad-row { display: flex; gap: 8px; }
+.snake-dpad {
+  width: 50px;
+  height: 46px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--accent2);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s, border-color .15s;
+}
+.snake-dpad:hover { background: var(--surface); border-color: var(--accent); }
+.snake-dpad:active { transform: scale(.92); }
+
+/* ═══════════════════════════════════════════════
+   BREAK MODAL
+═══════════════════════════════════════════════ */
+.break-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: break-fade .3s ease;
+}
+.break-modal.show { display: flex; }
+@keyframes break-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.break-modal-card {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+  padding: 22px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 24px 64px rgba(0,0,0,.5);
+}
+.break-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.break-modal-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--green);
+}
+.break-modal-sub {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.break-modal-sub #break-timer {
+  color: var(--accent2);
+  font-weight: 700;
+}

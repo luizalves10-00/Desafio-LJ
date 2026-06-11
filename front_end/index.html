@@ -43,6 +43,9 @@
     <button class="nav-item" data-section="conquistas" onclick="navigate('conquistas', this)">
       <span class="nav-icon">🏆</span> Conquistas
     </button>
+    <button class="nav-item" data-section="jogos" onclick="navigate('jogos', this)">
+      <span class="nav-icon">🎮</span> Jogos
+    </button>
 
     <div class="nav-section-label">Configurações</div>
     <button class="nav-item" data-section="temas" onclick="navigate('temas', this)">
@@ -237,6 +240,46 @@
       </div>
     </section>
 
+    <!-- ══ JOGOS ══ -->
+    <section class="section" id="section-jogos">
+      <div class="card">
+        <div class="card-title">🎮 Snake — Jogo da Cobrinha</div>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px;">
+          Relaxe nas pausas! Use as <strong>setas do teclado</strong> ou os botões. Coma as frutas 🍎 e cresça sem bater nas paredes ou em si mesmo.
+        </p>
+
+        <div class="snake-wrap">
+          <div class="snake-stats">
+            <div class="snake-stat">
+              <span class="snake-stat-label">Pontos</span>
+              <span class="snake-stat-val" id="snake-score">0</span>
+            </div>
+            <div class="snake-stat">
+              <span class="snake-stat-label">Recorde</span>
+              <span class="snake-stat-val gold" id="snake-best">0</span>
+            </div>
+          </div>
+
+          <div class="snake-board-wrap">
+            <canvas id="snake-canvas" width="360" height="360"></canvas>
+            <div class="snake-overlay" id="snake-overlay">
+              <div class="snake-overlay-msg" id="snake-overlay-msg">Pronto para jogar?</div>
+              <button class="btn btn-primary" id="snake-start-btn" onclick="snakeStart()">▶ Começar</button>
+            </div>
+          </div>
+
+          <div class="snake-controls">
+            <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
+            <div class="snake-dpad-row">
+              <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
+              <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
+              <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ══ TEMAS ══ -->
     <section class="section" id="section-temas">
       <div class="card">
@@ -315,6 +358,49 @@
 
   </div><!-- /content -->
 </div><!-- /main -->
+
+<!-- ── MODAL DE PAUSA COM JOGO ── -->
+<div class="break-modal" id="break-modal">
+  <div class="break-modal-card">
+    <div class="break-modal-header">
+      <div>
+        <div class="break-modal-title">⛹ Hora da pausa!</div>
+        <div class="break-modal-sub">Relaxe jogando — o foco volta em <span id="break-timer">5:00</span></div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="closeBreakModal()">✕ Fechar</button>
+    </div>
+
+    <div class="snake-wrap">
+      <div class="snake-stats">
+        <div class="snake-stat">
+          <span class="snake-stat-label">Pontos</span>
+          <span class="snake-stat-val" id="snake-score-modal">0</span>
+        </div>
+        <div class="snake-stat">
+          <span class="snake-stat-label">Recorde</span>
+          <span class="snake-stat-val gold" id="snake-best-modal">0</span>
+        </div>
+      </div>
+
+      <div class="snake-board-wrap">
+        <canvas id="snake-canvas-modal" width="320" height="320"></canvas>
+        <div class="snake-overlay" id="snake-overlay-modal">
+          <div class="snake-overlay-msg" id="snake-overlay-msg-modal">Jogue enquanto descansa! 🐍</div>
+          <button class="btn btn-primary" onclick="snakeStart()">▶ Começar</button>
+        </div>
+      </div>
+
+      <div class="snake-controls">
+        <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
+        <div class="snake-dpad-row">
+          <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
+          <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
+          <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="toast-container"></div>
 

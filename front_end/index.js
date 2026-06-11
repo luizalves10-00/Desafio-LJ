@@ -16,6 +16,7 @@ const SECTION_TITLES = {
   pomodoro:   "Pomodoro",
   tarefas:    "Tarefas",
   conquistas: "Conquistas",
+  jogos:      "Jogos",
   temas:      "Temas",
 };
 
@@ -29,6 +30,7 @@ function navigate(name, btn) {
   if (name === "tarefas")    loadTasks();
   if (name === "conquistas") renderAchievements();
   if (name === "dashboard")  loadSuggest();
+  if (name === "jogos")      snakeReset();
 }
 
 // ── SIDEBAR MOBILE ─────────────────────────────────────────────────────────
@@ -98,6 +100,9 @@ function updateDisplay() {
   if (rMini) { rMini.style.strokeDashoffset = offsetMini; rMini.className = "ring-fill" + breakCls; }
   const rFull = document.getElementById("ring-fill-full");
   if (rFull) { rFull.style.strokeDashoffset = offsetFull; rFull.className = "ring-fill" + breakCls; }
+
+  const bt = document.getElementById("break-timer");
+  if (bt) bt.textContent = timeStr;
 }
 
 function startTimer() {
@@ -139,14 +144,16 @@ function tick() {
       isBreak = true;
       totalSecs = breakMins * 60;
       secondsLeft = totalSecs;
-      showToast("🍅 Pomodoro concluído! Descanse.", "gold");
+      showToast("🍅 Pomodoro concluído! Descanse jogando.", "gold");
       playBeep(880);
+      openBreakModal();
     } else {
       isBreak = false;
       totalSecs = focusMins * 60;
       secondsLeft = totalSecs;
       showToast("🚀 Pausa encerrada! Volte ao foco.", "");
       playBeep(440);
+      closeBreakModal();
     }
     updateDisplay();
     startTimer();
@@ -379,6 +386,207 @@ function setTopbarDate() {
     now.toLocaleDateString("pt-BR", { weekday:"long", day:"numeric", month:"long" });
 }
 
+// ── BREAK MODAL ──────────────────────────────────────────────────────────────
+function openBreakModal() {
+  document.getElementById("break-modal").classList.add("show");
+  snakeReset();
+}
+function closeBreakModal() {
+  document.getElementById("break-modal").classList.remove("show");
+  snakeStop();
+}
+
+// ── SNAKE GAME ───────────────────────────────────────────────────────────────
+const SNAKE_GRID = 16;          // 16 x 16 células
+const SNAKE_SPEED = 130;        // ms por passo
+
+let snakeBody = [];
+let snakeDir = { x: 1, y: 0 };
+let snakeNextDir = { x: 1, y: 0 };
+let snakeFood = { x: 8, y: 8 };
+let snakeScore = 0;
+let snakeBest = parseInt(localStorage.getItem("lus-snake-best") || "0", 10);
+let snakeLoop = null;
+let snakeRunning = false;
+
+// Descobre qual canvas está visível (modal tem prioridade)
+function snakeTargets() {
+  const modalOpen = document.getElementById("break-modal").classList.contains("show");
+  const suffix = modalOpen ? "-modal" : "";
+  return {
+    canvas:     document.getElementById("snake-canvas" + suffix),
+    scoreEl:    document.getElementById("snake-score" + suffix),
+    bestEl:     document.getElementById("snake-best" + suffix),
+    overlay:    document.getElementById("snake-overlay" + suffix),
+    overlayMsg: document.getElementById("snake-overlay-msg" + suffix),
+  };
+}
+
+function snakeReset() {
+  snakeStop();
+  snakeBody = [{ x: 4, y: 8 }, { x: 3, y: 8 }, { x: 2, y: 8 }];
+  snakeDir = { x: 1, y: 0 };
+  snakeNextDir = { x: 1, y: 0 };
+  snakeScore = 0;
+  snakePlaceFood();
+  const t = snakeTargets();
+  if (t.scoreEl) t.scoreEl.textContent = "0";
+  if (t.bestEl)  t.bestEl.textContent = snakeBest;
+  if (t.overlay) {
+    t.overlay.classList.remove("hidden");
+    if (t.overlayMsg) t.overlayMsg.textContent = "Pronto para jogar? 🐍";
+  }
+  snakeDraw();
+}
+
+function snakeStart() {
+  if (snakeRunning) return;
+  // se veio de game over, reinicia
+  if (snakeBody.length === 0) snakeReset();
+  snakeRunning = true;
+  const t = snakeTargets();
+  if (t.overlay) t.overlay.classList.add("hidden");
+  snakeLoop = setInterval(snakeStep, SNAKE_SPEED);
+}
+
+function snakeStop() {
+  snakeRunning = false;
+  if (snakeLoop) { clearInterval(snakeLoop); snakeLoop = null; }
+}
+
+function snakeSetDir(dir) {
+  const map = {
+    up:    { x: 0, y: -1 },
+    down:  { x: 0, y: 1 },
+    left:  { x: -1, y: 0 },
+    right: { x: 1, y: 0 },
+  };
+  const nd = map[dir];
+  if (!nd) return;
+  // impede inverter 180°
+  if (nd.x === -snakeDir.x && nd.y === -snakeDir.y) return;
+  snakeNextDir = nd;
+}
+
+function snakePlaceFood() {
+  let ok = false;
+  while (!ok) {
+    snakeFood = {
+      x: Math.floor(Math.random() * SNAKE_GRID),
+      y: Math.floor(Math.random() * SNAKE_GRID),
+    };
+    ok = !snakeBody.some(s => s.x === snakeFood.x && s.y === snakeFood.y);
+  }
+}
+
+function snakeStep() {
+  snakeDir = snakeNextDir;
+  const head = {
+    x: snakeBody[0].x + snakeDir.x,
+    y: snakeBody[0].y + snakeDir.y,
+  };
+
+  // colisão com parede ou corpo → game over
+  const hitWall = head.x < 0 || head.y < 0 || head.x >= SNAKE_GRID || head.y >= SNAKE_GRID;
+  const hitSelf = snakeBody.some(s => s.x === head.x && s.y === head.y);
+  if (hitWall || hitSelf) {
+    snakeGameOver();
+    return;
+  }
+
+  snakeBody.unshift(head);
+
+  // comeu fruta
+  if (head.x === snakeFood.x && head.y === snakeFood.y) {
+    snakeScore += 10;
+    const t = snakeTargets();
+    if (t.scoreEl) t.scoreEl.textContent = snakeScore;
+    if (snakeScore > snakeBest) {
+      snakeBest = snakeScore;
+      localStorage.setItem("lus-snake-best", snakeBest);
+      if (t.bestEl) t.bestEl.textContent = snakeBest;
+    }
+    playBeep(660);
+    snakePlaceFood();
+  } else {
+    snakeBody.pop();
+  }
+
+  snakeDraw();
+}
+
+function snakeGameOver() {
+  snakeStop();
+  const t = snakeTargets();
+  if (t.overlay) {
+    t.overlay.classList.remove("hidden");
+    if (t.overlayMsg) t.overlayMsg.textContent = `💀 Game over! Pontos: ${snakeScore}`;
+  }
+  snakeBody = [];
+  playBeep(200);
+}
+
+function snakeDraw() {
+  const t = snakeTargets();
+  if (!t.canvas) return;
+  const ctx = t.canvas.getContext("2d");
+  const size = t.canvas.width;
+  const cell = size / SNAKE_GRID;
+
+  // cores do tema atual
+  const css = getComputedStyle(document.documentElement);
+  const bg     = css.getPropertyValue("--surface2").trim() || "#16213e";
+  const accent = css.getPropertyValue("--accent2").trim()  || "#a855f7";
+  const accent1 = css.getPropertyValue("--accent").trim()  || "#7c3aed";
+  const red    = css.getPropertyValue("--red").trim()      || "#ef4444";
+
+  // fundo
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, size, size);
+
+  // grade leve
+  ctx.strokeStyle = "rgba(255,255,255,.03)";
+  ctx.lineWidth = 1;
+  for (let i = 1; i < SNAKE_GRID; i++) {
+    ctx.beginPath(); ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, size); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i * cell); ctx.lineTo(size, i * cell); ctx.stroke();
+  }
+
+  // fruta
+  ctx.fillStyle = red;
+  ctx.beginPath();
+  ctx.arc(snakeFood.x * cell + cell / 2, snakeFood.y * cell + cell / 2, cell / 2.6, 0, Math.PI * 2);
+  ctx.fill();
+
+  // cobra
+  snakeBody.forEach((s, i) => {
+    ctx.fillStyle = i === 0 ? accent : accent1;
+    const pad = 1.5;
+    roundRect(ctx, s.x * cell + pad, s.y * cell + pad, cell - pad * 2, cell - pad * 2, 4);
+    ctx.fill();
+  });
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// teclado
+document.addEventListener("keydown", (e) => {
+  const keys = {
+    ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+    w: "up", s: "down", a: "left", d: "right",
+  };
+  const dir = keys[e.key];
+  if (dir && snakeRunning) { e.preventDefault(); snakeSetDir(dir); }
+});
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
   loadTheme();
@@ -398,6 +606,7 @@ async function init() {
   renderDots();
   loadStatus();
   loadSuggest();
+  snakeReset();
 }
 
 init();
