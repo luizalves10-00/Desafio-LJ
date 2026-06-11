@@ -21,9 +21,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # ── Constants ──────────────────────────────────────────────────────────────
-XP_PER_POMODORO = 50
-XP_PER_TASK     = 30
-XP_PER_LEVEL    = 200
+XP_PER_POMODORO     = 50
+XP_PER_TASK         = 30
+XP_PER_LEVEL        = 200
+GAME_XP_MAX_PER_CALL = 50    # teto de XP por partida
+GAME_XP_DAILY_CAP    = 150   # teto de XP de jogos por dia (anti-abuso)
 
 # ── Models ─────────────────────────────────────────────────────────────────
 class User(db.Model):
@@ -57,6 +59,8 @@ class UserStats(db.Model):
     streak           = db.Column(db.Integer, default=0)
     last_study_date  = db.Column(db.String(10), nullable=True)
     total_pomodoros  = db.Column(db.Integer, default=0)
+    game_xp_today    = db.Column(db.Integer, default=0)
+    game_xp_date     = db.Column(db.String(10), nullable=True)
 
     user = db.relationship("User", back_populates="stats")
 
@@ -228,6 +232,42 @@ def complete_pomodoro():
         "level":          stats.level,
         "streak":         stats.streak,
         "xp_to_next":     stats.xp_to_next,
+        "xp_progress_pct": stats.xp_progress_pct,
+    })
+
+
+# ── Recompensa de jogos ─────────────────────────────────────────────────────
+@app.route("/api/game/reward", methods=["POST"])
+def game_reward():
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user  = result
+    stats = get_or_create_stats(user)
+    body  = request.get_json(silent=True) or {}
+
+    amount = int(body.get("amount", 0) or 0)
+    amount = max(0, min(amount, GAME_XP_MAX_PER_CALL))
+
+    today = str(date.today())
+    if stats.game_xp_date != today:
+        stats.game_xp_date = today
+        stats.game_xp_today = 0
+
+    remaining = max(0, GAME_XP_DAILY_CAP - (stats.game_xp_today or 0))
+    granted   = min(amount, remaining)
+
+    stats.xp += granted
+    stats.game_xp_today = (stats.game_xp_today or 0) + granted
+    db.session.commit()
+
+    return jsonify({
+        "xp_gained":       granted,
+        "capped":          granted < amount,
+        "daily_remaining": max(0, GAME_XP_DAILY_CAP - stats.game_xp_today),
+        "total_xp":        stats.xp,
+        "level":           stats.level,
+        "xp_to_next":      stats.xp_to_next,
         "xp_progress_pct": stats.xp_progress_pct,
     })
 
