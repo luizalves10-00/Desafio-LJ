@@ -308,12 +308,62 @@ function updateHeroCard(d) {
   });
 }
 
+// ── CELEBRAÇÃO DE LEVEL UP ──────────────────────────────────────────────────
+const CONFETTI_COLORS = ["#f59e0b", "#a855f7", "#22c55e", "#3b82f6", "#ef4444", "#fbbf24", "#ec4899"];
+let lvlupTimer = null;
+
+function showLevelUp(level, newClass) {
+  const ov = document.getElementById("levelup-overlay");
+  if (!ov) return;
+  document.getElementById("lvlup-icon").textContent = heroClass(level).icon;
+  document.getElementById("lvlup-msg").innerHTML = newClass
+    ? `Você alcançou o <b>nível ${level}</b> e evoluiu para<br><span class="lvlup-class">${newClass.icon} ${newClass.name}</span>!`
+    : `Você alcançou o <b>nível ${level}</b>! Continue assim, herói!`;
+
+  // chuva de confetes
+  const conf = document.getElementById("lvlup-confetti");
+  conf.innerHTML = "";
+  for (let i = 0; i < 50; i++) {
+    const p = document.createElement("div");
+    p.className = "conf";
+    p.style.left = Math.random() * 100 + "%";
+    p.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+    p.style.animationDuration = (2.2 + Math.random() * 1.8) + "s";
+    p.style.animationDelay = Math.random() * 0.8 + "s";
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    if (Math.random() < 0.4) p.style.borderRadius = "50%";
+    conf.appendChild(p);
+  }
+
+  ov.classList.add("show");
+  // fanfarra (dó-mi-sol-dó)
+  playBeep(523);
+  setTimeout(() => playBeep(659), 150);
+  setTimeout(() => playBeep(784), 300);
+  setTimeout(() => playBeep(1047), 480);
+
+  clearTimeout(lvlupTimer);
+  lvlupTimer = setTimeout(closeLevelUp, 4500);
+}
+
+function closeLevelUp() {
+  const ov = document.getElementById("levelup-overlay");
+  if (ov) ov.classList.remove("show");
+  clearTimeout(lvlupTimer);
+}
+
 async function loadStatus() {
   try {
     const res = await apiFetch(`${API}/status`);
     if (res.status === 401) { redirectLogin(); return; }
+    const prevLevel = statusData && statusData.level;
     statusData = await res.json();
     updateHeroCard(statusData);
+    // subiu de nível? celebra! (e anuncia a nova classe, se mudou)
+    if (prevLevel && statusData.level > prevLevel) {
+      const oldCls = heroClass(prevLevel), newCls = heroClass(statusData.level);
+      showLevelUp(statusData.level, newCls !== oldCls ? newCls : null);
+    }
     document.getElementById("sb-level").textContent = `Nível ${statusData.level}`;
     document.getElementById("sb-xp").textContent = `${statusData.xp} XP`;
     document.getElementById("sb-xp-fill").style.width = statusData.xp_progress_pct + "%";
@@ -339,7 +389,7 @@ async function loadTasks() {
 
 async function addTask() {
   const title = document.getElementById("task-title").value.trim();
-  if (!title) { showToast("Digite o nome da tarefa!", ""); return; }
+  if (!title) { showToast("Digite o nome da missão!", ""); return; }
   const body = {
     title,
     subject:  document.getElementById("task-subject").value.trim(),
@@ -357,7 +407,7 @@ async function addTask() {
     document.getElementById("task-due").value = "";
     loadTasks();
     loadSuggest();
-    showToast("Tarefa adicionada! ✓", "green");
+    showToast("📜 Missão aceita! Boa sorte, herói.", "green");
   } catch(e) {}
 }
 
@@ -365,7 +415,7 @@ async function completeTask(id) {
   try {
     const res = await apiFetch(`${API}/tasks/${id}/complete`, { method: "POST" });
     const d = await res.json();
-    showToast(`✅ Tarefa concluída! +${d.xp_gained} XP`, "gold");
+    showToast(`⚔️ Missão cumprida! +${d.xp_gained} XP de recompensa`, "gold");
     loadTasks(); loadStatus(); loadSuggest();
   } catch(e) {}
 }
@@ -404,16 +454,19 @@ async function logout() {
 function redirectLogin() { window.location.href = "login.html"; }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
-const PRIORITY_LABELS = { 1: ["Alta", "p1"], 2: ["Média", "p2"], 3: ["Baixa", "p3"] };
+// dificuldade das missões: quanto mais difícil, maior a recompensa
+const PRIORITY_LABELS = { 1: ["⚔️ Chefe", "p1"], 2: ["🛡️ Elite", "p2"], 3: ["🗡️ Normal", "p3"] };
+const PRIORITY_XP     = { 1: 40, 2: 30, 3: 20 };
 
 function renderTasks(tasks) {
   const list = document.getElementById("task-list");
   if (!tasks.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Nenhuma tarefa ainda. Adicione sua primeira!</div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>Nenhuma missão no mural. Aceite a primeira!</div>`;
     return;
   }
   list.innerHTML = tasks.map(t => {
-    const [plabel, pcls] = PRIORITY_LABELS[t.priority] || ["Média", "p2"];
+    const [plabel, pcls] = PRIORITY_LABELS[t.priority] || ["🛡️ Elite", "p2"];
+    const xp = PRIORITY_XP[t.priority] || 30;
     const due = t.due_date ? ` · Prazo: ${formatDate(t.due_date)}` : "";
     return `
       <div class="task-item ${t.done ? "done" : ""}">
@@ -421,6 +474,7 @@ function renderTasks(tasks) {
           <div class="task-title">${esc(t.title)}</div>
           <div class="task-meta">${esc(t.subject || "Sem matéria")}${due}</div>
         </div>
+        <span class="task-xp">${t.done ? "✓ recebido" : "+" + xp + " XP"}</span>
         <span class="priority-badge ${pcls}">${plabel}</span>
         <div class="task-actions">
           ${!t.done ? `<button class="btn btn-green btn-sm" onclick="completeTask(${t.id})">✓</button>` : ""}
