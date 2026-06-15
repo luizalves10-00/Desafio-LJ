@@ -5,6 +5,11 @@ from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime
 import os
+from google import genai
+from dotenv import load_dotenv
+
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv()
 
 # ── App setup ──────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -43,6 +48,9 @@ class User(db.Model):
     stats  = db.relationship("UserStats", back_populates="user", uselist=False, cascade="all, delete-orphan")
     tasks  = db.relationship("Task",      back_populates="user", cascade="all, delete-orphan")
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     def set_password(self, password: str):
         self.password_hash = generate_password_hash(password)
 
@@ -66,6 +74,9 @@ class UserStats(db.Model):
     game_xp_date     = db.Column(db.String(10), nullable=True)
 
     user = db.relationship("User", back_populates="stats")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     @property
     def level(self) -> int:
@@ -104,6 +115,9 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship("User", back_populates="tasks")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def to_dict(self) -> dict:
         return {
@@ -368,6 +382,89 @@ def suggest():
     best = sorted(pending, key=lambda t: (t.due_date or "9999-12-31", t.priority))[0]
     return jsonify({"suggestion": best.to_dict(), "message": f"Comece por: {best.title}"})
 
+
+# ── AI Routine Planner ─────────────────────────────────────────────────────
+@app.route("/api/ai/routine", methods=["GET"])
+def ai_routine():
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+    
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "Chave da API do Gemini (GEMINI_API_KEY) não configurada no servidor."}), 500
+        
+    stats = get_or_create_stats(user)
+    pending_tasks = Task.query.filter_by(user_id=user.id, done=False).all()
+    
+    if not pending_tasks:
+        return jsonify({"suggestion": "Você não tem tarefas pendentes! Adicione novas tarefas para que eu possa organizar sua rotina.", "type": "empty"})
+
+    task_list_str = "\n".join([f"- {t.title} (Prioridade: {t.priority}, Prazo: {t.due_date or 'Sem prazo'})" for t in pending_tasks])
+    
+    prompt = f"""
+Você é um assistente de estudos motivacional e prático do aplicativo LevelUp Study.
+O usuário se chama {user.name}. Ele está no Nível {stats.level} e tem um streak (dias seguidos de estudo) de {stats.streak} dias.
+
+Aqui estão as tarefas pendentes dele:
+{task_list_str}
+
+Crie um plano de estudos curto e direto para o dia de hoje.
+Regras:
+1. Comece com uma frase motivacional curta e energética.
+2. Sugira qual tarefa ele deve fazer primeiro e como ele deve seguir (priorizando prazos curtos e maior prioridade, onde prioridade 1 é máxima).
+3. Seja conciso (máximo de 3 parágrafos curtos). Use emojis para deixar o texto moderno e amigável.
+4. Lembre-o de usar o timer Pomodoro do app para ganhar XP.
+"""
+
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+        return jsonify({"suggestion": response.text, "type": "ai"})
+    except Exception as e:
+        print(f"Erro na API do Gemini: {e}")
+        return jsonify({"error": "Erro ao comunicar com a inteligência artificial."}), 500
+
+@app.route("/api/ai/chat", methods=["POST"])
+def ai_chat():
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+    
+    body = request.get_json(silent=True) or {}
+    message = (body.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "Mensagem vazia."}), 400
+        
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return jsonify({"error": "Chave da API do Gemini (GEMINI_API_KEY) não configurada no servidor."}), 500
+        
+    stats = get_or_create_stats(user)
+    
+    prompt = f"""
+Você é um mentor de estudos de IA, parte de um app de produtividade gamificado (LevelUp Study).
+O nome do usuário é {user.name}, Nível {stats.level}, Streak {stats.streak} dias.
+Mensagem do usuário: "{message}"
+
+Responda de forma direta, amigável e encorajadora. Você pode usar formatação Markdown simples. Tente manter a resposta curta (1-3 parágrafos) a menos que ele peça algo complexo.
+"""
+
+    try:
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+        return jsonify({"reply": response.text})
+    except Exception as e:
+        print(f"Erro na API do Gemini: {e}")
+        return jsonify({"error": "Erro ao comunicar com a inteligência artificial."}), 500
 
 # ── Frontend (serve as páginas no mesmo host da API) ─────────────────────────
 @app.route("/")

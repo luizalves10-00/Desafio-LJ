@@ -51,6 +51,9 @@
     <button class="nav-item" data-section="temas" onclick="navigate('temas', this)">
       <span class="nav-icon">🎨</span> Temas
     </button>
+    <button class="nav-item" data-section="chat" onclick="navigate('chat', this)">
+      <span class="nav-icon">🤖</span> Chat com IA
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -846,6 +849,24 @@
             </div>
           </div>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CHAT COM IA ══ -->
+    <section class="section" id="section-chat">
+      <div class="card" style="display: flex; flex-direction: column; height: 600px;">
+        <div class="card-title">🤖 Converse com seu Mentor de Estudos</div>
+        
+        <div class="chat-messages" id="chat-messages" style="flex: 1; overflow-y: auto; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 14px; background: rgba(0,0,0,0.2);">
+          <div class="chat-message ai" style="margin-bottom: 10px; padding: 10px; border-radius: 8px; background: rgba(255,215,0,0.1); color: var(--gold);">
+            <strong>Mentor IA:</strong> Olá! Eu sou seu mentor gamificado. Como posso ajudar você com seus estudos ou planejamento hoje?
+          </div>
+        </div>
+
+        <div class="chat-input-area" style="display: flex; gap: 10px;">
+          <input type="text" id="chat-input" placeholder="Digite sua mensagem..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);" onkeydown="if(event.key==='Enter') sendMessageAi()" />
+          <button class="btn btn-primary" onclick="sendMessageAi()" id="btn-chat-send">Enviar</button>
         </div>
       </div>
     </section>

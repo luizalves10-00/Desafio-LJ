@@ -18,6 +18,7 @@ const SECTION_TITLES = {
   conquistas: "Conquistas",
   jogos:      "Jogos",
   temas:      "Temas",
+  chat:       "Chat com IA",
 };
 
 function navigate(name, btn) {
@@ -444,6 +445,90 @@ async function loadSuggest() {
       document.getElementById("suggest-meta").textContent = "";
     }
   } catch(e) {}
+}
+
+async function loadAiRoutine() {
+  const btn = document.getElementById("btn-ai");
+  const title = document.getElementById("suggest-title");
+  const body = document.getElementById("suggest-body");
+  const meta = document.getElementById("suggest-meta");
+  
+  if (btn) btn.disabled = true;
+  title.textContent = "✨ IA Pensando...";
+  body.textContent = "Analisando suas missões e nível...";
+  meta.textContent = "";
+
+  try {
+    const res = await apiFetch(`${API}/ai/routine`);
+    if (res.status === 401) { redirectLogin(); return; }
+    const d = await res.json();
+    
+    if (d.error) {
+      title.textContent = "❌ Erro";
+      body.textContent = d.error;
+    } else if (d.type === "empty") {
+      title.textContent = "🎉 Tudo em dia!";
+      body.textContent = d.suggestion;
+    } else {
+      title.textContent = "🗺️ Seu Plano de Batalha";
+      body.innerHTML = d.suggestion.replace(/\n/g, '<br>');
+    }
+  } catch(e) {
+    title.textContent = "❌ Erro de conexão";
+    body.textContent = "Não foi possível conectar com a IA.";
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function sendMessageAi() {
+  const input = document.getElementById("chat-input");
+  const messages = document.getElementById("chat-messages");
+  const btn = document.getElementById("btn-chat-send");
+  const text = input.value.trim();
+  
+  if (!text) return;
+  
+  // Add user message
+  const userMsg = document.createElement("div");
+  userMsg.className = "chat-message user";
+  userMsg.style.cssText = "margin-bottom: 10px; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); color: var(--text); text-align: right;";
+  userMsg.innerHTML = `<strong>Você:</strong> ${esc(text)}`;
+  messages.appendChild(userMsg);
+  
+  input.value = "";
+  input.disabled = true;
+  btn.disabled = true;
+  messages.scrollTop = messages.scrollHeight;
+  
+  // Add loading message
+  const aiMsg = document.createElement("div");
+  aiMsg.className = "chat-message ai";
+  aiMsg.style.cssText = "margin-bottom: 10px; padding: 10px; border-radius: 8px; background: rgba(255,215,0,0.1); color: var(--gold);";
+  aiMsg.innerHTML = `<strong>Mentor IA:</strong> Digitando...`;
+  messages.appendChild(aiMsg);
+  messages.scrollTop = messages.scrollHeight;
+  
+  try {
+    const res = await apiFetch(`${API}/ai/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text }),
+    });
+    const d = await res.json();
+    if (d.error) {
+      aiMsg.innerHTML = `<strong>Erro:</strong> ${d.error}`;
+    } else {
+      aiMsg.innerHTML = `<strong>Mentor IA:</strong> ${d.reply.replace(/\n/g, '<br>')}`;
+    }
+  } catch(e) {
+    aiMsg.innerHTML = `<strong>Erro:</strong> Não foi possível conectar com a IA.`;
+  } finally {
+    input.disabled = false;
+    btn.disabled = false;
+    input.focus();
+    messages.scrollTop = messages.scrollHeight;
+  }
 }
 
 async function logout() {
