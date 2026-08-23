@@ -10,6 +10,12 @@ let interval = null;
 let pomodorosDone = 0;
 let statusData = {};
 
+// ── GAME LOCKOUT STATE ─────────────────────────────────────────────────────
+const LOCKOUT_KEY   = "lus-game-lockout-until";
+const SESSION_KEY   = "lus-game-session-start";
+let activeSection   = null;   // seção atualmente visível
+let lockoutInterval = null;   // interval do countdown do bloqueio
+
 // ── NAVIGATION ──────────────────────────────────────────────────────────────
 const SECTION_TITLES = {
   dashboard:  "Dashboard",
@@ -22,6 +28,12 @@ const SECTION_TITLES = {
 };
 
 function navigate(name, btn) {
+  // Se estava nos jogos, encerra a sessão e aplica cooldown se necessário
+  if (activeSection === "jogos" && name !== "jogos") {
+    endGameSession();
+  }
+  activeSection = name;
+
   document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("section-" + name).classList.add("active");
@@ -737,6 +749,11 @@ function selectGame(name, btn) {
 
 // clique num card da tela de seleção → abre a área do jogo
 function openGameFromMenu(name) {
+  // Bloqueia se cooldown ativo
+  if (gameLockoutActive()) {
+    showLockoutScreen();
+    return;
+  }
   document.getElementById("game-menu").classList.add("hidden");
   document.getElementById("game-area").classList.remove("hidden");
   activateGame(name, "");
@@ -752,6 +769,13 @@ function backToMenu() {
 // exibe a tela de seleção (ao entrar na seção Jogos)
 function showGameMenu() {
   stopAllGames();
+  // Se há cooldown ativo, mostra a tela de bloqueio em vez do menu
+  if (gameLockoutActive()) {
+    showLockoutScreen();
+    return;
+  }
+  hideLockoutScreen();
+  startGameSession();
   document.getElementById("game-area").classList.add("hidden");
   document.getElementById("game-menu").classList.remove("hidden");
 }
@@ -792,6 +816,109 @@ function gameSuffix() {
 }
 function gel(baseId) {
   return document.getElementById(baseId + gameSuffix());
+}
+
+// ── GAME LOCKOUT — COOLDOWN DE PUNIÇÃO ────────────────────────────────────────
+// O tempo extra que o estudante ficar nos jogos vira o tempo de cooldown.
+// Ex.: pausa = 5 min, ficou 8 min jogando → bloqueio de 3 min.
+
+/** Retorna true se há bloqueio ativo. */
+function gameLockoutActive() {
+  const until = parseInt(localStorage.getItem(LOCKOUT_KEY) || "0");
+  if (Date.now() < until) return true;
+  localStorage.removeItem(LOCKOUT_KEY);
+  return false;
+}
+
+/** Retorna quantos ms ainda faltam de bloqueio (0 se desbloqueado). */
+function lockoutMsRemaining() {
+  const until = parseInt(localStorage.getItem(LOCKOUT_KEY) || "0");
+  return Math.max(0, until - Date.now());
+}
+
+/** Marca o início de uma sessão de jogos. */
+function startGameSession() {
+  localStorage.setItem(SESSION_KEY, String(Date.now()));
+}
+
+/**
+ * Encerra a sessão de jogos.
+ * Se o tempo jogado ultrapassou o tempo de pausa permitido (breakMins),
+ * o excesso se torna o cooldown da próxima vez.
+ * Há uma tolerância de 20 s para cliques acidentais.
+ */
+function endGameSession() {
+  const startTs = parseInt(localStorage.getItem(SESSION_KEY) || "0");
+  if (!startTs) return;
+  localStorage.removeItem(SESSION_KEY);
+
+  const playedMs  = Date.now() - startTs;
+  const allowedMs = breakMins * 60 * 1000;
+  const TOLERANCE = 20_000; // 20 segundos de tolerância
+  const overtimeMs = playedMs - allowedMs - TOLERANCE;
+
+  if (overtimeMs > 0) {
+    const lockUntil = Date.now() + overtimeMs;
+    localStorage.setItem(LOCKOUT_KEY, String(lockUntil));
+
+    const overtimeSec = Math.ceil(overtimeMs / 1000);
+    const m = Math.floor(overtimeSec / 60);
+    const s = overtimeSec % 60;
+    const label = m > 0
+      ? `${m}min${s > 0 ? ` ${s}s` : ""}`
+      : `${s}s`;
+    showToast(
+      `🔒 Você jogou ${label} a mais! Cooldown de ${label} ativado.`,
+      "red"
+    );
+  }
+}
+
+/** Exibe a tela de bloqueio e inicia o countdown. */
+function showLockoutScreen() {
+  const lockoutEl = document.getElementById("game-lockout");
+  const menuEl    = document.getElementById("game-menu");
+  const areaEl    = document.getElementById("game-area");
+
+  if (menuEl) menuEl.classList.add("hidden");
+  if (areaEl) areaEl.classList.add("hidden");
+  if (lockoutEl) {
+    lockoutEl.classList.remove("hidden");
+    _tickLockoutDisplay(); // atualiza imediatamente
+  }
+
+  // inicia ou reinicia o countdown do display
+  if (lockoutInterval) clearInterval(lockoutInterval);
+  lockoutInterval = setInterval(() => {
+    const rem = lockoutMsRemaining();
+    _tickLockoutDisplay();
+    if (rem <= 0) {
+      clearInterval(lockoutInterval);
+      lockoutInterval = null;
+      hideLockoutScreen();
+      showGameMenu();
+      showToast("🎮 Jogos desbloqueados! Tente equilibrar estudo e diversão.", "gold");
+    }
+  }, 1000);
+}
+
+/** Atualiza apenas o timer dentro da tela de bloqueio. */
+function _tickLockoutDisplay() {
+  const rem = lockoutMsRemaining();
+  const m   = String(Math.floor(rem / 60000)).padStart(2, "0");
+  const s   = String(Math.floor((rem % 60000) / 1000)).padStart(2, "0");
+  const el  = document.getElementById("lockout-timer-display");
+  if (el) el.textContent = `${m}:${s}`;
+}
+
+/** Esconde a tela de bloqueio. */
+function hideLockoutScreen() {
+  const lockoutEl = document.getElementById("game-lockout");
+  if (lockoutEl) lockoutEl.classList.add("hidden");
+  if (lockoutInterval) {
+    clearInterval(lockoutInterval);
+    lockoutInterval = null;
+  }
 }
 
 // ── BREAK MODAL ──────────────────────────────────────────────────────────────

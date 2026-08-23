@@ -1649,8 +1649,108 @@ select option { background: var(--surface2); }
 }
 
 /* ═══════════════════════════════════════════════
+   GAME LOCKOUT — Tela de cooldown de punição
+═══════════════════════════════════════════════ */
+.game-lockout-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  min-height: 420px;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(239,68,68,.08), rgba(251,146,60,.06));
+  border: 1.5px solid rgba(239,68,68,.3);
+  border-radius: 20px;
+  animation: lockoutIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+.game-lockout-screen.hidden { display: none; }
+
+@keyframes lockoutIn {
+  from { opacity: 0; transform: scale(.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.lockout-icon-wrap {
+  position: relative;
+  margin-bottom: 8px;
+}
+.lockout-padlock {
+  font-size: 4rem;
+  animation: lockoutShake 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px rgba(239,68,68,.55));
+}
+@keyframes lockoutShake {
+  0%,100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(8deg); }
+}
+.lockout-sparks {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  font-size: 1.1rem;
+  animation: sparkPop 1.4s ease-in-out infinite;
+}
+@keyframes sparkPop {
+  0%,100% { opacity: .4; transform: translateX(-50%) scale(.8); }
+  50%      { opacity: 1;  transform: translateX(-50%) scale(1.15); }
+}
+.lockout-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: #ef4444;
+  margin: 0;
+  text-shadow: 0 0 24px rgba(239,68,68,.4);
+}
+.lockout-subtitle {
+  font-size: .92rem;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 360px;
+  margin: 0;
+}
+.lockout-timer-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: rgba(239,68,68,.12);
+  border: 1.5px solid rgba(239,68,68,.35);
+  border-radius: 16px;
+  padding: 18px 40px;
+  margin: 8px 0;
+}
+.lockout-label {
+  font-size: .8rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #ef4444;
+  opacity: .75;
+}
+.lockout-timer {
+  font-size: 3rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: #ef4444;
+  letter-spacing: .06em;
+  line-height: 1;
+}
+.lockout-hint {
+  font-size: .84rem;
+  color: var(--muted);
+  opacity: .8;
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════
    FORCA
 ═══════════════════════════════════════════════ */
+
 .forca-hangman { font-size: 3.5rem; line-height: 1; }
 .forca-stat { font-size: .85rem; color: var(--muted); font-weight: 700; }
 .forca-word {

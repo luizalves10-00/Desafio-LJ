@@ -296,6 +296,26 @@
     <!-- ══ JOGOS ══ -->
     <section class="section" id="section-jogos">
 
+      <!-- TELA DE BLOQUEIO (cooldown de punição) -->
+      <div class="game-lockout-screen hidden" id="game-lockout">
+        <div class="lockout-icon-wrap">
+          <div class="lockout-padlock">🔒</div>
+          <div class="lockout-sparks">
+            <span>⚡</span><span>🔥</span><span>⚡</span>
+          </div>
+        </div>
+        <h2 class="lockout-title">Jogos Bloqueados!</h2>
+        <p class="lockout-subtitle">Você ficou jogando além do tempo de pausa.<br>O cooldown é igual ao tempo extra que você usou.</p>
+        <div class="lockout-timer-wrap">
+          <div class="lockout-label">Libera em</div>
+          <div class="lockout-timer" id="lockout-timer-display">00:00</div>
+        </div>
+        <p class="lockout-hint">💡 Use o Pomodoro para estudar enquanto espera!</p>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('pomodoro', document.querySelector('[onclick*=pomodoro]'))" style="margin-top:16px;">
+          ⏱️ Ir para o Pomodoro
+        </button>
+      </div>
+
       <!-- TELA DE SELEÇÃO -->
       <div class="card" id="game-menu">
         <div class="card-title">🎮 Escolha um jogo</div>
