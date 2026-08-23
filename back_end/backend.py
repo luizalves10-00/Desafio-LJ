@@ -8,13 +8,14 @@ import os
 from google import genai
 from dotenv import load_dotenv
 
-# Carrega as variáveis de ambiente do arquivo .env
-load_dotenv()
-
-# ── App setup ──────────────────────────────────────────────────────────────
+# App setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), "front_end")
 
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+# ── App setup ──────────────────────────────────────────────────────────────
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
@@ -43,6 +44,7 @@ class User(db.Model):
     name       = db.Column(db.String(100), nullable=False)
     email      = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    interests  = db.Column(db.String(500), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     stats  = db.relationship("UserStats", back_populates="user", uselist=False, cascade="all, delete-orphan")
@@ -58,7 +60,7 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def to_public(self) -> dict:
-        return {"id": self.id, "name": self.name, "email": self.email}
+        return {"id": self.id, "name": self.name, "email": self.email, "interests": self.interests}
 
 
 class UserStats(db.Model):
@@ -155,9 +157,10 @@ def get_or_create_stats(user: User) -> UserStats:
 @app.route("/api/auth/register", methods=["POST"])
 def register():
     body = request.get_json(silent=True) or {}
-    name     = (body.get("name") or "").strip()
-    email    = (body.get("email") or "").strip().lower()
-    password = body.get("password") or ""
+    name      = (body.get("name") or "").strip()
+    email     = (body.get("email") or "").strip().lower()
+    password  = body.get("password") or ""
+    interests = (body.get("interests") or "").strip()
 
     if not name or not email or not password:
         return jsonify({"error": "Nome, e-mail e senha são obrigatórios"}), 400
@@ -166,7 +169,7 @@ def register():
     if User.query.filter_by(email=email).first():
         return jsonify({"error": "E-mail já cadastrado"}), 409
 
-    user = User(name=name, email=email)
+    user = User(name=name, email=email, interests=interests)
     user.set_password(password)
     db.session.add(user)
     db.session.flush()
@@ -406,6 +409,7 @@ def ai_routine():
     prompt = f"""
 Você é um assistente de estudos motivacional e prático do aplicativo LevelUp Study.
 O usuário se chama {user.name}. Ele está no Nível {stats.level} e tem um streak (dias seguidos de estudo) de {stats.streak} dias.
+Interesses do usuário: {user.interests or 'Não definidos'}. Use esses interesses como contexto em suas dicas e sugestões se possível.
 
 Aqui estão as tarefas pendentes dele:
 {task_list_str}
@@ -450,6 +454,9 @@ def ai_chat():
     prompt = f"""
 Você é um mentor de estudos de IA, parte de um app de produtividade gamificado (LevelUp Study).
 O nome do usuário é {user.name}, Nível {stats.level}, Streak {stats.streak} dias.
+Interesses do usuário: {user.interests or 'Não definidos'}.
+IMPORTANTE: Use esses interesses como foco temático para analogias, exemplos práticos e explicações (ex: se ele gosta de futebol e estuda física, use chutes de jogadores famosos para explicar; se ele gosta de anime, use poderes de personagens). 
+
 Mensagem do usuário: "{message}"
 
 Responda de forma direta, amigável e encorajadora. Você pode usar formatação Markdown simples. Tente manter a resposta curta (1-3 parágrafos) a menos que ele peça algo complexo.

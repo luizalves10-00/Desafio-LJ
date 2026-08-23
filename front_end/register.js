@@ -93,13 +93,17 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  // Capturar interesses selecionados
+  const checkboxes = document.querySelectorAll('#interests-grid input[type="checkbox"]:checked');
+  const interests = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
   setLoading(true);
   try {
     const res = await fetch(`${API}/auth/register`, {
       method:      "POST",
       headers:     { "Content-Type": "application/json" },
       credentials: "include",
-      body:        JSON.stringify({ name, email, password }),
+      body:        JSON.stringify({ name, email, password, interests }),
     });
     const data = await res.json();
 
