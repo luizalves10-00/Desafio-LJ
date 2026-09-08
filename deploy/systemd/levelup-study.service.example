@@ -1,0 +1,18 @@
+[Unit]
+Description=LevelUp Study (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User=USUARIO_HESTIA
+Group=USUARIO_HESTIA
+WorkingDirectory=/home/USUARIO_HESTIA/apps/levelup-study/current/back_end
+EnvironmentFile=/home/USUARIO_HESTIA/apps/levelup-study/shared/.env
+ExecStart=/home/USUARIO_HESTIA/apps/levelup-study/current/.venv/bin/gunicorn --workers 2 --threads 2 --timeout 90 --bind 127.0.0.1:8017 --access-logfile - --error-logfile - backend:app
+Restart=always
+RestartSec=5
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
