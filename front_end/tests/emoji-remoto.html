@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Teste de emojis sob demanda</title>
+  <link rel="stylesheet" href="../emoji-3d.css">
+  <script defer src="../emoji-catalog.js"></script><script defer src="../emoji-3d.js"></script>
+  <style>body{max-width:760px;margin:48px auto;padding:24px;background:#10101e;color:#e2e8f0;font:18px/1.6 system-ui}button{padding:12px 20px;border:0;border-radius:10px;background:#923cf2;color:white;font:inherit;cursor:pointer}#reply{margin-top:24px;padding:24px;border-radius:16px;background:#1d1d30;font-size:28px;min-height:90px}small{color:#aaa}</style>
+</head>
+<body>
+  <h1>Emojis 3D sob demanda</h1>
+  <p>Simula uma resposta nova no mesmo renderizador usado pelo chat. Entre no sistema em outra aba para permitir novos downloads.</p>
+  <button id="generate" type="button">Simular resposta com emojis novos</button>
+  <div id="reply" aria-live="polite"></div>
+  <small>Repetir a resposta reutiliza o cache. Nenhuma chamada ao modelo de IA é feita neste teste.</small>
+  <script>
+    document.getElementById('generate').addEventListener('click', () => {
+      document.getElementById('reply').textContent = 'Olá! 👋 Faça uma pausa para o lanche 🍕 e volte com curiosidade 🦊. Até já! 👋';
+    });
+  </script>
+</body>
+</html>

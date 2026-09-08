@@ -18,6 +18,7 @@ back_end/focusquest.db
 
 # Legacy JSON storage (replaced by SQLite)
 back_end/data.json
+back_end/emoji-cache/
 
 # Logs dos servidores (dev)
 *.log

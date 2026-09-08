@@ -100,14 +100,14 @@ Todas as chamadas à API usam `credentials: "include"` para enviar o cookie de s
 
 O `index.html` é uma Single Page Application simples: uma sidebar fixa com botões que alternam a visibilidade das seções sem recarregar a página.
 
-### 🏠 Dashboard
+### <img src="assets/emoji/1f3e0.png" alt="🏠" width="24" height="24" /> Dashboard
 
 Visão geral com:
 - 3 cards de estatísticas (nível, XP total, streak)
 - Caixa de sugestão inteligente com botão de atualizar
 - Timer Pomodoro compacto com anel SVG
 
-### ⏱ Pomodoro
+### <img src="assets/emoji/23f1.png" alt="⏱" width="24" height="24" /> Pomodoro
 
 - Timer grande com anel de progresso SVG animado
 - Modos de duração: 25/5, 50/10, 15/3, 45/15 minutos
@@ -115,32 +115,32 @@ Visão geral com:
 - Beep sonoro ao trocar entre foco e pausa (Web Audio API)
 - Cards de estatísticas: total de pomodoros, XP acumulado, minutos de foco
 
-### 📋 Tarefas
+### <img src="assets/emoji/1f4cb.png" alt="📋" width="24" height="24" /> Tarefas
 
 - Formulário com: título, matéria, prazo e prioridade
 - Lista com ordenação automática (não concluídas → alta prioridade → prazo mais próximo)
 - Botão de concluir (+30 XP) e botão de excluir
-- Badge colorido de prioridade (🔴 Alta · 🟡 Média · 🟢 Baixa)
+- Badge colorido de prioridade (<img src="assets/emoji/1f534.png" alt="🔴" width="24" height="24" /> Alta · <img src="assets/emoji/1f7e1.png" alt="🟡" width="24" height="24" /> Média · <img src="assets/emoji/1f7e2.png" alt="🟢" width="24" height="24" /> Baixa)
 
-### 🏆 Conquistas
+### <img src="assets/emoji/1f3c6.png" alt="🏆" width="24" height="24" /> Conquistas
 
 Grid de 11 badges. Badges bloqueados ficam com opacidade reduzida; desbloqueados recebem borda dourada.
 
 | Badge | Condição |
 |---|---|
-| 🍅 Primeiro Pomodoro | 1 pomodoro concluído |
-| 🔥 Em Chamas | 5 pomodoros |
-| 💪 Dedicação | 20 pomodoros |
-| 🚀 Maratonista | 50 pomodoros |
-| ⚡ Streak 3 dias | 3 dias seguidos |
-| 🌟 Semana Perfeita | 7 dias seguidos |
-| 👑 Mês de Ouro | 30 dias seguidos |
-| 🏆 Nível 5 | Alcançar nível 5 |
-| 💎 Nível 10 | Alcançar nível 10 |
-| ✨ 500 XP | Acumular 500 XP |
-| 🌈 2000 XP | Acumular 2000 XP |
+| <img src="assets/emoji/1f345.png" alt="🍅" width="24" height="24" /> Primeiro Pomodoro | 1 pomodoro concluído |
+| <img src="assets/emoji/1f525.png" alt="🔥" width="24" height="24" /> Em Chamas | 5 pomodoros |
+| <img src="assets/emoji/1f4aa.png" alt="💪" width="24" height="24" /> Dedicação | 20 pomodoros |
+| <img src="assets/emoji/1f680.png" alt="🚀" width="24" height="24" /> Maratonista | 50 pomodoros |
+| <img src="assets/emoji/26a1.png" alt="⚡" width="24" height="24" /> Streak 3 dias | 3 dias seguidos |
+| <img src="assets/emoji/1f31f.png" alt="🌟" width="24" height="24" /> Semana Perfeita | 7 dias seguidos |
+| <img src="assets/emoji/1f451.png" alt="👑" width="24" height="24" /> Mês de Ouro | 30 dias seguidos |
+| <img src="assets/emoji/1f3c6.png" alt="🏆" width="24" height="24" /> Nível 5 | Alcançar nível 5 |
+| <img src="assets/emoji/1f48e.png" alt="💎" width="24" height="24" /> Nível 10 | Alcançar nível 10 |
+| <img src="assets/emoji/2728.png" alt="✨" width="24" height="24" /> 500 XP | Acumular 500 XP |
+| <img src="assets/emoji/1f308.png" alt="🌈" width="24" height="24" /> 2000 XP | Acumular 2000 XP |
 
-### 🎨 Temas
+### <img src="assets/emoji/1f3a8.png" alt="🎨" width="24" height="24" /> Temas
 
 Seletor visual com preview em miniatura de cada tema. A escolha é salva em `localStorage` e aplicada automaticamente na próxima visita.
 
@@ -152,12 +152,12 @@ Os temas são implementados com **CSS Custom Properties** no seletor `[data-them
 
 | Atributo `data-theme` | Nome visual |
 |---|---|
-| `dark` | 🌙 Dark (padrão) |
-| `ocean` | 🌊 Ocean |
-| `forest` | 🌿 Forest |
-| `sunset` | 🌅 Sunset |
-| `light` | ☀️ Light |
-| `midnight` | 💜 Midnight |
+| `dark` | <img src="assets/emoji/1f319.png" alt="🌙" width="24" height="24" /> Dark (padrão) |
+| `ocean` | <img src="assets/emoji/1f30a.png" alt="🌊" width="24" height="24" /> Ocean |
+| `forest` | <img src="assets/emoji/1f33f.png" alt="🌿" width="24" height="24" /> Forest |
+| `sunset` | <img src="assets/emoji/1f305.png" alt="🌅" width="24" height="24" /> Sunset |
+| `light` | <img src="assets/emoji/2600.png" alt="☀️" width="24" height="24" /> Light |
+| `midnight` | <img src="assets/emoji/1f49c.png" alt="💜" width="24" height="24" /> Midnight |
 
 **Variáveis CSS usadas:**
 
@@ -224,3 +224,24 @@ const API = "http://localhost:5000/api";
 ```
 
 Para apontar para outro servidor, basta alterar essa constante em `index.html`, `login.html` e `register.html`.
+
+## Emojis 3D locais
+
+O catálogo inclui os 139 emojis do inventário, associados pelo Unicode exato.
+A renderização compartilhada em `emoji-3d.js` atende login, cadastro, painel,
+mensagens, jogos e apresentação. As regras dos jogos continuam usando o texto
+Unicode; a imagem altera somente a apresentação.
+
+Execute `node scripts/baixar-emojis.mjs` na raiz para validar/baixar os PNGs
+e regenerar o catálogo. Distribua `assets/emoji` junto com o frontend.
+Consulte [créditos e licença](assets/emoji/CREDITOS.md).
+
+Com o backend em execução, abra `/tests/emoji-3d.html` para executar a verificação
+de carregamento dos 139 PNGs, conteúdo dinâmico, fallback, seletores e canvas.
+A página também apresenta uma galeria com o nome Unicode de cada imagem.
+O material BMC possui uma [versão HTML com os emojis 3D](../docs_desafio/bmc.html);
+o arquivo de texto original foi preservado como referência.
+
+Emojis novos de respostas da IA são carregados sob demanda pela API local,
+sem enviar a conversa ao fornecedor. O Unicode permanece visível durante a
+busca ou em falhas. Consulte [cache, limites e testes](../back_end/EMOJIS.md).

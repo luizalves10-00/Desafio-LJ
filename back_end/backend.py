@@ -7,6 +7,7 @@ from datetime import date, datetime
 import os
 from google import genai
 from dotenv import load_dotenv
+from emoji_cache import EmojiCache, CacheError, create_emoji_blueprint
 
 # App setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -474,6 +475,18 @@ Responda de forma direta, amigável e encorajadora. Você pode usar formatação
         return jsonify({"error": "Erro ao comunicar com a inteligência artificial."}), 500
 
 # ── Frontend (serve as páginas no mesmo host da API) ─────────────────────────
+def authorize_emoji_download():
+    if not session.get("user_id"):
+        raise CacheError(401)
+
+
+emoji_cache = EmojiCache(
+    os.path.join(BASE_DIR, "emoji-cache"),
+    os.path.join(FRONTEND_DIR, "assets", "emoji"),
+)
+app.register_blueprint(create_emoji_blueprint(emoji_cache, authorize_emoji_download))
+
+
 @app.route("/")
 def index_page():
     return send_from_directory(FRONTEND_DIR, "login.html")

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verificação dos emojis 3D</title>
+  <link rel="stylesheet" href="../emoji-3d.css">
+  <script defer src="../emoji-catalog.js"></script>
+  <script defer src="../emoji-3d.js"></script>
+  <style>
+    body { background:#10101e;color:#e2e8f0;font:16px/1.5 system-ui;margin:32px; }
+    #gallery { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px; }
+    figure { margin:0;padding:16px;text-align:center;background:#1d1d30;border-radius:12px; }
+    figure .emoji-3d { font-size:64px; }
+    figcaption { font-size:11px;overflow-wrap:anywhere; }
+    #fixture { margin-bottom:24px; }
+  </style>
+</head>
+<body>
+  <h1>Verificação dos 139 emojis 3D</h1>
+  <pre id="results">Executando…</pre>
+  <div id="fixture"><span id="initial">🍅 ⚔️ ❤</span>
+    <select id="choice"><option value="1">⚔️ Chefe</option><option value="2">🛡️ Elite</option></select>
+  </div>
+  <div id="gallery"></div>
+  <script>
+    window.addEventListener('load', async () => {
+      const results = [];
+      const check = (condition, label) => {
+        results.push(`${condition ? 'PASS' : 'FAIL'}: ${label}`);
+        document.getElementById('results').textContent = results.join('\n');
+        if (!condition) throw new Error(label);
+      };
+      const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+      try {
+        const initial = document.getElementById('initial');
+        check(initial.querySelectorAll('.emoji-3d').length === 3, 'HTML inicial convertido');
+        check(initial.textContent === '🍅 ⚔️ ❤', 'Texto original preservado para cópia e lógica');
+        const dynamic = document.createElement('div');
+        dynamic.textContent = '❌ derrota 🎉 vitória';
+        document.getElementById('fixture').append(dynamic); await tick();
+        check(dynamic.querySelectorAll('img').length === 2, 'Mensagens dinâmicas convertidas');
+        dynamic.textContent = '⭕'; await tick();
+        check(dynamic.querySelectorAll('img').length === 1 && dynamic.textContent === '⭕', 'Atualização do tabuleiro preserva o símbolo');
+        Emoji3D.render(dynamic); Emoji3D.render(dynamic);
+        check(dynamic.querySelectorAll('.emoji-3d').length === 1, 'Renderização repetida não duplica imagens');
+        dynamic.firstChild.firstChild.firstChild.data = '⭕'; await tick();
+        check(dynamic.textContent === '⭕', 'Texto interno não dispara recursão');
+        const unknown = document.createElement('span'); unknown.textContent = '👩‍🚀';
+        document.getElementById('fixture').append(unknown); await tick();
+        check(unknown.querySelector('.emoji-3d').dataset.emoji === '👩‍🚀' && unknown.textContent === '👩‍🚀', 'Emoji novo preserva a sequência completa para busca remota');
+        const fallback = Emoji3D.create('🍅'); document.getElementById('fixture').append(fallback);
+        fallback.querySelector('img').dispatchEvent(new Event('error'));
+        check(fallback.classList.contains('emoji-3d-failed') && fallback.textContent === '🍅', 'Fallback mantém o emoji exato');
+        const select = document.getElementById('choice');
+        let changes = 0; select.addEventListener('change', () => changes++);
+        select.parentElement.querySelectorAll('[role="option"]')[1].click();
+        check(select.value === '2' && changes === 1, 'Seletor mantém valor e evento change');
+        check(select.parentElement.querySelector('button').textContent === '🛡️ Elite', 'Seletor sincroniza imagem e texto');
+        const gallery = document.getElementById('gallery');
+        for (const [emoji, entry] of Object.entries(EMOJI_3D_CATALOG)) {
+          const figure = document.createElement('figure'); figure.append(Emoji3D.create(emoji));
+          const caption = document.createElement('figcaption'); caption.textContent = entry.name;
+          figure.append(caption); gallery.append(figure);
+        }
+        const images = [...gallery.querySelectorAll('img')];
+        for (const image of images) image.loading = 'eager';
+        await Promise.all(images.map(image => image.decode()));
+        check(images.length === 139 && images.every(image => image.naturalWidth >= 128), '139 PNGs locais carregados e decodificados');
+        check(images.every(image => new URL(image.src).origin === location.origin), 'Nenhuma imagem depende de servidor externo');
+        let drawn = 0; const fake = {font:'16px sans-serif',textAlign:'center',measureText:t=>({width:t.length*8}),save(){},restore(){},fillText(){},drawImage(){drawn++;}};
+        Emoji3D.drawText(fake, '❤ 🔒', 50, 30);
+        check(drawn === 2, 'Coração e cadeado são imagens no canvas');
+        document.title = 'PASS — 139 emojis 3D';
+      } catch (error) {
+        document.title = 'FAIL — emojis 3D';
+        document.getElementById('results').textContent += '\n' + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

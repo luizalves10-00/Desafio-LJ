@@ -3213,7 +3213,7 @@ function platDrawBoss(ctx, sx) {
   ctx.font = "11px sans-serif";
   ctx.fillStyle = "#ef4444";
   ctx.textAlign = "center";
-  ctx.fillText("❤".repeat(b.hp), sx + b.w / 2, b.y - 16);
+  Emoji3D.drawText(ctx, "❤".repeat(b.hp), sx + b.w / 2, b.y - 16);
   ctx.textAlign = "left";
 }
 
@@ -3347,7 +3347,7 @@ function platDraw() {
       ctx.font = "11px sans-serif";
       ctx.fillStyle = "#fbbf24";
       ctx.textAlign = "center";
-      ctx.fillText("🔒 Derrote o chefão!", gx + 10, goal.y - 10);
+      Emoji3D.drawText(ctx, "🔒 Derrote o chefão!", gx + 10, goal.y - 10);
       ctx.textAlign = "left";
     }
   }
