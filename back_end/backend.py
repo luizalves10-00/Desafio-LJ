@@ -489,7 +489,7 @@ app.register_blueprint(create_emoji_blueprint(emoji_cache, authorize_emoji_downl
 
 @app.route("/")
 def index_page():
-    return send_from_directory(FRONTEND_DIR, "login.html")
+    return send_from_directory(FRONTEND_DIR, "landing.html")
 
 
 @app.route("/<path:filename>")
