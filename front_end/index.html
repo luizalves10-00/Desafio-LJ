@@ -269,7 +269,31 @@
             <input type="text" id="task-subject" placeholder="Matéria" style="max-width:160px" />
           </div>
           <div class="task-form-row">
-            <input type="date" id="task-due" />
+            <div class="date-picker" id="task-date-picker">
+              <input type="hidden" id="task-due" />
+              <button class="date-picker-trigger" id="task-date-trigger" type="button"
+                      aria-haspopup="dialog" aria-expanded="false" aria-controls="task-date-popover">
+                <span class="date-picker-icon" aria-hidden="true">📅</span>
+                <span id="task-date-label">Escolher prazo</span>
+                <span class="date-picker-chevron" aria-hidden="true">▾</span>
+              </button>
+              <div class="date-picker-popover" id="task-date-popover" role="dialog"
+                   aria-modal="false" aria-label="Escolher prazo da missão" hidden>
+                <div class="date-picker-header">
+                  <button type="button" class="date-picker-nav" id="task-date-prev" aria-label="Mês anterior">‹</button>
+                  <button type="button" class="date-picker-month" id="task-date-month" aria-live="polite"></button>
+                  <button type="button" class="date-picker-nav" id="task-date-next" aria-label="Próximo mês">›</button>
+                </div>
+                <div class="date-picker-weekdays" aria-hidden="true">
+                  <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div class="date-picker-grid" id="task-date-grid" role="grid"></div>
+                <div class="date-picker-actions">
+                  <button type="button" id="task-date-clear">Limpar</button>
+                  <button type="button" id="task-date-today">Hoje</button>
+                </div>
+              </div>
+            </div>
             <select id="task-priority">
               <option value="3">🗡️ Missão Normal (+20 XP)</option>
               <option value="2" selected>🛡️ Missão Elite (+30 XP)</option>

@@ -418,10 +418,113 @@ async function addTask() {
     document.getElementById("task-title").value = "";
     document.getElementById("task-subject").value = "";
     document.getElementById("task-due").value = "";
+    syncTaskDatePicker();
     loadTasks();
     loadSuggest();
     showToast("📜 Missão aceita! Boa sorte, herói.", "green");
   } catch(e) {}
+}
+
+// ── SELETOR DE DATA DAS MISSÕES ───────────────────────────────────────────
+const taskDateState = { view: new Date(), focused: new Date() };
+
+function dateOnly(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
+function dateValue(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+function parseDateValue(value) {
+  const parts = value && value.split("-").map(Number);
+  return parts && parts.length === 3 ? new Date(parts[0], parts[1] - 1, parts[2]) : null;
+}
+function formatTaskDate(date) {
+  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
+    .format(date).replaceAll(" de ", " ");
+}
+function openTaskDatePicker() {
+  const selected = parseDateValue(gel("task-due").value);
+  taskDateState.focused = selected || dateOnly(new Date());
+  taskDateState.view = new Date(taskDateState.focused.getFullYear(), taskDateState.focused.getMonth(), 1);
+  gel("task-date-picker").classList.add("open");
+  gel("task-date-popover").hidden = false;
+  gel("task-date-trigger").setAttribute("aria-expanded", "true");
+  renderTaskDatePicker();
+  requestAnimationFrame(() => gel("task-date-grid").querySelector('[tabindex="0"]')?.focus());
+}
+function closeTaskDatePicker(returnFocus = false) {
+  gel("task-date-picker").classList.remove("open");
+  gel("task-date-popover").hidden = true;
+  gel("task-date-trigger").setAttribute("aria-expanded", "false");
+  if (returnFocus) gel("task-date-trigger").focus();
+}
+function selectTaskDate(date) {
+  gel("task-due").value = dateValue(date);
+  taskDateState.focused = dateOnly(date);
+  syncTaskDatePicker();
+  closeTaskDatePicker(true);
+}
+function syncTaskDatePicker() {
+  const selected = parseDateValue(gel("task-due").value);
+  gel("task-date-picker").classList.toggle("has-value", Boolean(selected));
+  gel("task-date-label").textContent = selected ? formatTaskDate(selected) : "Escolher prazo";
+}
+function renderTaskDatePicker() {
+  const grid = gel("task-date-grid");
+  const view = taskDateState.view;
+  const first = new Date(view.getFullYear(), view.getMonth(), 1);
+  const start = new Date(view.getFullYear(), view.getMonth(), 1 - first.getDay());
+  const selected = parseDateValue(gel("task-due").value);
+  const today = dateOnly(new Date());
+  gel("task-date-month").textContent = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(view);
+  grid.innerHTML = "";
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "date-picker-day";
+    if (date.getMonth() !== view.getMonth()) button.classList.add("outside");
+    if (dateValue(date) === dateValue(today)) button.classList.add("today");
+    if (selected && dateValue(date) === dateValue(selected)) button.classList.add("selected");
+    button.textContent = date.getDate();
+    button.dataset.date = dateValue(date);
+    button.setAttribute("role", "gridcell");
+    button.setAttribute("aria-label", new Intl.DateTimeFormat("pt-BR", { dateStyle: "full" }).format(date));
+    button.setAttribute("aria-selected", String(Boolean(selected && dateValue(date) === dateValue(selected))));
+    button.tabIndex = dateValue(date) === dateValue(taskDateState.focused) ? 0 : -1;
+    button.onclick = () => selectTaskDate(date);
+    grid.appendChild(button);
+  }
+}
+function moveTaskDateFocus(days) {
+  taskDateState.focused.setDate(taskDateState.focused.getDate() + days);
+  taskDateState.view = new Date(taskDateState.focused.getFullYear(), taskDateState.focused.getMonth(), 1);
+  renderTaskDatePicker();
+  gel("task-date-grid").querySelector('[tabindex="0"]')?.focus();
+}
+function initTaskDatePicker() {
+  const trigger = gel("task-date-trigger");
+  trigger.addEventListener("click", () => gel("task-date-popover").hidden ? openTaskDatePicker() : closeTaskDatePicker());
+  gel("task-date-prev").onclick = () => { taskDateState.view.setMonth(taskDateState.view.getMonth() - 1); renderTaskDatePicker(); };
+  gel("task-date-next").onclick = () => { taskDateState.view.setMonth(taskDateState.view.getMonth() + 1); renderTaskDatePicker(); };
+  gel("task-date-month").onclick = () => { taskDateState.view = new Date(); taskDateState.view.setDate(1); renderTaskDatePicker(); };
+  gel("task-date-today").onclick = () => selectTaskDate(new Date());
+  gel("task-date-clear").onclick = () => { gel("task-due").value = ""; syncTaskDatePicker(); closeTaskDatePicker(true); };
+  gel("task-date-popover").addEventListener("keydown", event => {
+    const moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
+    if (moves[event.key]) { event.preventDefault(); moveTaskDateFocus(moves[event.key]); }
+    else if (event.key === "Home") { event.preventDefault(); moveTaskDateFocus(-taskDateState.focused.getDay()); }
+    else if (event.key === "End") { event.preventDefault(); moveTaskDateFocus(6 - taskDateState.focused.getDay()); }
+    else if (event.key === "PageUp" || event.key === "PageDown") {
+      event.preventDefault();
+      taskDateState.focused.setMonth(taskDateState.focused.getMonth() + (event.key === "PageUp" ? -1 : 1));
+      taskDateState.view = new Date(taskDateState.focused.getFullYear(), taskDateState.focused.getMonth(), 1);
+      renderTaskDatePicker();
+      gel("task-date-grid").querySelector('[tabindex="0"]')?.focus();
+    } else if (event.key === "Escape") { event.preventDefault(); closeTaskDatePicker(true); }
+  });
+  document.addEventListener("pointerdown", event => {
+    if (!gel("task-date-picker").contains(event.target)) closeTaskDatePicker();
+  });
+  syncTaskDatePicker();
 }
 
 async function completeTask(id) {
@@ -3394,6 +3497,7 @@ document.addEventListener("keyup", (e) => {
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
   loadTheme();
+  initTaskDatePicker();
   setTopbarDate();
   try {
     const res = await apiFetch(`${API}/auth/me`);
