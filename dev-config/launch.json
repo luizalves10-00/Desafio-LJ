@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "levelup",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["back_end/backend.py"],
+      "port": 5000,
+      "autoPort": true
+    }
+  ]
+}

@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>LevelUp Study — Pitch Deck (5 Minutos)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Manrope:wght@400;500;600;700;800&display=swap">
+
+<style>
+/* ══════════════════════════════════════════════════════════════
+   LEVELUP STUDY — PITCH DECK MASTER (DIREÇÃO DE ARTE & UI/UX SÊNIOR)
+   Proporção Estrita 16:9 (1280x720) | Bento Grids, SVGs & Glass
+   Exportação Impecável para PDF (@media print com cores sólidas)
+   ══════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Paleta Oficial do Projeto ── */
+  --void:        #07060D;   /* Fundo quase-preto absoluto com viés violeta */
+  --ink:         #0E0C1A;   /* Superfície primária */
+  --ink-2:       #15112B;   /* Superfície secundária */
+  --ink-solid:   #131024;   /* Sólido elegante para print e alto contraste */
+  --ink-solid-2: #1B162E;   /* Sólido secundário para print */
+
+  /* ── Acentos Cromáticos ── */
+  --arcane:      #8B5CF6;   /* Tecnologia / Marca / Inteligência */
+  --arcane-hi:   #C4B5FD;   /* Realce de texto e foco tecnológico */
+  --ember:       #F59E0B;   /* Gamificação / EXP / Alerta construtivo */
+  --vitae:       #34D399;   /* Sucesso / Validação / Impacto positivo */
+  --crimson:     #FB7185;   /* Dor / Problema / Paralisia / Urgência */
+
+  /* ── Tipografia e Leitura ── */
+  --parchment:   #F3F0FB;   /* Texto principal brilhante */
+  --mist:        #A79EC4;   /* Texto secundário */
+  --mist-dim:    #7C7396;   /* Legendas e rótulos discretos */
+
+  /* ── Vidro e Bordas ── */
+  --glass:       rgba(255, 255, 255, 0.04);
+  --glass-card:  rgba(14, 12, 26, 0.72);
+  --line:        rgba(196, 181, 253, 0.14);
+  --line-2:      rgba(196, 181, 253, 0.28);
+  --line-hi:     rgba(139, 92, 246, 0.45);
+
+  /* ── Curvaturas ── */
+  --r-xl: 22px;
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 8px;
+
+  /* ── Famílias de Fonte ── */
+  --font-display: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body:    'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --k: 1;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--void);
+  color: var(--parchment);
+  font-family: var(--font-body);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── SVG Library Oculta ── */
+.svg-library {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ── Ícones Vetoriais Padronizados (.icon-box) ── */
+.icon-box {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--arcane-hi);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(196, 181, 253, 0.2);
+  flex-shrink: 0;
+}
+.icon-box svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon-box.is-ember {
+  color: var(--ember);
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.32);
+}
+.icon-box.is-vitae {
+  color: var(--vitae);
+  background: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.32);
+}
+.icon-box.is-crimson {
+  color: var(--crimson);
+  background: rgba(251, 113, 133, 0.15);
+  border-color: rgba(251, 113, 133, 0.32);
+}
+
+/* ── Emojis 3D Fluent Locais ── */
+.emoji-3d {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -0.16em;
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+}
+.emoji-3d.is-md { width: 1.35em; height: 1.35em; }
+.emoji-3d.is-lg { width: 1.6em; height: 1.6em; }
+.emoji-3d-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ── Fundo Animado Sutil (.ambient) ── */
+.ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-image: radial-gradient(rgba(196, 181, 253, 0.1) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+.ambient i {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.32;
+  animation: floatOrb 22s ease-in-out infinite alternate;
+}
+.ambient i:nth-child(1) {
+  width: 52vw;
+  height: 52vw;
+  left: -15vw;
+  top: -18vw;
+  background: var(--arcane);
+}
+.ambient i:nth-child(2) {
+  width: 44vw;
+  height: 44vw;
+  right: -16vw;
+  top: 15vh;
+  background: #4c1d95;
+  animation-duration: 26s;
+}
+.ambient i:nth-child(3) {
+  width: 36vw;
+  height: 36vw;
+  left: 35vw;
+  bottom: -15vh;
+  background: var(--ember);
+  opacity: 0.12;
+  animation-duration: 30s;
+}
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(3vw, 2vh) scale(1.05); }
+  100% { transform: translate(-2vw, -2vh) scale(0.97); }
+}
+
+/* ── Palco 1280x720 com Auto-Fit e Transform Scale ── */
+.stage-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+}
+.stage {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  transform: scale(var(--k));
+  transform-origin: center center;
+}
+
+/* ── HUD de Controle Superior ── */
+.hud {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 44px;
+  z-index: 6;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: #120b22;
+  background: linear-gradient(145deg, var(--ember), #fbbf24 60%, var(--arcane-hi));
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.28);
+}
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15.5px;
+  letter-spacing: -0.01em;
+  color: var(--parchment);
+}
+.brand-name b {
+  color: var(--arcane-hi);
+  font-weight: 700;
+}
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chapter-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mist);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+.hud-btn {
+  background: var(--glass);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 11px;
+  color: var(--mist);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.16s ease;
+}
+.hud-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--parchment);
+  border-color: var(--line-2);
+}
+.hud-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.counter {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mist-dim);
+  background: var(--glass);
+  border: 1px solid var(--line);
+  padding: 5px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.counter b {
+  color: var(--parchment);
+  font-weight: 700;
+}
+
+/* ── Trilho Inferior de EXP e Navegação ── */
+.rail {
+  position: absolute;
+  inset: auto 44px 18px 44px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 6;
+}
+.rail-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ember);
+  min-width: 105px;
+}
+.rail-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.rail-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--arcane), var(--ember));
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+  transition: width 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-btns {
+  display: flex;
+  gap: 6px;
+}
+.nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  color: var(--mist);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--parchment);
+  border-color: var(--line-2);
+}
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.nav-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Zonas de Clique Laterais ── */
+.zone {
+  position: absolute;
+  top: 60px;
+  bottom: 56px;
+  width: 70px;
+  z-index: 4;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+.zone-l { left: 0; }
+.zone-r { right: 0; }
+
+/* ── Estrutura do Slide ── */
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: 64px 44px 54px 44px;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1), transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+.slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* ── Cabeçalho do Slide ── */
+.head-block {
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--arcane-hi);
+}
+.eyebrow.is-crimson { color: var(--crimson); }
+.eyebrow.is-ember   { color: var(--ember); }
+.eyebrow.is-vitae   { color: var(--vitae); }
+.eyebrow.is-backup  { color: #38BDF8; }
+
+.head-block h2 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 38px;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--parchment);
+  text-wrap: balance;
+}
+.head-block h2 em,
+.head-block h2 span.hl-arcane,
+.head-block h2 .hl-arcane {
+  font-style: normal;
+  color: var(--arcane-hi);
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+}
+.head-block h2 em.is-crimson,
+.head-block h2 span.hl-crimson,
+.head-block h2 .hl-crimson {
+  font-style: normal;
+  color: var(--crimson);
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+}
+.head-block h2 em.is-ember,
+.head-block h2 span.hl-ember,
+.head-block h2 .hl-ember {
+  font-style: normal;
+  color: var(--ember);
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+}
+.head-block h2 em.is-vitae,
+.head-block h2 span.hl-vitae,
+.head-block h2 .hl-vitae {
+  font-style: normal;
+  color: var(--vitae);
+  background: none;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: initial;
+}
+.head-block .lead {
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--mist);
+  max-width: 980px;
+}
+.head-block .lead strong {
+  color: var(--parchment);
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM BENTO GRID & FLOAT CARDS
+   ══════════════════════════════════════════════════════════════ */
+.bento-grid {
+  display: grid;
+  gap: 16px;
+  flex: 1;
+  align-items: stretch;
+}
+.bento-hero-left  { grid-template-columns: 1.15fr 0.85fr; }
+.bento-hero-right { grid-template-columns: 0.85fr 1.15fr; }
+.bento-split      { grid-template-columns: 1fr 1fr; }
+.bento-3col       { grid-template-columns: repeat(3, 1fr); }
+.bento-4col       { grid-template-columns: repeat(4, 1fr); }
+
+.bento-card {
+  position: relative;
+  background: var(--glass-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.bento-card:hover {
+  border-color: var(--line-2);
+}
+.bento-card.is-crimson {
+  border-color: rgba(251, 113, 133, 0.32);
+  background: linear-gradient(155deg, rgba(251, 113, 133, 0.08), var(--glass-card) 60%);
+}
+.bento-card.is-ember {
+  border-color: rgba(245, 158, 11, 0.32);
+  background: linear-gradient(155deg, rgba(245, 158, 11, 0.08), var(--glass-card) 60%);
+}
+.bento-card.is-arcane {
+  border-color: rgba(139, 92, 246, 0.35);
+  background: linear-gradient(155deg, rgba(139, 92, 246, 0.12), var(--glass-card) 60%);
+}
+.bento-card.is-vitae {
+  border-color: rgba(52, 211, 153, 0.32);
+  background: linear-gradient(155deg, rgba(52, 211, 153, 0.08), var(--glass-card) 60%);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.015em;
+  color: var(--parchment);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--mist);
+}
+.card-body strong {
+  color: var(--parchment);
+  font-weight: 600;
+}
+
+/* ── Cards Flutuantes de Sobreposição (.float-card) ── */
+.float-card {
+  position: absolute;
+  background: rgba(14, 12, 26, 0.92);
+  border: 1px solid rgba(196, 181, 253, 0.35);
+  border-radius: var(--r-md);
+  padding: 8px 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  pointer-events: none;
+  animation: floatCard 4s ease-in-out infinite;
+}
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-7px) rotate(1deg); }
+}
+.float-card.is-top-left     { top: 14px; left: 14px; animation-delay: -1s; }
+.float-card.is-bottom-right { bottom: 14px; right: 14px; animation-delay: -2s; }
+.float-card.is-bottom-left  { bottom: 14px; left: 14px; animation-delay: -3s; }
+
+.float-stat {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--parchment);
+}
+.float-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mist-dim);
+}
+
+/* ── Badges e Tags ── */
+.tag {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  color: var(--arcane-hi);
+  background: rgba(139, 92, 246, 0.12);
+}
+.tag.is-ember   { color: var(--ember); border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.12); }
+.tag.is-vitae   { color: var(--vitae); border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.12); }
+.tag.is-crimson { color: var(--crimson); border-color: rgba(251, 113, 133, 0.4); background: rgba(251, 113, 133, 0.12); }
+.tag.is-cyan    { color: #38BDF8; border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.12); }
+
+/* ── Estatísticas de Impacto ── */
+.stat-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 38px;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: var(--parchment);
+  font-variant-numeric: tabular-nums;
+}
+.stat.is-crimson { color: var(--crimson); }
+.stat.is-ember   { color: var(--ember); }
+.stat.is-vitae   { color: var(--vitae); }
+.stat.is-arcane  { color: var(--arcane-hi); }
+.stat-cap {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mist-dim);
+}
+
+/* ── Imagem Hero Exata (Slide 1) ── */
+.hero-photo-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 290px;
+  border-radius: 30px 30px 110px 30px;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  background: #000;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.44);
+}
+.hero-photo-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(7, 6, 13, 0.65), transparent 45%);
+  pointer-events: none;
+}
+.hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.92) contrast(1.05);
+}
+
+/* ── Container do Player de Vídeo Demo (Slide 6) ── */
+.video-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 340px;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  background: #05040a;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Container do Player de Vídeo Vertical (Slide 7 - João Pedro) ── */
+.video-portrait-wrap {
+  position: relative;
+  width: 228px;
+  height: 405px;
+  max-width: 100%;
+  aspect-ratio: 474 / 850;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid var(--line-2);
+  background: #000;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(52, 211, 153, 0.12);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.video-portrait-wrap .video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  display: block;
+}
+.video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  display: block;
+}
+.video-badge {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  background: rgba(14, 12, 26, 0.85);
+  border: 1px solid var(--line-2);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--mist);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+  z-index: 2;
+}
+.video-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--crimson);
+  animation: pulseDot 1.4s infinite;
+}
+@keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+/* ── Avatares Circulares da Equipe LAWS (Slide 9) ── */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 22px;
+}
+.team-card {
+  background: var(--glass-card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s, border-color 0.2s;
+}
+.team-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-2);
+}
+.avatar-frame {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--arcane), var(--ember));
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.38);
+  flex-shrink: 0;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  background: #141128;
+}
+.team-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--parchment);
+}
+.team-role {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--arcane-hi);
+  margin-top: -4px;
+}
+.team-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--mist);
+  margin-top: 4px;
+}
+
+/* ── Tabela de Preços SaaS (Slide 8) ── */
+.pricing-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pricing-card.featured {
+  border-color: var(--arcane);
+  background: linear-gradient(170deg, rgba(139, 92, 246, 0.16), var(--glass-card) 60%);
+  box-shadow: 0 16px 36px rgba(139, 92, 246, 0.25);
+}
+.price-tag {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--parchment);
+  line-height: 1;
+}
+.price-tag span {
+  font-size: 12px;
+  color: var(--mist-dim);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
+/* ── Notas do Apresentador (Ocultas para a Audiência) ── */
+aside.notes {
+  display: none;
+}
+
+/* ── Painel Flutuante de Notas (Tecla N) ── */
+.notes-drawer {
+  position: fixed;
+  bottom: 56px;
+  right: 44px;
+  width: 440px;
+  max-height: 280px;
+  background: rgba(14, 12, 26, 0.98);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: 16px 18px;
+  z-index: 10;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.75);
+  overflow-y: auto;
+  display: none;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+.notes-drawer.is-open { display: block; }
+.notes-drawer h4 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ember);
+  margin-bottom: 8px;
+}
+.notes-drawer strong { color: var(--arcane-hi); }
+
+/* ── Modal de Índice Geral (Tecla O) ── */
+.index-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  background: rgba(7, 6, 13, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 6vh 8vw;
+  overflow-y: auto;
+}
+.index-modal.is-open { display: block; }
+.index-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 11px;
+  margin-top: 18px;
+}
+.index-btn {
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--glass);
+  color: var(--parchment);
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 13.5px;
+  font-family: var(--font-body);
+  transition: all 0.16s;
+}
+.index-btn:hover {
+  border-color: var(--line-2);
+  background: rgba(255, 255, 255, 0.08);
+}
+.index-btn.active {
+  border-color: var(--arcane);
+  background: rgba(139, 92, 246, 0.18);
+}
+.index-btn span {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ember);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ENGENHARIA CSS EXCLUSIVA PARA PDF (@media print) - PRINT PERFECT
+   Garante 100% de nitidez vetorial e isolamento estrito de cada slide
+   ══════════════════════════════════════════════════════════════ */
+@media print {
+  @page {
+    size: 1280px 720px;
+    margin: 0;
+  }
+  html, body {
+    background: #07060D !important;
+    color: #F3F0FB !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 1280px !important;
+  }
+  /* Oculta elementos visuais que quebram o PDF */
+  .ambient, .ambient-grid {
+    display: none !important;
+  }
+  .stage-wrap {
+    position: relative !important;
+    display: block !important;
+  }
+  .stage {
+    position: relative !important;
+    width: 1280px !important;
+    height: auto !important;
+    transform: none !important;
+  }
+  .hud, .rail, .zone, .index-modal, .notes-drawer {
+    display: none !important;
+  }
+  
+  /* Isolamento estrito de cada slide e Background Real idêntico ao HTML */
+  .slide {
+    position: relative !important;
+    display: grid !important; 
+    grid-template-rows: auto 1fr !important;
+    width: 1280px !important;
+    height: 720px !important;
+    max-height: 720px !important;
+    padding: 56px 64px 40px 64px !important;
+    break-after: page !important;
+    page-break-after: always !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    animation: none !important;
+    box-sizing: border-box !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    overflow: hidden !important; /* CORREÇÃO CRÍTICA: Garante que conteúdo nunca vaze para o slide seguinte */
+    background-color: #07060D !important;
+    background-image:
+      radial-gradient(rgba(196, 181, 253, 0.12) 1px, transparent 1px),
+      radial-gradient(circle 650px at 0% 0%, rgba(139, 92, 246, 0.28), transparent 70%),
+      radial-gradient(circle 520px at 100% 30%, rgba(76, 29, 149, 0.32), transparent 70%),
+      radial-gradient(circle 440px at 50% 100%, rgba(245, 158, 11, 0.12), transparent 70%) !important;
+    background-size:
+      34px 34px,
+      100% 100%,
+      100% 100%,
+      100% 100% !important;
+    background-repeat:
+      repeat,
+      no-repeat,
+      no-repeat,
+      no-repeat !important;
+  }
+  
+  /* Altura e largura controladas do player vertical no PDF */
+  .video-portrait-wrap {
+    width: 228px !important;
+    height: 405px !important;
+    max-height: 405px !important;
+  }
+  
+  /* Vidro translúcido elegante no PDF para revelar o background real */
+  .bento-card, .team-card, .pricing-card,
+  .bento-card.is-crimson, .bento-card.is-ember, .bento-card.is-arcane, .bento-card.is-vitae,
+  .pricing-card.featured {
+    background: rgba(14, 12, 26, 0.82) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(196, 181, 253, 0.32) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4) !important;
+  }
+  
+  /* Congela os cards flutuantes para não quebrarem a página */
+  .float-card {
+    background: rgba(27, 22, 46, 0.92) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border: 1px solid rgba(196, 181, 253, 0.5) !important;
+    box-shadow: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+  
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<!-- BIBLIOTECA SVG PADRONIZADA (LANDING PAGE) -->
+<svg class="svg-library" aria-hidden="true">
+  <symbol id="icon-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M9 2h6M12 9v4l3 2"/></symbol>
+  <symbol id="icon-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h3a4 4 0 0 0 4-4v-6a2 2 0 0 1 2-2"/></symbol>
+  <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 1.4 5.6L19 10l-5.6 1.4L12 17l-1.4-5.6L5 10l5.6-1.4L12 3Z"/><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"/></symbol>
+  <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+  <symbol id="icon-play" viewBox="0 0 24 24"><path d="m9 7 8 5-8 5V7Z"/></symbol>
+  <symbol id="icon-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="icon-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+</svg>
+
+<div class="ambient" aria-hidden="true">
+  <i></i><i></i><i></i>
+</div>
+
+<div class="stage-wrap">
+<div class="stage" id="stage">
+
+  <!-- HUD SUPERIOR -->
+  <header class="hud">
+    <div class="brand">
+      <div class="brand-mark">LV</div>
+      <div class="brand-name">LevelUp <b>Study</b></div>
+    </div>
+    <div class="hud-right">
+      <div class="chapter-badge" id="chapter">O Problema</div>
+      <button class="hud-btn" id="btnNotes" title="Alternar Roteiro Falado (Tecla N ou S)">
+        <span class="emoji-3d"><img class="emoji-3d-img" src="assets/emoji/1f4dd.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f4dd.png';" alt="Roteiro"></span>
+        Notas (5 min)
+      </button>
+      <button class="counter" id="counter" title="Abrir Índice de Slides (Tecla O)">
+        <b>01</b> / 12
+      </button>
+    </div>
+  </header>
+
+  <!-- ZONAS DE CLIQUE LATERAIS -->
+  <button class="zone zone-l" id="zoneL" aria-label="Slide anterior"></button>
+  <button class="zone zone-r" id="zoneR" aria-label="Próximo slide"></button>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 1: O PROBLEMA
+       Tempo: 0:00 - 0:35
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide is-active" data-chapter="O Problema" data-title="01 · O Problema">
+    <div class="head-block">
+      <div class="eyebrow is-crimson">Pesquisa de Validação Real · 55 Estudantes Entrevistados</div>
+      <h2>O ciclo invisível da dor: <span style="color: var(--arcane-hi);">culpa e procrastinação</span></h2>
+      <p class="lead">Estudar não é o problema. A dor do jovem é <strong>travar na decisão de por onde começar</strong> diante do bombardeio de distrações digitais.</p>
+    </div>
+
+    <div class="bento-grid bento-hero-left">
+      <!-- Imagem Hero Obrigatória com Float Cards -->
+      <div class="bento-card" style="padding: 0; background: transparent; border: 0;">
+        <div class="hero-photo-wrap">
+          <img class="hero-photo" src="assets/img/procrastinacao.png" alt="Estudante Típico Procrastinando">
+          
+          <div class="float-card is-top-left">
+            <div class="icon-box is-crimson" style="width:32px; height:32px; border-radius:8px;">
+              <svg><use href="#icon-timer"></use></svg>
+            </div>
+            <div>
+              <div class="float-stat" style="color:var(--crimson)">87%</div>
+              <div class="float-label">Paralisia Decisória</div>
+            </div>
+          </div>
+
+          <div class="float-card is-bottom-right">
+            <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/23f1.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/23f1.png';" alt="Timer"></span>
+            <div>
+              <div class="float-stat" style="color:var(--ember)">91%</div>
+              <div class="float-label">Fuga para o Celular</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Lateral: Diagnóstico e Métricas Reais -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="bento-card is-crimson">
+          <div class="tag is-crimson">Diagnóstico de Campo</div>
+          <div class="card-title">
+            <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f61f.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f61f.png';" alt="Estudante Preocupado"></span>
+            A Anatomia da Paralisia
+          </div>
+          <div class="card-body">
+            Entrevistamos <strong>55 alunos entre 11 e 24 anos</strong>. O padrão se repete: a tentativa de estudar gera ansiedade, a pausa de 5 minutos no celular é sequestrada pelas redes e o dia termina com a sensação errônea de incompetência.
+          </div>
+        </div>
+
+        <div class="bento-card" style="flex:1; justify-content:center;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+            <div class="stat-box">
+              <div class="stat is-crimson">87%</div>
+              <div class="stat-cap">Travam antes de começar</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat is-ember">91%</div>
+              <div class="stat-cap">Perdem a pausa pro celular</div>
+            </div>
+            <div class="stat-box" style="grid-column: span 2; padding-top: 8px; border-top: 1px solid var(--line);">
+              <div class="stat is-vitae" style="font-size:26px;">55 de 55 Alunos</div>
+              <div class="stat-cap">Relataram sentimento diário de culpa e sobrecarga</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 0:00 - 0:35] Roteiro Falado (Slide 1):</h4>
+      "Senhores jurados, vocês sabiam que estudar não é a verdadeira dor do aluno? Em nossa pesquisa de campo com 55 estudantes reais, 91% nos disseram a mesma coisa: eles sentam para estudar com boa intenção, mas a sobrecarga de prazos trava a decisão. Eles abrem o celular para uma pausa rápida de 5 minutos, e essa pausa é sequestrada pelas redes sociais. O resultado? Sentimento constante de culpa e a convicção errônea de que o problema é falta de inteligência."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 2: A CIÊNCIA POR TRÁS DA DOR
+       Tempo: 0:35 - 1:10
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Fundamentação" data-title="02 · A Ciência por trás da Dor">
+    <div class="head-block">
+      <div class="eyebrow is-ember">Fundamentação Científica & Pedagógica</div>
+      <h2>Por que os métodos tradicionais <span style="color: var(--arcane-hi);">falham com jovens?</span></h2>
+      <p class="lead">A ciência explica: a sobrecarga desregula o cortisol, o método dos anos 80 perde para os algoritmos e o esforço do estudo parece invisível.</p>
+    </div>
+
+    <div class="bento-grid bento-3col">
+      <div class="bento-card is-crimson">
+        <div class="tag is-crimson">Estudo Global Chegg.org</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f30d.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f30d.png';" alt="Global"></span>
+          Epidemia de Ansiedade
+        </div>
+        <div class="stat is-crimson" style="margin: 6px 0;">74%</div>
+        <div class="card-body">
+          Quase três quartos dos estudantes secundaristas e universitários relatam <strong>paralisia por estresse acadêmico</strong> decorrente da incapacidade de priorizar tarefas.
+        </div>
+        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:11px; color:var(--crimson);">
+          Causa número 1 da evasão de rotina
+        </div>
+      </div>
+
+      <div class="bento-card is-ember">
+        <div class="tag is-ember">Falha Metodológica</div>
+        <div class="card-title">
+          <div class="icon-box is-ember" style="width:28px; height:28px; border-radius:6px;">
+            <svg><use href="#icon-timer"></use></svg>
+          </div>
+          O Pomodoro dos Anos 80
+        </div>
+        <div class="card-body" style="margin-top: 10px;">
+          O Pomodoro tradicional foi concebido antes da era dos feeds algorítmicos. Recomendar <span style="color: var(--ember); font-weight: 700;">"pausa livre de 5 min"</span> a um adolescente hoje é <strong>entregá-lo diretamente às garras do TikTok</strong>.
+        </div>
+        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:11px; color:var(--ember);">
+          Zero barreira contra distração
+        </div>
+      </div>
+
+      <div class="bento-card is-arcane">
+        <div class="tag is-arcane">Neurobiologia</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f9e0.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f9e0.png';" alt="Cérebro"></span>
+          O Esforço Invisível
+        </div>
+        <div class="card-body" style="margin-top: 10px;">
+          Nos videogames o cérebro recebe <strong>feedback dopaminérgico em tempo real</strong> (barras sobem, leveis avançam). No livro ou caderno, 3 horas de dedicação parecem estéreis e invisíveis.
+        </div>
+        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-family:var(--font-mono); font-size:11px; color:var(--arcane-hi);">
+          Falta de recompensa imediata
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 0:35 - 1:10] Roteiro Falado (Slide 2):</h4>
+      "A ciência explica esse fenômeno. Relatórios globais da Chegg.org mostram que quase três quartos dos alunos sofrem com ansiedade por prazos. E por que métodos famosos como o Pomodoro comum falham? Porque o Pomodoro foi feito nos anos 80, antes do algoritmo do TikTok existir! Dizer para um adolescente 'faça uma pausa livre de 5 minutos' é garantir que ele nunca mais volte para a mesa. Além disso, o cérebro humano precisa de feedback de dopamina. Nos games ele vê a barra subir; no livro, o esforço parece invisível."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 3: A SOLUÇÃO — CICLO DE ESTUDOS
+       Tempo: 1:10 - 1:45
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="A Solução" data-title="03 · A Solução">
+    <div class="head-block">
+      <div class="eyebrow is-vitae">A Solução Proprietária</div>
+      <h2>Da frustração da culpa ao <span style="color: var(--vitae);">progresso tangível</span></h2>
+      <p class="lead">O LevelUp Study estrutura a rotina em um <strong>Ciclo de Estudos Fechado: Rota Inteligente > Foco RPG > Recompensa Tangível</strong>.</p>
+    </div>
+
+    <div class="bento-grid bento-hero-right">
+      <!-- Coluna Esquerda: O Ciclo de Estudos com Ícones SVG Profissionais -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="bento-card is-arcane" style="flex:1;">
+          <div class="tag is-arcane">Metodologia Exclusiva</div>
+          <div class="card-title">
+            <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f3c6.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f3c6.png';" alt="Troféu"></span>
+            O Ciclo de Estudos LevelUp
+          </div>
+          
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin: 16px 0;">
+            <!-- ETAPA 1 COM SVG ROUTE -->
+            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; display:flex; flex-direction:column; align-items:center;">
+              <div class="icon-box" style="margin-bottom:8px;">
+                <svg><use href="#icon-route"></use></svg>
+              </div>
+              <div style="font-family:var(--font-mono); font-size:10px; color:var(--crimson); font-weight:700;">ETAPA 1</div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:15px; margin-top:2px;">Rota de Início</div>
+              <div style="font-size:11px; color:var(--mist); margin-top:4px;">O Que Fazer Agora sem paralisia</div>
+            </div>
+
+            <!-- ETAPA 2 COM SVG TIMER -->
+            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; display:flex; flex-direction:column; align-items:center;">
+              <div class="icon-box is-ember" style="margin-bottom:8px;">
+                <svg><use href="#icon-timer"></use></svg>
+              </div>
+              <div style="font-family:var(--font-mono); font-size:10px; color:var(--ember); font-weight:700;">ETAPA 2</div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:15px; margin-top:2px;">Foco RPG</div>
+              <div style="font-size:11px; color:var(--mist); margin-top:4px;">Dano no monstro da distração</div>
+            </div>
+
+            <!-- ETAPA 3 COM SVG SPARK -->
+            <div style="background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:12px; padding:12px; text-align:center; display:flex; flex-direction:column; align-items:center;">
+              <div class="icon-box is-vitae" style="margin-bottom:8px;">
+                <svg><use href="#icon-spark"></use></svg>
+              </div>
+              <div style="font-family:var(--font-mono); font-size:10px; color:var(--vitae); font-weight:700;">ETAPA 3</div>
+              <div style="font-family:var(--font-display); font-weight:700; font-size:15px; margin-top:2px;">Recompensa</div>
+              <div style="font-size:11px; color:var(--mist); margin-top:4px;">EXP instantâneo & Pausa Ativa</div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            Ao unir a rotina de estudo com mecânicas de evolução tangível, o estudante vê o resultado de sua dedicação subir na tela no exato instante em que o cronômetro avança.
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Caso Piloto da Ana Clara -->
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="bento-card is-vitae">
+          <div class="tag is-vitae">Teste Piloto Real</div>
+          <div class="card-title">
+            <div class="icon-box is-vitae" style="width:28px; height:28px; border-radius:6px;">
+              <svg><use href="#icon-check"></use></svg>
+            </div>
+            O Relato da Ana Clara
+          </div>
+          <div class="card-body" style="font-style: italic; font-size: 13.5px; color: #f1f5f9; margin-top: 6px;">
+            "Quando vi o monstro da procrastinação tomar dano a cada minuto focado e recebi 50 EXP na barra de nível, estudar deixou de ser um fardo obrigatório e virou um desafio que eu queria vencer."
+          </div>
+          <div style="margin-top: 10px; font-family: var(--font-mono); font-size: 11px; color: var(--vitae);">
+            Ana Clara · Estudante do Piloto
+          </div>
+        </div>
+
+        <div class="bento-card" style="flex:1; flex-direction:row; justify-content:space-evenly; align-items:center; padding:18px;">
+          <style>
+            .hero-ring { display:grid; place-items:center; position:relative; }
+            .hero-ring-txt { position:absolute; text-align:center; }
+            .hero-ring-txt b { display:block; font-family: var(--font-display); font-size:38px; font-weight:800; letter-spacing:-.03em; line-height:1; color:var(--vitae); }
+            .hero-ring-txt s { text-decoration:none; font-family: var(--font-mono); font-size:9.5px; letter-spacing:.18em; color: var(--mist-dim); text-transform:uppercase; margin-top:4px; display:block; }
+          </style>
+          
+          <div class="hero-ring">
+            <svg width="140" height="140" viewBox="0 0 188 188" aria-hidden="true">
+              <circle cx="94" cy="94" r="78" fill="none" stroke="rgba(52,211,153,.15)" stroke-width="12"></circle>
+              <!-- 100% full circle -->
+              <circle cx="94" cy="94" r="78" fill="none" stroke="url(#gcov-vitae)" stroke-width="12"
+                      stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="0"
+                      transform="rotate(-90 94 94)"></circle>
+              <defs>
+                <linearGradient id="gcov-vitae" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#10b981"></stop>
+                  <stop offset="100%" stop-color="#34d399"></stop>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="hero-ring-txt">
+              <b>100%</b>
+              <s>Adesão no Piloto</s>
+            </div>
+          </div>
+
+          <div style="width:1px; height:80px; background:var(--line);"></div>
+
+          <div class="stat-box" style="text-align:center; max-width:140px;">
+            <div class="stat is-ember" style="font-size:28px; line-height:1.2;">Instantâneo</div>
+            <div class="stat-cap" style="margin-top:6px;">Feedback Dopaminérgico</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 1:10 - 1:45] Roteiro Falado (Slide 3):</h4>
+      "É aqui que entra o LevelUp Study. Nós transformamos a tarefa de sentar e estudar em uma jornada onde o esforço se torna visível instantaneamente através de um Ciclo de Estudos Fechado: Rota Inteligente, Foco RPG e Recompensa Tangível. A Ana Clara, aluna do nosso teste piloto, resumiu com perfeição: quando ela viu o monstro da procrastinação sofrer dano a cada minuto de foco no Pomodoro e recebeu 50 EXP na barra de nível, estudar deixou de ser um fardo e virou um desafio que ela queria vencer."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 4: TRÊS PILARES DE IMPACTO
+       Tempo: 1:45 - 2:15
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Proposta de Valor" data-title="04 · Três Pilares de Impacto">
+    <div class="head-block">
+      <div class="eyebrow is-arcane">Proposta de Valor</div>
+      <h2>Três pilares inegociáveis que <span style="color: var(--arcane-hi);">sustentam a mudança</span></h2>
+      <p class="lead">Uma arquitetura comportamental desenhada para aliviar a mente e blindar o foco do estudante.</p>
+    </div>
+
+    <div class="bento-grid bento-3col">
+      <div class="bento-card is-arcane">
+        <div class="tag is-arcane">Pilar 01</div>
+        <div class="card-title">
+          <div class="icon-box" style="width:28px; height:28px; border-radius:6px;">
+            <svg><use href="#icon-route"></use></svg>
+          </div>
+          Alívio da Ansiedade
+        </div>
+        <div class="card-body">
+          Elimina o bloqueio inicial. Em vez de se perder entre 10 tarefas acumuladas, o aluno usa o <strong>"O Que Fazer Agora?"</strong> para receber a rota ideal de início sem sobrecarga.
+        </div>
+        <div style="margin-top:auto; padding-top:12px; border-top:1px solid var(--line); font-size:12px; color:var(--arcane-hi);">
+          Fim da paralisia decisória
+        </div>
+      </div>
+
+      <div class="bento-card is-ember">
+        <div class="tag is-ember">Pilar 02</div>
+        <div class="card-title">
+          <div class="icon-box is-ember" style="width:28px; height:28px; border-radius:6px;">
+            <svg><use href="#icon-timer"></use></svg>
+          </div>
+          Blindagem da Pausa
+        </div>
+        <div class="card-body">
+          A pausa não vira fuga. O descanso ocorre <strong>dentro do próprio app com 18 minijogos</strong> e trava de autolimite, protegendo o jovem contra a armadilha dos feeds infinitos.
+        </div>
+        <div style="margin-top:auto; padding-top:12px; border-top:1px solid var(--line); font-size:12px; color:var(--ember);">
+          Pausa ativa sem redes sociais
+        </div>
+      </div>
+
+      <div class="bento-card is-vitae">
+        <div class="tag is-vitae">Pilar 03</div>
+        <div class="card-title">
+          <div class="icon-box is-vitae" style="width:28px; height:28px; border-radius:6px;">
+            <svg><use href="#icon-spark"></use></svg>
+          </div>
+          Recompensa Emocional
+        </div>
+        <div class="card-body">
+          O esforço gera satisfação genuína. Ganho contínuo de EXP, <strong>evolução de 7 classes RPG</strong> e streaks de dias que ativam o orgulho próprio e constroem consistência.
+        </div>
+        <div style="margin-top:auto; padding-top:12px; border-top:1px solid var(--line); font-size:12px; color:var(--vitae);">
+          Estudo associado a vitória
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 1:45 - 2:15] Roteiro Falado (Slide 4):</h4>
+      "Nossa proposta de valor se sustenta em três pilares fundamentais. Primeiro: Alívio da Ansiedade. O aluno não perde tempo angustiado com 10 tarefas acumuladas; ele clica em 'O que fazer agora?' e nossa rota inteligente diz por onde começar. Segundo: Blindagem da Pausa. Em vez de ele ir para o Instagram, oferecemos 18 minijogos rápidos dentro da nossa própria plataforma. E terceiro: Recompensa Emocional. Estudar finalmente tem o mesmo mecanismo de satisfação de um RPG: você ganha EXP, sobe de classe e não quer quebrar sua sequência de dias."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 5: A CIÊNCIA DA RETENÇÃO
+       Tempo: 2:15 - 2:50
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Diferencial" data-title="05 · A Ciência da Retenção">
+    <div class="head-block">
+      <div class="eyebrow is-ember">Engenharia Comportamental</div>
+      <h2>Gamificação séria não é brincadeira: <span style="color: var(--arcane-hi);">é retenção</span></h2>
+      <p class="lead">Evidências acadêmicas comprovam: mecânicas de RPG autênticas aumentam a consistência e reduzem a evasão escolar.</p>
+    </div>
+
+    <div class="bento-grid bento-hero-left">
+      <div class="bento-card is-ember" style="justify-content:center; gap:20px;">
+        <div class="tag is-ember">Evidência Científica PUCRS</div>
+        <div>
+          <div class="stat is-ember" style="font-size:54px;">+42%</div>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:18px; color:var(--parchment); margin-top:4px;">
+            Aumento na Consistência de Rotina
+          </div>
+          <p class="card-body" style="margin-top:8px;">
+            Estudos comprovam que a ludificação estruturada com recompensas graduais reduz o abandono escolar e eleva a adesão aos estudos em até 60%.
+          </p>
+        </div>
+        <div class="tag is-arcane" style="align-self:flex-start;">O jovem sobe de nível na vida real</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="bento-card" style="padding:14px 18px;">
+          <div class="card-title">
+            <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/2694.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/2694.png';" alt="Espadas"></span>
+            7 Classes de Especialização
+          </div>
+          <div class="card-body">Guerreiro, Mago, Arqueiro, Alquimista e mais: evolução ligada à dedicação real.</div>
+        </div>
+
+        <div class="bento-card" style="padding:14px 18px;">
+          <div class="card-title">
+            <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f9e9.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f9e9.png';" alt="Puzzle"></span>
+            3 Atributos Mentais Progressivos
+          </div>
+          <div class="card-body">Foco, Sabedoria e Consistência sobem conforme matérias são concluídas.</div>
+        </div>
+
+        <div class="bento-card" style="padding:14px 18px;">
+          <div class="card-title">
+            <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f31f.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f31f.png';" alt="Estrela"></span>
+            33 Conquistas e 8 Chefes
+          </div>
+          <div class="card-body">Monstros da distração derrotados segundo a segundo durante as sessões de foco.</div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 2:15 - 2:50] Roteiro Falado (Slide 5):</h4>
+      "E por que gamificar? Muitos pensam que gamificação é modismo, mas pesquisas da PUCRS mostram que elementos de jogos reduzem o abandono escolar e aumentam a consistência em até 60%! No LevelUp Study nós não colocamos 'pontinhos genéricos'. Construímos um RPG de verdade: são 7 classes de evolução, 3 atributos que crescem conforme você estuda, 33 conquistas colecionáveis e 8 monstros da distração que você derrota enquanto o timer roda. O jovem sente que está subindo de nível na vida real."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 6: A MÁGICA DO ECOSSISTEMA
+       Tempo: 2:50 - 3:30
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Como Funciona" data-title="06 · A Mágica do Ecossistema">
+    <div class="head-block">
+      <div class="eyebrow is-arcane">Diferencial Tecnológico</div>
+      <h2>A tecnologia que <span style="color: var(--arcane-hi);">protege o foco</span> e destrava a rotina</h2>
+      <p class="lead">Inteligência Artificial contextualizada combinada com a nossa barreira proprietária contra a dispersão.</p>
+    </div>
+
+    <div class="bento-grid bento-hero-left">
+      <!-- Coluna Esquerda: Vídeo de Demonstração do Sistema -->
+      <div class="bento-card" style="padding:0; background:transparent; border:0;">
+        <div class="video-wrap">
+          <div class="video-badge">DEMO DO SISTEMA · LEVELUP STUDY</div>
+          <video class="video-player" controls preload="metadata" autoplay muted loop>
+            <source src="assets/video/video-sistema-levelup.mp4" type="video/mp4">
+            Seu navegador não suporta reprodução de vídeo HTML5.
+          </video>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Cards de Funcionalidade Empilhados -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="bento-card is-arcane" style="flex:1; padding: 14px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-title">
+              <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f916.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f916.png';" alt="Robô"></span>
+              Mentor Gemini 2.5
+            </div>
+            <div class="tag is-arcane" style="align-self:center;">IA Pedagógica</div>
+          </div>
+          <div class="card-body" style="margin-top: 8px;">
+            A IA aprende os interesses do aluno (futebol, animes) e explica matérias difíceis usando metáforas que ele adora.
+          </div>
+        </div>
+
+        <div class="bento-card is-ember" style="flex:1; padding: 14px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-title">
+              <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f3ae.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f3ae.png';" alt="Arcade"></span>
+              Arcade (18 Minijogos)
+            </div>
+            <div class="tag is-ember" style="align-self:center;">Pausa Ativa</div>
+          </div>
+          <div class="card-body" style="margin-top: 8px;">
+            Jogos retrô de raciocínio. O cérebro relaxa sem sair da plataforma e sem cair no vício das redes.
+          </div>
+        </div>
+
+        <div class="bento-card is-crimson" style="flex:1; padding: 14px 18px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="card-title">
+              <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/26a1.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/26a1.png';" alt="Raio"></span>
+              Cooldown Anti-Vício 1:1
+            </div>
+            <div class="tag is-crimson" style="align-self:center;">Vantagem Injusta</div>
+          </div>
+          <div class="card-body" style="margin-top: 8px;">
+            Se o aluno exceder a pausa em 3 min, <strong>os jogos são bloqueados por exatamente 3 min</strong>!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 2:50 - 3:30] Roteiro Falado (Slide 6):</h4>
+      "Aqui está a verdadeira mágica do nosso produto. Primeiro: nossa Inteligência Artificial não é um ChatGPT genérico. Ela sabe que o aluno gosta de anime ou futebol e explica física usando chutes de jogadores e poderes de personagens! Segundo: nós colocamos 18 minijogos direto no app. E terceiro: nossa VANTAGEM INJUSTA — o sistema de autolimite. Se a pausa era de 5 minutos e o aluno jogou 8 minutos, os jogos são bloqueados automaticamente por exatamente 3 minutos! Jogar nunca compensa mais do que estudar."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 7: RESULTADOS QUALITATIVOS E TESTES DE USABILIDADE
+       Tempo: 3:30 - 4:10
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Validação" data-title="07 · Resultados Qualitativos e Usabilidade">
+    <div class="head-block">
+      <div class="eyebrow is-vitae">Validação de Campo com Estudantes Reais</div>
+      <h2 style="font-size:28px; line-height:1.15; max-width:100%;">Resultados Qualitativos de Campo e Testes de Usabilidade:<br><span style="color: var(--vitae);">Quem testou não voltou para os métodos antigos</span></h2>
+      <p class="lead" style="font-size:15px; margin-top:-2px;">Validação direta com alunos de preparatórios: métricas de retenção comprovadas e relato em vídeo.</p>
+    </div>
+
+    <div style="display:flex; gap:26px; align-items:center;">
+      <!-- Coluna Esquerda: Player de Vídeo Vertical em Formato Normal (9:16) -->
+      <div class="video-portrait-wrap">
+        <div class="video-badge" style="top:10px; left:10px; font-size:8.5px; padding:3px 8px;">
+          DEMO EM VÍDEO · JOÃO PEDRO (IFTO)
+        </div>
+        <video class="video-player" controls preload="metadata">
+          <source src="assets/video/joao_pedro.mp4" type="video/mp4">
+          Seu navegador não suporta reprodução de vídeo HTML5.
+        </video>
+        <div class="float-card is-bottom-left" style="pointer-events:auto; padding:6px 10px; gap:6px; bottom:12px; left:12px; z-index:3;">
+          <div class="icon-box is-vitae" style="width:22px; height:22px; border-radius:5px;">
+            <svg style="width:13px; height:13px;"><use href="#icon-spark"></use></svg>
+          </div>
+          <div>
+            <div class="float-stat" style="color:var(--vitae); font-size:15px; line-height:1;">9.4 / 10</div>
+            <div class="float-label" style="font-size:8px;">Nota Média UX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna Direita: Depoimento Real Único e Métricas de Validação -->
+      <div style="display:flex; flex-direction:column; gap:12px; flex:1;">
+        <div class="bento-card is-vitae" style="border-width:2px; box-shadow:0 18px 44px rgba(52, 211, 153, 0.2); padding:16px 20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="tag is-vitae" style="padding:3px 8px; font-size:8.5px;">Depoimento Real de Validação</div>
+            <div style="font-family:var(--font-mono); font-size:9.5px; color:var(--vitae); font-weight:700;">Vídeo Comprovado · Aluno do 9º Ano</div>
+          </div>
+
+          <div class="card-title" style="margin-top:8px; font-size:16px; display:flex; align-items:center; gap:8px;">
+            <div class="icon-box is-vitae" style="width:26px; height:26px; border-radius:6px;">
+              <svg><use href="#icon-play"></use></svg>
+            </div>
+            <div>
+              João Pedro, 14 Anos
+              <span style="display:inline-block; margin-left:6px; font-family:var(--font-mono); font-size:10px; color:var(--mist); font-weight:500;">(Preparatório IFTO)</span>
+            </div>
+          </div>
+
+          <blockquote class="card-body" style="font-size:13px; line-height:1.5; color:#ffffff; font-weight:500; font-style:italic; margin-top:8px; border-left:3px solid var(--vitae); padding-left:12px;">
+            "Antes, eu me distraía à toa, pegava o celular e não rendia nada. Mas usando o LevelUp Study, meu aproveitamento melhorou demais. O mais legal é que a plataforma vai me guiando no que eu tenho que fazer. Assim, eu não perco o foco e sinto que estou evoluindo nas matérias. Recomendo muito."
+          </blockquote>
+
+          <div style="display:flex; gap:12px; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid rgba(196,181,253,0.14);">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div class="icon-box is-vitae" style="width:18px; height:18px; border-radius:4px;"><svg><use href="#icon-check"></use></svg></div>
+              <span style="font-size:10.5px; color:var(--parchment); font-weight:600;">Rotina Guiada</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div class="icon-box is-vitae" style="width:18px; height:18px; border-radius:4px;"><svg><use href="#icon-check"></use></svg></div>
+              <span style="font-size:10.5px; color:var(--parchment); font-weight:600;">Blindagem da Pausa</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:4px;">
+              <div class="icon-box is-vitae" style="width:18px; height:18px; border-radius:4px;"><svg><use href="#icon-check"></use></svg></div>
+              <span style="font-size:10.5px; color:var(--parchment); font-weight:600;">Evolução Real</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards Complementares de Prova de Validação -->
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
+          <div class="bento-card" style="padding:10px 14px;">
+            <div class="tag is-vitae" style="font-size:8px; padding:2px 7px;">Nota de UX (SUS)</div>
+            <div class="stat is-vitae" style="font-size:24px; margin:3px 0 1px 0;">9.4 <span style="font-size:12px; color:var(--mist); font-weight:500;">/ 10</span></div>
+            <div class="card-body" style="font-size:10.5px; line-height:1.3;">Aprovado com louvor na facilidade de uso diário.</div>
+          </div>
+
+          <div class="bento-card" style="padding:10px 14px;">
+            <div class="tag is-arcane" style="font-size:8px; padding:2px 7px;">Preferência</div>
+            <div class="stat is-arcane" style="font-size:24px; margin:3px 0 1px 0;">100%</div>
+            <div class="card-body" style="font-size:10.5px; line-height:1.3;">Não voltaram para métodos analógicos ou apps comuns.</div>
+          </div>
+
+          <div class="bento-card" style="padding:10px 14px;">
+            <div class="tag is-ember" style="font-size:8px; padding:2px 7px;">Foco Blindado</div>
+            <div class="stat is-ember" style="font-size:24px; margin:3px 0 1px 0;">+3.2x</div>
+            <div class="card-body" style="font-size:10.5px; line-height:1.3;">Mais tempo útil de estudo sem fuga para as redes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 3:30 - 4:10] Roteiro Falado (Slide 7):</h4>
+      "E nós não ficamos apenas na teoria. Colocamos o protótipo funcional para rodar nas mãos de alunos reais. O João Pedro, estudante de 14 anos do 9º ano que está se preparando para o processo seletivo do IFTO, nos deu um testemunho gravado em vídeo que resume perfeitamente a nossa proposta de valor: antes ele se distraía à toa, pegava o celular e não rendia nada. Usando o LevelUp Study, o aproveitamento dele melhorou demais porque a plataforma vai guiando passo a passo o que ele precisa fazer, ele não perde o foco e sente que está evoluindo de verdade nas matérias. Nossa nota média de usabilidade atingiu 9.4 de 10!"
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 8: MODELO DE NEGÓCIO E PRECIFICAÇÃO
+       Tempo: 4:10 - 4:45
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Modelo de Negócio" data-title="08 · SaaS Freemium & Escala">
+    <div class="head-block">
+      <div class="eyebrow is-ember">Monetização e Escala Sustentável</div>
+      <h2>Modelo de negócio: <span style="color: var(--arcane-hi);">Gratuito para crescer, SaaS para lucrar</span></h2>
+      <p class="lead">Inclusão social na base e monetização de alto valor agregado com B2C premium e licenciamento B2B.</p>
+    </div>
+
+    <div class="bento-grid bento-3col">
+      <div class="bento-card pricing-card">
+        <div>
+          <div class="tag">Gratuito Sempre</div>
+          <div class="card-title" style="margin-top:6px;">Plano Aprendiz</div>
+          <div class="price-tag" style="margin-top:10px;">R$ 0 <span>/ para sempre</span></div>
+        </div>
+        <div class="card-body">
+          Pomodoro RPG, 18 minijogos com autolimite, 33 conquistas, 8 monstros e rotas básicas. <strong>Garante que nenhum aluno de escola pública fique de fora</strong>.
+        </div>
+        <div style="font-family:var(--font-mono); font-size:10px; color:var(--mist-dim);">Inclusão & Crescimento Viral</div>
+      </div>
+
+      <div class="bento-card pricing-card featured">
+        <div>
+          <div class="tag is-ember">Recomendado · B2C</div>
+          <div class="card-title" style="margin-top:6px;">Plano Herói</div>
+          <div class="price-tag" style="color:var(--ember); margin-top:10px;">R$ 19,90 <span>/ mês</span></div>
+        </div>
+        <div class="card-body">
+          <strong>Mentor IA Gemini 2.5 Ilimitado</strong>, relatórios avançados de desempenho pedagógico, temas visuais raros e prioridade de servidores. Menos que o valor de um lanche.
+        </div>
+        <div style="font-family:var(--font-mono); font-size:10px; color:var(--arcane-hi);">Margem Operacional > 85%</div>
+      </div>
+
+      <div class="bento-card pricing-card">
+        <div>
+          <div class="tag is-vitae">Institucional · B2B</div>
+          <div class="card-title" style="margin-top:6px;">Painel Escolas</div>
+          <div class="price-tag" style="font-size:22px; margin-top:10px;">Sob Consulta <span>/ licença</span></div>
+        </div>
+        <div class="card-body">
+          Dashboard analítico para colégios privados e redes municipais/estaduais acompanharem o <strong>engajamento das turmas e combaterem a evasão escolar</strong> em tempo real.
+        </div>
+        <div style="font-family:var(--font-mono); font-size:10px; color:var(--vitae);">Escala com Secretarias de Educação</div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 4:10 - 4:45] Roteiro Falado (Slide 8):</h4>
+      "E como nós nos sustentamos financeiramente? O modelo é SaaS Freemium com perna B2B. A versão básica é 100% gratuita — nenhum estudante de escola pública pagará um centavo para ter foco e organização. Para quem deseja acelerar seus estudos, oferecemos o Plano Herói por R$ 19,90 mensais — valor menor que um lanche — dando acesso ilimitado ao Mentor IA e relatórios avançados. E no B2B, vendemos o Painel do Professor para escolas particulares e redes públicas monitorarem o engajamento das turmas."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 9: FECHAMENTO & EQUIPE LAWS
+       Tempo: 4:45 - 5:00
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Encerramento" data-title="09 · Encerramento">
+    <div class="head-block">
+      <div class="eyebrow is-arcane">Encerramento & Chamada à Ação</div>
+      <h2>Estudar não precisa ser ansiedade. <span style="color: var(--arcane-hi);">Pode ser a jornada de subir de nível.</span></h2>
+      <p class="lead">Construímos do zero a solução que nós mesmos gostaríamos de ter tido quando estávamos paralisados pela procrastinação.</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:16px; flex:1; justify-content:space-between;">
+      <!-- Equipe LAWS Estritamente em Formato Circular com Anéis de Borda -->
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="avatar-frame">
+            <img class="avatar-img" src="assets/img/ana_karolina.jpg" alt="Foto de Ana Karolina Castro">
+          </div>
+          <div>
+            <div class="team-name">Ana Karolina Castro</div>
+            <div class="team-role">Full Stack · Arcade & RPG</div>
+          </div>
+          <div class="team-desc">Desenvolveu o dashboard, temas, progressão de EXP e o arcade com 18 minijogos.</div>
+        </div>
+
+        <div class="team-card">
+          <div class="avatar-frame">
+            <img class="avatar-img" src="assets/img/luiz_amaral.jpg" alt="Foto de Luiz Fellipe Amaral">
+          </div>
+          <div>
+            <div class="team-name">Luiz Fellipe Amaral</div>
+            <div class="team-role">Back-end · IA & Infra</div>
+          </div>
+          <div class="team-desc">Arquiteto da API Flask, banco SQLite, lógica anti-vício e integração Gemini Flash.</div>
+        </div>
+
+        <div class="team-card">
+          <div class="avatar-frame">
+            <img class="avatar-img" src="assets/img/william_brito.png" alt="Foto de William Brito">
+          </div>
+          <div>
+            <div class="team-name">William Brito</div>
+            <div class="team-role">Full Stack · UX/UI Design</div>
+          </div>
+          <div class="team-desc">Especialista em design de interface, arquitetura CSS, responsividade e experiência do aluno.</div>
+        </div>
+
+        <div class="team-card">
+          <div class="avatar-frame">
+            <img class="avatar-img" src="assets/img/samuel_teles.jpg" alt="Foto de Samuel Teles">
+          </div>
+          <div>
+            <div class="team-name">Samuel Teles</div>
+            <div class="team-role">Full Stack · QA & Gamificação</div>
+          </div>
+          <div class="team-desc">Responsável pelos testes de usabilidade, balanceamento do RPG e validação com estudantes.</div>
+        </div>
+      </div>
+
+      <!-- Banner de Fechamento / CTA -->
+      <div class="bento-card is-arcane" style="padding:16px 22px; flex-direction:row; align-items:center; justify-content:space-between;">
+        <div>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <span class="tag is-vitae">Protótipo Funcional Pronto</span>
+            <span class="tag is-ember">Desafio Liga Jovem 4ª Edição</span>
+            <span class="tag">Equipe LAWS</span>
+          </div>
+          <div style="font-family:var(--font-display); font-weight:700; font-size:16px; margin-top:6px; color:var(--parchment);">
+            Convidamos a banca e as escolas parceiras a subirem de nível na educação brasileira.
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <a href="https://github.com/luizalves10-00/Desafio-LJ" target="_blank" class="hud-btn" style="padding:8px 14px; text-decoration:none; color:var(--parchment); background:rgba(139,92,246,0.25); border-color:var(--arcane);">
+            <div class="icon-box" style="width:20px; height:20px; border:0; background:transparent;"><svg><use href="#icon-spark"></use></svg></div>
+            Código no GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>[Tempo: 4:45 - 5:00] Roteiro Falado (Slide 9 - Fechamento):</h4>
+      "Para encerrar: estudar não precisa ser uma fonte de ansiedade e sofrimento. Pode ser a jornada em que o aluno se sente no controle e celebra cada pequena vitória. A Equipe LAWS — eu, Ana Karolina, William e Samuel — construiu do zero a ferramenta que nós gostaríamos de ter tido quando estávamos paralisados pela procrastinação. O aplicativo está pronto, testado e de código aberto. Convidamos as escolas a adotarem nosso piloto e os jurados a nos apoiarem nessa jornada. Muito obrigado!"
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 10: BACKUP Q&A — CUSTO DE INFRAESTRUTURA
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Backup Q&A" data-title="10 · [Q&A] Custo de Infraestrutura">
+    <div class="head-block">
+      <div class="eyebrow is-backup">Slide Tático de Apoio à Banca (Q&A)</div>
+      <h2>Como o projeto se sustenta com <span style="color: var(--arcane-hi);">custo próximo de zero?</span></h2>
+      <p class="lead">Arquitetura de alta eficiência pensada para escalabilidade frugal em servidores modestos.</p>
+    </div>
+
+    <div class="bento-grid bento-3col">
+      <div class="bento-card">
+        <div class="tag is-cyan">Backend Frugal</div>
+        <div class="card-title">
+          <div class="icon-box" style="width:28px; height:28px; border-radius:6px;"><svg><use href="#icon-route"></use></svg></div>
+          SQLite + Python Flask
+        </div>
+        <div class="stat is-vitae" style="font-size:32px;">~120 MB</div>
+        <div class="card-body">
+          Consumo mínimo de memória RAM. Roda tranquilamente em um plano VPS básico de R$ 25/mês com Gunicorn e cache local de assets.
+        </div>
+      </div>
+
+      <div class="bento-card">
+        <div class="tag is-cyan">IA Acessível</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f916.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f916.png';" alt="Robô"></span>
+          Gemini 2.5 Flash
+        </div>
+        <div class="stat is-arcane" style="font-size:32px;">R$ 0,0005</div>
+        <div class="card-body">
+          Custo irrisório por requisição com prompt engineering enxuto. O custo total médio por aluno ativo não ultrapassa <strong>R$ 0,04 por mês</strong>.
+        </div>
+      </div>
+
+      <div class="bento-card is-vitae">
+        <div class="tag is-vitae">Equilíbrio Financeiro</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f4b0.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f4b0.png';" alt="Moeda"></span>
+          Break-Even com 15 Alunos
+        </div>
+        <div class="stat is-vitae" style="font-size:32px;">15 Assinantes</div>
+        <div class="card-body">
+          Apenas 15 assinantes do Plano Herói (R$ 298,50/mês) pagam todo o custo do servidor e viabilizam o acesso gratuito de <strong>mais de 2.000 estudantes de escolas públicas</strong>.
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>Guia de Resposta do Apresentador (Custo / Infraestrutura):</h4>
+      "Se perguntarem: 'Como vocês vão pagar os servidores e a IA sem cobrar do aluno pobre?', responda: Nós usamos Vanilla JS e Flask rodando em SQLite com Gunicorn. Todo o backend consome 120MB de RAM. Na IA, usamos o Gemini Flash, cujo custo é ínfimo. O custo operacional por aluno é de apenas R$ 0,04 por mês. Apenas 15 assinantes pagantes sustentam 2.000 estudantes da rede pública."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 11: BACKUP Q&A — CONCORRÊNCIA DIRETA
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Backup Q&A" data-title="11 · [Q&A] Concorrência Direta">
+    <div class="head-block">
+      <div class="eyebrow is-backup">Slide Tático de Apoio à Banca (Q&A)</div>
+      <h2>Por que não usar o <span style="color: var(--arcane-hi);">Forest, Todoist ou outros apps?</span></h2>
+      <p class="lead">Nenhum competidor do mercado resolve o elo mais fraco da rotina do jovem: a hora da pausa.</p>
+    </div>
+
+    <div class="bento-grid" style="grid-template-columns: 1fr;">
+      <div class="bento-card" style="padding: 16px 20px;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--line-2); color:var(--mist-dim); font-family:var(--font-mono); font-size:10px; text-transform:uppercase;">
+              <th style="padding:8px;">Funcionalidade</th>
+              <th style="padding:8px;">Todoist / Notion</th>
+              <th style="padding:8px;">Forest App</th>
+              <th style="padding:8px; color:var(--arcane-hi);">LevelUp Study</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:10px 8px; font-weight:600;">Gestão de Tarefas</td>
+              <td style="padding:10px 8px; color:var(--vitae);">Excelente</td>
+              <td style="padding:10px 8px; color:var(--crimson);">Não possui</td>
+              <td style="padding:10px 8px; color:var(--vitae); font-weight:700;">Rota Inteligente "O Que Fazer"</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:10px 8px; font-weight:600;">Controle de Foco</td>
+              <td style="padding:10px 8px; color:var(--crimson);">Não possui</td>
+              <td style="padding:10px 8px; color:var(--vitae);">Timer Pomodoro</td>
+              <td style="padding:10px 8px; color:var(--vitae); font-weight:700;">Pomodoro com Batalha RPG</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--line); background:rgba(139,92,246,0.06);">
+              <td style="padding:10px 8px; font-weight:700; color:var(--ember);">Blindagem da Pausa</td>
+              <td style="padding:10px 8px; color:var(--crimson);">Joga pro celular</td>
+              <td style="padding:10px 8px; color:var(--crimson);">Joga pro TikTok</td>
+              <td style="padding:10px 8px; color:var(--ember); font-weight:800;">Arcade + Cooldown 1:1 Nativo</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 8px; font-weight:600;">Feedback Dopaminérgico</td>
+              <td style="padding:10px 8px; color:var(--crimson);">Nenhum</td>
+              <td style="padding:10px 8px; color:var(--mist);">Árvores visuais</td>
+              <td style="padding:10px 8px; color:var(--vitae); font-weight:700;">RPG com 7 Classes, EXP e Monstros</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>Guia de Resposta do Apresentador (Concorrência):</h4>
+      "Se perguntarem: 'Por que o aluno não usa o Forest ou um app de tarefas como o Todoist?', responda com convicção: O Todoist só lista tarefas, mas não te dá foco nem recompensa. O Forest te prende por 25 minutos, mas te joga direto nas garras do TikTok na pausa de 5 minutos! O LevelUp Study é o único que fecha o ciclo: você planeja a tarefa, estuda combatendo o monstro, descansa com um minijogo que tem autolimite e ainda ganha EXP."
+    </aside>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 12: BACKUP Q&A — ESCALABILIDADE E ODS DA ONU
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="slide" data-chapter="Backup Q&A" data-title="12 · [Q&A] Escalabilidade e ODS">
+    <div class="head-block">
+      <div class="eyebrow is-backup">Slide Tático de Apoio à Banca (Q&A)</div>
+      <h2>Impacto social direto e <span style="color: var(--arcane-hi);">alinhamento com os ODS da ONU</span></h2>
+      <p class="lead">Solução estruturada para transformar políticas públicas de educação e bem-estar juvenil.</p>
+    </div>
+
+    <div class="bento-grid bento-3col">
+      <div class="bento-card is-vitae">
+        <div class="tag is-vitae">ODS 4</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f4da.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f4da.png';" alt="Educação"></span>
+          Educação de Qualidade
+        </div>
+        <div class="card-body">
+          Ensina <strong>metacognição e autogestão</strong> desde a base. Transforma o aluno passivo em agente ativo da sua própria evolução escolar.
+        </div>
+        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-size:11px; color:var(--vitae);">
+          Meta 4.4: Habilidades para o futuro
+        </div>
+      </div>
+
+      <div class="bento-card is-crimson">
+        <div class="tag is-crimson">ODS 3</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/2764.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/2764.png';" alt="Coração"></span>
+          Saúde Mental & Bem-Estar
+        </div>
+        <div class="card-body">
+          Combate na raiz a <strong>ansiedade acadêmica e a culpa tóxica</strong> geradas pela procrastinação crônica e pela sobrecarga de prazos.
+        </div>
+        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-size:11px; color:var(--crimson);">
+          Meta 3.4: Promoção da saúde mental
+        </div>
+      </div>
+
+      <div class="bento-card is-arcane">
+        <div class="tag is-arcane">ODS 10</div>
+        <div class="card-title">
+          <span class="emoji-3d is-md"><img class="emoji-3d-img" src="assets/emoji/1f91d.png" onerror="this.onerror=null; this.src='../front_end/assets/emoji/1f91d.png';" alt="Mãos"></span>
+          Redução das Desigualdades
+        </div>
+        <div class="card-body">
+          Web app progressivo ultraleve: <strong>funciona em celulares básicos de R$ 300</strong> com conexão 3G/4G lenta, levando IA de ponta para a periferia.
+        </div>
+        <div style="margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-size:11px; color:var(--arcane-hi);">
+          Democratização tecnológica real
+        </div>
+      </div>
+    </div>
+
+    <aside class="notes">
+      <h4>Guia de Resposta do Apresentador (ODS e Impacto Social):</h4>
+      "Se os jurados perguntarem sobre os ODS da ONU ou como isso escala em políticas públicas, responda: O LevelUp Study se conecta diretamente com a meta do ODS 4 de educação de qualidade ao ensinar autogestão. No ODS 3, reduzimos a ansiedade de adolescentes em fase pré-vestibular. E no ODS 10, quebramos a desigualdade: por ser uma aplicação web ultraleve, ela roda em qualquer celular usado de R$ 300, entregando IA e metodologia de ponta de graça para o aluno da periferia."
+    </aside>
+  </section>
+
+  <!-- PAINEL FLUTUANTE DE NOTAS DO APRESENTADOR (TECLA N) -->
+  <div class="notes-drawer" id="notesDrawer">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h4 style="margin:0;">ROTEIRO FALADO DO APRESENTADOR</h4>
+      <button id="btnCloseNotes" style="background:none; border:0; color:var(--mist); cursor:pointer; font-size:16px;">×</button>
+    </div>
+    <div id="notesContent">
+      Carregando notas...
+    </div>
+  </div>
+
+  <!-- MODAL DE ÍNDICE GERAL DE SLIDES (TECLA O) -->
+  <div class="index-modal" id="indexModal">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="font-family:var(--font-display); font-size:24px; font-weight:800; color:var(--parchment);">Índice Geral do Pitch Deck</h3>
+      <button id="btnCloseIndex" style="background:none; border:1px solid var(--line); border-radius:8px; padding:6px 12px; color:var(--mist); cursor:pointer;">Fechar (Esc)</button>
+    </div>
+    <p style="font-size:13px; color:var(--mist); margin-top:4px;">Selecione qualquer slide para saltar diretamente:</p>
+    <div class="index-grid" id="indexGrid"></div>
+  </div>
+
+  <!-- TRILHO INFERIOR DE EXP E NAVEGAÇÃO -->
+  <footer class="rail">
+    <div class="rail-label" id="expLabel">EXP 0 / 1100</div>
+    <div class="rail-track">
+      <div class="rail-fill" id="railFill"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn" id="btnPrev" title="Slide Anterior (←)">
+        <svg><use href="#icon-arrow" transform="rotate(180 12 12)"></use></svg>
+      </button>
+      <button class="nav-btn" id="btnNext" title="Próximo Slide (→)">
+        <svg><use href="#icon-arrow"></use></svg>
+      </button>
+      <button class="nav-btn" id="btnFull" title="Tela Cheia (F)">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+          <path d="M3 3h6v2H5v4H3V3zm12 0h6v6h-2V5h-4V3zM3 15h2v4h4v2H3v-6zm16 4h-4v2h6v-6h-2v4z"/>
+        </svg>
+      </button>
+    </div>
+  </footer>
+
+</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   MOTOR DE NAVEGAÇÃO E RESPONSIVIDADE DO PITCH DECK
+   ═══════════════════════════════════════════════════════════ */
+(() => {
+  'use strict';
+
+  const stage = document.getElementById('stage');
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let currentIndex = 0;
+
+  const counter = document.getElementById('counter');
+  const chapter = document.getElementById('chapter');
+  const expLabel = document.getElementById('expLabel');
+  const railFill = document.getElementById('railFill');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const btnFull = document.getElementById('btnFull');
+  const btnNotes = document.getElementById('btnNotes');
+  const notesDrawer = document.getElementById('notesDrawer');
+  const notesContent = document.getElementById('notesContent');
+  const btnCloseNotes = document.getElementById('btnCloseNotes');
+  const indexModal = document.getElementById('indexModal');
+  const indexGrid = document.getElementById('indexGrid');
+  const btnCloseIndex = document.getElementById('btnCloseIndex');
+
+  /* ── Ajuste de Escala Responsiva (Preserva 1280x720) ── */
+  function autoFit() {
+    const sx = window.innerWidth / 1280;
+    const sy = window.innerHeight / 720;
+    const margin = document.fullscreenElement ? 1 : 0.92;
+    const scale = Math.min(sx, sy, 1.35) * margin;
+    document.documentElement.style.setProperty('--k', scale.toFixed(4));
+  }
+  window.addEventListener('resize', autoFit);
+  document.addEventListener('fullscreenchange', autoFit);
+  autoFit();
+
+  /* ── Montagem do Índice Geral ── */
+  slides.forEach((slide, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'index-btn';
+    btn.innerHTML = `<span>${String(idx + 1).padStart(2, '0')}</span> <strong>${slide.dataset.title}</strong>`;
+    btn.addEventListener('click', () => {
+      goTo(idx);
+      indexModal.classList.remove('is-open');
+    });
+    indexGrid.appendChild(btn);
+  });
+  const indexButtons = Array.from(indexGrid.children);
+
+  /* ── Atualização do Estado do Slide ── */
+  function updateUI() {
+    slides.forEach((s, idx) => {
+      s.classList.toggle('is-active', idx === currentIndex);
+    });
+
+    const activeSlide = slides[currentIndex];
+    counter.innerHTML = `<b>${String(currentIndex + 1).padStart(2, '0')}</b> / ${total}`;
+    chapter.textContent = activeSlide.dataset.chapter;
+
+    const progress = total > 1 ? (currentIndex / (total - 1)) * 100 : 100;
+    railFill.style.width = `${progress}%`;
+    expLabel.textContent = `EXP ${currentIndex * 100} / ${(total - 1) * 100}`;
+
+    btnPrev.disabled = currentIndex === 0;
+    btnNext.disabled = currentIndex === total - 1;
+
+    indexButtons.forEach((btn, idx) => {
+      btn.classList.toggle('active', idx === currentIndex);
+    });
+
+    // Atualiza notas do apresentador na gaveta
+    const noteEl = activeSlide.querySelector('aside.notes');
+    if (noteEl) {
+      notesContent.innerHTML = noteEl.innerHTML;
+    } else {
+      notesContent.innerHTML = '<span style="color: var(--mist-dim);">Nenhuma anotação específica para este slide.</span>';
+    }
+  }
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= total) return;
+    currentIndex = idx;
+    updateUI();
+  }
+
+  function next() { goTo(currentIndex + 1); }
+  function prev() { goTo(currentIndex - 1); }
+
+  /* ── Eventos de Controle e Atalhos de Teclado ── */
+  btnNext.addEventListener('click', next);
+  btnPrev.addEventListener('click', prev);
+  document.getElementById('zoneR').addEventListener('click', next);
+  document.getElementById('zoneL').addEventListener('click', prev);
+
+  counter.addEventListener('click', () => indexModal.classList.add('is-open'));
+  btnCloseIndex.addEventListener('click', () => indexModal.classList.remove('is-open'));
+  indexModal.addEventListener('click', (e) => {
+    if (e.target === indexModal) indexModal.classList.remove('is-open');
+  });
+
+  btnNotes.addEventListener('click', () => notesDrawer.classList.toggle('is-open'));
+  btnCloseNotes.addEventListener('click', () => notesDrawer.classList.remove('is-open'));
+
+  btnFull.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      next();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      prev();
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      goTo(0);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      goTo(total - 1);
+    } else if (e.key.toLowerCase() === 'o') {
+      indexModal.classList.toggle('is-open');
+    } else if (e.key.toLowerCase() === 'n' || e.key.toLowerCase() === 's') {
+      notesDrawer.classList.toggle('is-open');
+    } else if (e.key.toLowerCase() === 'f') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    } else if (e.key === 'Escape') {
+      indexModal.classList.remove('is-open');
+      notesDrawer.classList.remove('is-open');
+    }
+  });
+
+  // Touch Swipe para dispositivos móveis
+  let touchStartX = null;
+  stage.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].clientX;
+  }, { passive: true });
+  stage.addEventListener('touchend', (e) => {
+    if (touchStartX === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(diff) > 50) {
+      diff < 0 ? next() : prev();
+    }
+    touchStartX = null;
+  }, { passive: true });
+
+  updateUI();
+})();
+</script>
+
+</body>
+</html>

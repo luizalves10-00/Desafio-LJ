@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LevelUp Study – Entrar</title>
+  <link rel="stylesheet" href="login.css" />
+  <link rel="stylesheet" href="emoji-3d.css" />
+  <script src="emoji-catalog.js" defer></script>
+  <script src="emoji-3d.js" defer></script>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">LevelUp <span>Study</span></div>
+    <p class="tagline">Estude como um herói. Evolua todo dia.</p>
+    <div class="badges-hint" aria-hidden="true">🍅 ⚡ 🏆 🔥 💎</div>
+
+    <div class="alert error" id="alert-error"></div>
+    <div class="alert success" id="alert-success"></div>
+
+    <form id="login-form" novalidate>
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="seu@email.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="••••••••"
+          autocomplete="current-password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit">Entrar</button>
+    </form>
+
+    <div class="divider">ou</div>
+
+    <div class="link-row">
+      Não tem conta? <a href="register.html">Criar conta grátis</a>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

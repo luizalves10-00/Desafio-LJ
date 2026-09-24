@@ -1,0 +1,722 @@
+// Gerado por scripts/baixar-emojis.mjs; identidade pelo Unicode.
+window.EMOJI_3D_CATALOG = {
+  "🌟": {
+    "name": "GLOWING STAR",
+    "file": "1f31f.png",
+    "unicode": "1f31f"
+  },
+  "💡": {
+    "name": "ELECTRIC LIGHT BULB",
+    "file": "1f4a1.png",
+    "unicode": "1f4a1"
+  },
+  "📊": {
+    "name": "BAR CHART",
+    "file": "1f4ca.png",
+    "unicode": "1f4ca"
+  },
+  "🧩": {
+    "name": "JIGSAW PUZZLE PIECE",
+    "file": "1f9e9.png",
+    "unicode": "1f9e9"
+  },
+  "1⃣": {
+    "name": "DIGIT ONE + COMBINING ENCLOSING KEYCAP",
+    "file": "31-20e3.png",
+    "unicode": "31-20e3",
+    "sourcePath": "assets/Keycap 1/3D/keycap_1_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "2⃣": {
+    "name": "DIGIT TWO + COMBINING ENCLOSING KEYCAP",
+    "file": "32-20e3.png",
+    "unicode": "32-20e3",
+    "sourcePath": "assets/Keycap 2/3D/keycap_2_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "3⃣": {
+    "name": "DIGIT THREE + COMBINING ENCLOSING KEYCAP",
+    "file": "33-20e3.png",
+    "unicode": "33-20e3",
+    "sourcePath": "assets/Keycap 3/3D/keycap_3_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "4⃣": {
+    "name": "DIGIT FOUR + COMBINING ENCLOSING KEYCAP",
+    "file": "34-20e3.png",
+    "unicode": "34-20e3",
+    "sourcePath": "assets/Keycap 4/3D/keycap_4_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "5⃣": {
+    "name": "DIGIT FIVE + COMBINING ENCLOSING KEYCAP",
+    "file": "35-20e3.png",
+    "unicode": "35-20e3",
+    "sourcePath": "assets/Keycap 5/3D/keycap_5_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "6⃣": {
+    "name": "DIGIT SIX + COMBINING ENCLOSING KEYCAP",
+    "file": "36-20e3.png",
+    "unicode": "36-20e3",
+    "sourcePath": "assets/Keycap 6/3D/keycap_6_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "7⃣": {
+    "name": "DIGIT SEVEN + COMBINING ENCLOSING KEYCAP",
+    "file": "37-20e3.png",
+    "unicode": "37-20e3",
+    "sourcePath": "assets/Keycap 7/3D/keycap_7_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "8⃣": {
+    "name": "DIGIT EIGHT + COMBINING ENCLOSING KEYCAP",
+    "file": "38-20e3.png",
+    "unicode": "38-20e3",
+    "sourcePath": "assets/Keycap 8/3D/keycap_8_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "9⃣": {
+    "name": "DIGIT NINE + COMBINING ENCLOSING KEYCAP",
+    "file": "39-20e3.png",
+    "unicode": "39-20e3",
+    "sourcePath": "assets/Keycap 9/3D/keycap_9_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "🖊": {
+    "name": "LOWER LEFT BALLPOINT PEN",
+    "file": "1f58a.png",
+    "unicode": "1f58a"
+  },
+  "📌": {
+    "name": "PUSHPIN",
+    "file": "1f4cc.png",
+    "unicode": "1f4cc"
+  },
+  "👉": {
+    "name": "WHITE RIGHT POINTING BACKHAND INDEX",
+    "file": "1f449.png",
+    "unicode": "1f449"
+  },
+  "🔥": {
+    "name": "FIRE",
+    "file": "1f525.png",
+    "unicode": "1f525"
+  },
+  "🏠": {
+    "name": "HOUSE BUILDING",
+    "file": "1f3e0.png",
+    "unicode": "1f3e0"
+  },
+  "⏱": {
+    "name": "STOPWATCH",
+    "file": "23f1.png",
+    "unicode": "23f1"
+  },
+  "📜": {
+    "name": "SCROLL",
+    "file": "1f4dc.png",
+    "unicode": "1f4dc"
+  },
+  "🏆": {
+    "name": "TROPHY",
+    "file": "1f3c6.png",
+    "unicode": "1f3c6"
+  },
+  "🎮": {
+    "name": "VIDEO GAME",
+    "file": "1f3ae.png",
+    "unicode": "1f3ae"
+  },
+  "🎨": {
+    "name": "ARTIST PALETTE",
+    "file": "1f3a8.png",
+    "unicode": "1f3a8"
+  },
+  "🤖": {
+    "name": "ROBOT FACE",
+    "file": "1f916.png",
+    "unicode": "1f916"
+  },
+  "↩": {
+    "name": "LEFTWARDS ARROW WITH HOOK",
+    "file": "21a9.png",
+    "unicode": "21a9"
+  },
+  "🐣": {
+    "name": "HATCHING CHICK",
+    "file": "1f423.png",
+    "unicode": "1f423"
+  },
+  "⚔": {
+    "name": "CROSSED SWORDS",
+    "file": "2694.png",
+    "unicode": "2694"
+  },
+  "📖": {
+    "name": "OPEN BOOK",
+    "file": "1f4d6.png",
+    "unicode": "1f4d6"
+  },
+  "🏅": {
+    "name": "SPORTS MEDAL",
+    "file": "1f3c5.png",
+    "unicode": "1f3c5"
+  },
+  "⚡": {
+    "name": "HIGH VOLTAGE SIGN",
+    "file": "26a1.png",
+    "unicode": "26a1"
+  },
+  "🗺": {
+    "name": "WORLD MAP",
+    "file": "1f5fa.png",
+    "unicode": "1f5fa"
+  },
+  "🎯": {
+    "name": "DIRECT HIT",
+    "file": "1f3af.png",
+    "unicode": "1f3af"
+  },
+  "👹": {
+    "name": "JAPANESE OGRE",
+    "file": "1f479.png",
+    "unicode": "1f479"
+  },
+  "▶": {
+    "name": "BLACK RIGHT-POINTING TRIANGLE",
+    "file": "25b6.png",
+    "unicode": "25b6"
+  },
+  "⏸": {
+    "name": "DOUBLE VERTICAL BAR",
+    "file": "23f8.png",
+    "unicode": "23f8"
+  },
+  "🍅": {
+    "name": "TOMATO",
+    "file": "1f345.png",
+    "unicode": "1f345"
+  },
+  "⏳": {
+    "name": "HOURGLASS WITH FLOWING SAND",
+    "file": "23f3.png",
+    "unicode": "23f3"
+  },
+  "🗡": {
+    "name": "DAGGER KNIFE",
+    "file": "1f5e1.png",
+    "unicode": "1f5e1"
+  },
+  "🛡": {
+    "name": "SHIELD",
+    "file": "1f6e1.png",
+    "unicode": "1f6e1"
+  },
+  "📭": {
+    "name": "OPEN MAILBOX WITH LOWERED FLAG",
+    "file": "1f4ed.png",
+    "unicode": "1f4ed"
+  },
+  "🔒": {
+    "name": "LOCK",
+    "file": "1f512.png",
+    "unicode": "1f512"
+  },
+  "🐍": {
+    "name": "SNAKE",
+    "file": "1f40d.png",
+    "unicode": "1f40d"
+  },
+  "🔢": {
+    "name": "INPUT SYMBOL FOR NUMBERS",
+    "file": "1f522.png",
+    "unicode": "1f522"
+  },
+  "🧠": {
+    "name": "BRAIN",
+    "file": "1f9e0.png",
+    "unicode": "1f9e0"
+  },
+  "💣": {
+    "name": "BOMB",
+    "file": "1f4a3.png",
+    "unicode": "1f4a3"
+  },
+  "⭕": {
+    "name": "HEAVY LARGE CIRCLE",
+    "file": "2b55.png",
+    "unicode": "2b55"
+  },
+  "🔤": {
+    "name": "INPUT SYMBOL FOR LATIN LETTERS",
+    "file": "1f524.png",
+    "unicode": "1f524"
+  },
+  "📚": {
+    "name": "BOOKS",
+    "file": "1f4da.png",
+    "unicode": "1f4da"
+  },
+  "🔠": {
+    "name": "INPUT SYMBOL FOR LATIN CAPITAL LETTERS",
+    "file": "1f520.png",
+    "unicode": "1f520"
+  },
+  "🔗": {
+    "name": "LINK SYMBOL",
+    "file": "1f517.png",
+    "unicode": "1f517"
+  },
+  "🔡": {
+    "name": "INPUT SYMBOL FOR LATIN SMALL LETTERS",
+    "file": "1f521.png",
+    "unicode": "1f521"
+  },
+  "✅": {
+    "name": "WHITE HEAVY CHECK MARK",
+    "file": "2705.png",
+    "unicode": "2705"
+  },
+  "🧱": {
+    "name": "BRICK",
+    "file": "1f9f1.png",
+    "unicode": "1f9f1"
+  },
+  "🔴": {
+    "name": "LARGE RED CIRCLE",
+    "file": "1f534.png",
+    "unicode": "1f534"
+  },
+  "🏓": {
+    "name": "TABLE TENNIS PADDLE AND BALL",
+    "file": "1f3d3.png",
+    "unicode": "1f3d3"
+  },
+  "🍄": {
+    "name": "MUSHROOM",
+    "file": "1f344.png",
+    "unicode": "1f344"
+  },
+  "🍎": {
+    "name": "RED APPLE",
+    "file": "1f34e.png",
+    "unicode": "1f34e"
+  },
+  "◀": {
+    "name": "BLACK LEFT-POINTING TRIANGLE",
+    "file": "25c0.png",
+    "unicode": "25c0"
+  },
+  "🔀": {
+    "name": "TWISTED RIGHTWARDS ARROWS",
+    "file": "1f500.png",
+    "unicode": "1f500"
+  },
+  "🙂": {
+    "name": "SLIGHTLY SMILING FACE",
+    "file": "1f642.png",
+    "unicode": "1f642"
+  },
+  "🚩": {
+    "name": "TRIANGULAR FLAG ON POST",
+    "file": "1f6a9.png",
+    "unicode": "1f6a9",
+    "sourcePath": "assets/Triangular flag/3D/triangular_flag_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "🔄": {
+    "name": "ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS",
+    "file": "1f504.png",
+    "unicode": "1f504"
+  },
+  "❌": {
+    "name": "CROSS MARK",
+    "file": "274c.png",
+    "unicode": "274c"
+  },
+  "🟩": {
+    "name": "LARGE GREEN SQUARE",
+    "file": "1f7e9.png",
+    "unicode": "1f7e9"
+  },
+  "🟨": {
+    "name": "LARGE YELLOW SQUARE",
+    "file": "1f7e8.png",
+    "unicode": "1f7e8"
+  },
+  "⬛": {
+    "name": "BLACK LARGE SQUARE",
+    "file": "2b1b.png",
+    "unicode": "2b1b"
+  },
+  "🏛": {
+    "name": "CLASSICAL BUILDING",
+    "file": "1f3db.png",
+    "unicode": "1f3db"
+  },
+  "🌍": {
+    "name": "EARTH GLOBE EUROPE-AFRICA",
+    "file": "1f30d.png",
+    "unicode": "1f30d"
+  },
+  "🔬": {
+    "name": "MICROSCOPE",
+    "file": "1f52c.png",
+    "unicode": "1f52c"
+  },
+  "🎉": {
+    "name": "PARTY POPPER",
+    "file": "1f389.png",
+    "unicode": "1f389"
+  },
+  "😀": {
+    "name": "GRINNING FACE",
+    "file": "1f600.png",
+    "unicode": "1f600"
+  },
+  "⏭": {
+    "name": "BLACK RIGHT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR",
+    "file": "23ed.png",
+    "unicode": "23ed"
+  },
+  "✔": {
+    "name": "HEAVY CHECK MARK",
+    "file": "2714.png",
+    "unicode": "2714"
+  },
+  "🟡": {
+    "name": "LARGE YELLOW CIRCLE",
+    "file": "1f7e1.png",
+    "unicode": "1f7e1"
+  },
+  "🪙": {
+    "name": "COIN",
+    "file": "1fa99.png",
+    "unicode": "1fa99"
+  },
+  "👾": {
+    "name": "ALIEN MONSTER",
+    "file": "1f47e.png",
+    "unicode": "1f47e"
+  },
+  "👿": {
+    "name": "IMP",
+    "file": "1f47f.png",
+    "unicode": "1f47f"
+  },
+  "🌋": {
+    "name": "VOLCANO",
+    "file": "1f30b.png",
+    "unicode": "1f30b"
+  },
+  "🌙": {
+    "name": "CRESCENT MOON",
+    "file": "1f319.png",
+    "unicode": "1f319"
+  },
+  "🌊": {
+    "name": "WATER WAVE",
+    "file": "1f30a.png",
+    "unicode": "1f30a"
+  },
+  "🌿": {
+    "name": "HERB",
+    "file": "1f33f.png",
+    "unicode": "1f33f"
+  },
+  "🌅": {
+    "name": "SUNRISE",
+    "file": "1f305.png",
+    "unicode": "1f305"
+  },
+  "☀": {
+    "name": "BLACK SUN WITH RAYS",
+    "file": "2600.png",
+    "unicode": "2600"
+  },
+  "💜": {
+    "name": "PURPLE HEART",
+    "file": "1f49c.png",
+    "unicode": "1f49c"
+  },
+  "⛹": {
+    "name": "PERSON WITH BALL",
+    "file": "26f9.png",
+    "unicode": "26f9"
+  },
+  "🐉": {
+    "name": "DRAGON",
+    "file": "1f409.png",
+    "unicode": "1f409"
+  },
+  "👻": {
+    "name": "GHOST",
+    "file": "1f47b.png",
+    "unicode": "1f47b"
+  },
+  "🧟": {
+    "name": "ZOMBIE",
+    "file": "1f9df.png",
+    "unicode": "1f9df"
+  },
+  "🤡": {
+    "name": "CLOWN FACE",
+    "file": "1f921.png",
+    "unicode": "1f921"
+  },
+  "🦹": {
+    "name": "SUPERVILLAIN",
+    "file": "1f9b9.png",
+    "unicode": "1f9b9"
+  },
+  "💀": {
+    "name": "SKULL",
+    "file": "1f480.png",
+    "unicode": "1f480"
+  },
+  "🐙": {
+    "name": "OCTOPUS",
+    "file": "1f419.png",
+    "unicode": "1f419"
+  },
+  "😴": {
+    "name": "SLEEPING FACE",
+    "file": "1f634.png",
+    "unicode": "1f634"
+  },
+  "💤": {
+    "name": "SLEEPING SYMBOL",
+    "file": "1f4a4.png",
+    "unicode": "1f4a4"
+  },
+  "🚀": {
+    "name": "ROCKET",
+    "file": "1f680.png",
+    "unicode": "1f680"
+  },
+  "🧙": {
+    "name": "MAGE",
+    "file": "1f9d9.png",
+    "unicode": "1f9d9"
+  },
+  "🔮": {
+    "name": "CRYSTAL BALL",
+    "file": "1f52e.png",
+    "unicode": "1f52e"
+  },
+  "📅": {
+    "name": "CALENDAR",
+    "file": "1f4c5.png",
+    "unicode": "1f4c5"
+  },
+  "✨": {
+    "name": "SPARKLES",
+    "file": "2728.png",
+    "unicode": "2728"
+  },
+  "⭐": {
+    "name": "WHITE MEDIUM STAR",
+    "file": "2b50.png",
+    "unicode": "2b50"
+  },
+  "💪": {
+    "name": "FLEXED BICEPS",
+    "file": "1f4aa.png",
+    "unicode": "1f4aa"
+  },
+  "🛸": {
+    "name": "FLYING SAUCER",
+    "file": "1f6f8.png",
+    "unicode": "1f6f8"
+  },
+  "👑": {
+    "name": "CROWN",
+    "file": "1f451.png",
+    "unicode": "1f451"
+  },
+  "💎": {
+    "name": "GEM STONE",
+    "file": "1f48e.png",
+    "unicode": "1f48e"
+  },
+  "🥉": {
+    "name": "THIRD PLACE MEDAL",
+    "file": "1f949.png",
+    "unicode": "1f949"
+  },
+  "🥈": {
+    "name": "SECOND PLACE MEDAL",
+    "file": "1f948.png",
+    "unicode": "1f948"
+  },
+  "🥇": {
+    "name": "FIRST PLACE MEDAL",
+    "file": "1f947.png",
+    "unicode": "1f947"
+  },
+  "🌈": {
+    "name": "RAINBOW",
+    "file": "1f308.png",
+    "unicode": "1f308"
+  },
+  "☄": {
+    "name": "COMET",
+    "file": "2604.png",
+    "unicode": "2604"
+  },
+  "🌌": {
+    "name": "MILKY WAY",
+    "file": "1f30c.png",
+    "unicode": "1f30c"
+  },
+  "🗂": {
+    "name": "CARD INDEX DIVIDERS",
+    "file": "1f5c2.png",
+    "unicode": "1f5c2"
+  },
+  "🐲": {
+    "name": "DRAGON FACE",
+    "file": "1f432.png",
+    "unicode": "1f432"
+  },
+  "🏁": {
+    "name": "CHEQUERED FLAG",
+    "file": "1f3c1.png",
+    "unicode": "1f3c1",
+    "sourcePath": "assets/Chequered flag/3D/chequered_flag_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "🦸": {
+    "name": "SUPERHERO",
+    "file": "1f9b8.png",
+    "unicode": "1f9b8"
+  },
+  "🌱": {
+    "name": "SEEDLING",
+    "file": "1f331.png",
+    "unicode": "1f331"
+  },
+  "💥": {
+    "name": "COLLISION SYMBOL",
+    "file": "1f4a5.png",
+    "unicode": "1f4a5"
+  },
+  "😎": {
+    "name": "SMILING FACE WITH SUNGLASSES",
+    "file": "1f60e.png",
+    "unicode": "1f60e"
+  },
+  "🤝": {
+    "name": "HANDSHAKE",
+    "file": "1f91d.png",
+    "unicode": "1f91d"
+  },
+  "😢": {
+    "name": "CRYING FACE",
+    "file": "1f622.png",
+    "unicode": "1f622"
+  },
+  "👍": {
+    "name": "THUMBS UP SIGN",
+    "file": "1f44d.png",
+    "unicode": "1f44d"
+  },
+  "😐": {
+    "name": "NEUTRAL FACE",
+    "file": "1f610.png",
+    "unicode": "1f610"
+  },
+  "😟": {
+    "name": "WORRIED FACE",
+    "file": "1f61f.png",
+    "unicode": "1f61f"
+  },
+  "😣": {
+    "name": "PERSEVERING FACE",
+    "file": "1f623.png",
+    "unicode": "1f623"
+  },
+  "😨": {
+    "name": "FEARFUL FACE",
+    "file": "1f628.png",
+    "unicode": "1f628"
+  },
+  "🏳": {
+    "name": "WAVING WHITE FLAG",
+    "file": "1f3f3.png",
+    "unicode": "1f3f3",
+    "sourcePath": "assets/White flag/3D/white_flag_3d.png",
+    "sourceRevision": "1ffb34c752ecf5d402f04cfb4b392c77f57c54bc"
+  },
+  "❤": {
+    "name": "HEAVY BLACK HEART",
+    "file": "2764.png",
+    "unicode": "2764"
+  },
+  "📋": {
+    "name": "CLIPBOARD",
+    "file": "1f4cb.png",
+    "unicode": "1f4cb"
+  },
+  "🟢": {
+    "name": "LARGE GREEN CIRCLE",
+    "file": "1f7e2.png",
+    "unicode": "1f7e2"
+  },
+  "⚽": {
+    "name": "SOCCER BALL",
+    "file": "26bd.png",
+    "unicode": "26bd"
+  },
+  "⛩": {
+    "name": "SHINTO SHRINE",
+    "file": "26e9.png",
+    "unicode": "26e9"
+  },
+  "🎵": {
+    "name": "MUSICAL NOTE",
+    "file": "1f3b5.png",
+    "unicode": "1f3b5"
+  },
+  "💻": {
+    "name": "PERSONAL COMPUTER",
+    "file": "1f4bb.png",
+    "unicode": "1f4bb"
+  },
+  "🔍": {
+    "name": "LEFT-POINTING MAGNIFYING GLASS",
+    "file": "1f50d.png",
+    "unicode": "1f50d"
+  },
+  "💰": {
+    "name": "MONEY BAG",
+    "file": "1f4b0.png",
+    "unicode": "1f4b0"
+  },
+  "🎬": {
+    "name": "CLAPPER BOARD",
+    "file": "1f3ac.png",
+    "unicode": "1f3ac"
+  },
+  "📝": {
+    "name": "MEMO",
+    "file": "1f4dd.png",
+    "unicode": "1f4dd"
+  },
+  "❓": {
+    "name": "BLACK QUESTION MARK ORNAMENT",
+    "file": "2753.png",
+    "unicode": "2753"
+  },
+  "🏃": {
+    "name": "RUNNER",
+    "file": "1f3c3.png",
+    "unicode": "1f3c3"
+  },
+  "🧑": {
+    "name": "ADULT",
+    "file": "1f9d1.png",
+    "unicode": "1f9d1"
+  }
+};

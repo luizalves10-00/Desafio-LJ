@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Roteiro Oficial de Pitch (5 Minutos) — LevelUp Study</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@500;700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #07060D;
+  --surface: #0E0C1A;
+  --surface-alt: #15112B;
+  --border: rgba(196, 181, 253, 0.16);
+  --border-focus: rgba(139, 92, 246, 0.45);
+  --text: #F3F0FB;
+  --text-dim: #A79EC4;
+  --text-muted: #7C7396;
+  --arcane: #8B5CF6;
+  --arcane-hi: #C4B5FD;
+  --ember: #F59E0B;
+  --vitae: #34D399;
+  --crimson: #FB7185;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Manrope', -apple-system, sans-serif;
+  line-height: 1.6;
+  padding: 32px 20px 80px;
+}
+.container {
+  max-width: 860px;
+  margin: 0 auto;
+}
+header {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+}
+.badge-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--arcane-hi);
+  border: 1px solid var(--border);
+}
+.badge.timer {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--ember);
+}
+h1 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.subtitle {
+  color: var(--text-dim);
+  font-size: 15px;
+}
+.quick-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.quick-nav a {
+  color: var(--arcane-hi);
+  text-decoration: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  transition: all 0.15s;
+}
+.quick-nav a:hover {
+  background: var(--arcane);
+  color: #fff;
+}
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 24px;
+  transition: border-color 0.2s;
+}
+.card:hover {
+  border-color: var(--border-focus);
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(196, 181, 253, 0.08);
+}
+.card-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.card-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ember);
+  background: rgba(245, 158, 11, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.context-box {
+  background: rgba(0, 0, 0, 0.25);
+  border-left: 3px solid var(--arcane);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.context-box strong { color: var(--arcane-hi); }
+.speech-bubble {
+  background: var(--surface-alt);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  border-radius: 10px;
+  padding: 18px 20px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #ffffff;
+}
+.speech-bubble strong {
+  color: var(--arcane-hi);
+  font-weight: 600;
+}
+.speech-bubble mark {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fef3c7;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+.tip-box {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--vitae);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.qa-card {
+  border-left: 4px solid var(--ember);
+}
+@media print {
+  body { background: var(--bg) !important; color: var(--text) !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .card { background: var(--surface) !important; border: 1px solid var(--border) !important; page-break-inside: avoid; }
+  .speech-bubble { background: var(--surface-alt) !important; color: #ffffff !important; border-color: rgba(139, 92, 246, 0.22) !important; }
+  .quick-nav { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="badge-row">
+      <span class="badge">Desafio Liga Jovem 4ª Edição</span>
+      <span class="badge timer">Tempo Limite: 05:00 Minutos</span>
+      <span class="badge">Equipe LAWS</span>
+    </div>
+    <h1>Roteiro Falado Oficial — LevelUp Study</h1>
+    <p class="subtitle">Guia de fala do apresentador com marcações de tempo e respostas táticas para o Q&A da banca avaliadora.</p>
+  </header>
+
+  <nav class="quick-nav">
+    <a href="#s1">01. Problema</a>
+    <a href="#s2">02. Ciência</a>
+    <a href="#s3">03. Solução</a>
+    <a href="#s4">04. Pilares</a>
+    <a href="#s5">05. Retenção</a>
+    <a href="#s6">06. A Mágica</a>
+    <a href="#s7">07. Validação</a>
+    <a href="#s8">08. Negócio</a>
+    <a href="#s9">09. Fechamento</a>
+    <a href="#qa10">10. Q&A Custo</a>
+    <a href="#qa11">11. Q&A Rivais</a>
+    <a href="#qa12">12. Q&A ODS</a>
+  </nav>
+
+  <!-- SLIDE 1 -->
+  <article class="card" id="s1">
+    <div class="card-header">
+      <div class="card-title">01 · O Problema</div>
+      <div class="card-time">⏱️ 0:00 - 0:35 (35s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> 87% paralisia de decisão, 91% fuga pro celular, pesquisa de campo com 55 estudantes reais.
+    </div>
+    <div class="speech-bubble">
+      "Senhores jurados, vocês sabiam que <strong>estudar não é a verdadeira dor do aluno?</strong><br><br>
+      Em nossa pesquisa de campo com 55 estudantes reais, <strong>91% nos disseram a mesma coisa</strong>: eles sentam para estudar com boa intenção, mas a sobrecarga de prazos trava a decisão. Eles abrem o celular para uma pausa rápida de 5 minutos, e essa pausa é sequestrada pelas redes sociais.<br><br>
+      O resultado? Sentimento constante de culpa e a convicção errônea de que o problema é falta de inteligência."
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Fale em tom empático e firme, olhando nos olhos dos jurados para criar conexão imediata.</div>
+  </article>
+
+  <!-- SLIDE 2 -->
+  <article class="card" id="s2">
+    <div class="card-header">
+      <div class="card-title">02 · A Ciência por trás da Dor</div>
+      <div class="card-time">⏱️ 0:35 - 1:10 (35s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> Relatório Chegg.org (74% ansiedade/cortisol), Pomodoro dos anos 80 vs TikTok e falta de dopamina no estudo convencional.
+    </div>
+    <div class="speech-bubble">
+      "A ciência explica esse fenômeno. Relatórios globais da Chegg.org mostram que <strong>quase três quartos dos alunos sofrem com ansiedade por prazos</strong>.<br><br>
+      E por que métodos famosos como o Pomodoro comum falham? Porque o Pomodoro foi feito nos anos 80, antes do algoritmo do TikTok existir! Dizer para um adolescente 'faça uma pausa livre de 5 minutos' é garantir que ele nunca mais volte para a mesa.<br><br>
+      Além disso, o cérebro humano precisa de feedback de dopamina: <strong>nos games ele vê a barra subir; no livro, o esforço parece invisível</strong>."
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Use tom explicativo e dinâmico ao citar os anos 80 e o TikTok, gerando identificação imediata na banca.</div>
+  </article>
+
+  <!-- SLIDE 3 -->
+  <article class="card" id="s3">
+    <div class="card-header">
+      <div class="card-title">03 · A Solução</div>
+      <div class="card-time">⏱️ 1:10 - 1:45 (35s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> Ciclo de Estudos Fechado (Rota Inteligente > Foco RPG > Recompensa Tangível) e monstro da procrastinação tomando dano.
+    </div>
+    <div class="speech-bubble">
+      "É aqui que entra o <strong>LevelUp Study</strong>. Nós transformamos a tarefa de sentar e estudar em uma jornada onde o esforço se torna visível instantaneamente através de um <strong>Ciclo de Estudos Fechado: Rota Inteligente, Foco RPG e Recompensa Tangível</strong>.<br><br>
+      A Ana Clara, aluna do nosso teste piloto, resumiu com perfeição: quando ela viu o monstro da procrastinação sofrer dano a cada minuto de foco no Pomodoro e recebeu <strong>50 EXP na barra de nível</strong>, estudar deixou de ser um fardo e virou um desafio que ela queria vencer."
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Aponte com convicção para o mockup do produto e transmita entusiasmo genuíno ao citar o caso da Ana Clara.</div>
+  </article>
+
+  <!-- SLIDE 4 -->
+  <article class="card" id="s4">
+    <div class="card-header">
+      <div class="card-title">04 · Três Pilares de Impacto</div>
+      <div class="card-time">⏱️ 1:45 - 2:15 (30s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> 1. Alívio da Ansiedade ("O Que Fazer Agora?"), 2. Blindagem da Pausa (Arcade 18 jogos) e 3. Recompensa Emocional (EXP e Streaks).
+    </div>
+    <div class="speech-bubble">
+      "Nossa proposta de valor se sustenta em <strong>três pilares fundamentais</strong>:<br><br>
+      <strong>Primeiro: Alívio da Ansiedade.</strong> O aluno não perde tempo angustiado com 10 tarefas acumuladas; ele clica em <strong>'O que fazer agora?'</strong> e nossa rota inteligente diz por onde começar.<br><br>
+      <strong>Segundo: Blindagem da Pausa.</strong> Em vez de ele ir para o Instagram, oferecemos 18 minijogos rápidos dentro da nossa própria plataforma.<br><br>
+      <strong>E terceiro: Recompensa Emocional.</strong> Estudar finalmente tem o mesmo mecanismo de satisfação de um RPG: você ganha EXP, sobe de classe e não quer quebrar sua sequência de dias."
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Seja rítmico e pontue cada um dos 3 pilares com pausas curtas para absorção total pela banca.</div>
+  </article>
+
+  <!-- SLIDE 5 -->
+  <article class="card" id="s5">
+    <div class="card-header">
+      <div class="card-title">05 · A Ciência da Retenção</div>
+      <div class="card-time">⏱️ 2:15 - 2:50 (35s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> Pesquisa PUCRS (+60% consistência, -43% evasão), 7 classes de evolução, 3 atributos, 33 conquistas e 8 monstros chefes.
+    </div>
+    <div class="speech-bubble">
+      "E por que gamificar? Muitos pensam que gamificação é modismo, mas <strong>pesquisas da PUCRS mostram que elementos de jogos reduzem o abandono escolar e aumentam a consistência em até 60%!</strong><br><br>
+      No LevelUp Study nós não colocamos 'pontinhos genéricos'. Construímos um RPG de verdade: são <strong>7 classes de evolução, 3 atributos</strong> que crescem conforme você estuda, <strong>33 conquistas colecionáveis e 8 monstros da distração</strong> que você derrota enquanto o timer roda.<br><br>
+      O jovem sente que está subindo de nível na vida real."
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Enfatize o dado da PUCRS com autoridade técnica para provar que a gamificação é pedagógica e fundamentada.</div>
+  </article>
+
+  <!-- SLIDE 6 -->
+  <article class="card" id="s6">
+    <div class="card-header">
+      <div class="card-title">06 · A Mágica do Ecossistema</div>
+      <div class="card-time">⏱️ 2:50 - 3:30 (40s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> Mentor IA Gemini 2.5 (analogias personalizadas), Arcade com 18 jogos e Vantagem Injusta: Regra de Ouro do Cooldown 1:1.
+    </div>
+    <div class="speech-bubble">
+      "Aqui está a verdadeira mágica do nosso produto:<br><br>
+      <strong>Primeiro:</strong> nossa Inteligência Artificial não é um ChatGPT genérico. Ela sabe que o aluno gosta de anime ou futebol e <strong>explica física usando chutes de jogadores e poderes de personagens!</strong><br><br>
+      <strong>Segundo:</strong> nós colocamos 18 minijogos direto no app para pausas controladas.<br><br>
+      <strong>E terceiro — nossa VANTAGEM INJUSTA:</strong> o sistema de autolimite. Se a pausa era de 5 minutos e o aluno jogou 8 minutos, os jogos são bloqueados automaticamente por exatamente 3 minutos! <strong>Jogar nunca compensa mais do que estudar.</strong>"
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Este é o clímax de produto do pitch. Dê força máxima à frase 'Jogar nunca compensa mais do que estudar'.</div>
+  </article>
+
+  <!-- SLIDE 7 -->
+  <article class="card" id="s7">
+    <div class="card-header">
+      <div class="card-title">07 · Resultados Qualitativos e Usabilidade</div>
+      <div class="card-time">⏱️ 3:30 - 4:10 (40s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> Vídeo de validação de João Pedro (14 anos, 9º ano preparatório IFTO), nota SUS UX 9.4/10, 100% preferência vs métodos antigos, +3.2x tempo focado.
+    </div>
+    <div class="speech-bubble">
+      "E nós não ficamos apenas na teoria. Colocamos o protótipo funcional para rodar nas mãos de alunos reais.<br><br>
+      O <strong>João Pedro, estudante de 14 anos do 9º ano</strong> que está se preparando para o processo seletivo do IFTO, nos deu um testemunho gravado em vídeo que resume perfeitamente a nossa proposta de valor: antes ele se distraía à toa, pegava o celular e não rendia nada. Usando o LevelUp Study, o aproveitamento dele melhorou demais porque <strong>a plataforma vai guiando passo a passo o que ele precisa fazer</strong>, ele não perde o foco e sente que está evoluindo de verdade nas matérias.<br><br>
+      Nossa nota média de usabilidade atingiu impressionantes <strong>9.4 de 10</strong> no índice SUS!"
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Aponte para o vídeo do João Pedro no slide e vincule diretamente ao dado de 9.4/10 como validação empírica irrefutável.</div>
+  </article>
+
+  <!-- SLIDE 8 -->
+  <article class="card" id="s8">
+    <div class="card-header">
+      <div class="card-title">08 · SaaS Freemium & Escala</div>
+      <div class="card-time">⏱️ 4:10 - 4:45 (35s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> Plano Aprendiz (R$ 0 - 100% gratuito escolas públicas), Plano Herói (R$ 19,90/mês - B2C) e Painel do Professor (B2B Institucional).
+    </div>
+    <div class="speech-bubble">
+      "E como nós nos sustentamos financeiramente? O modelo é <strong>SaaS Freemium com perna B2B</strong>.<br><br>
+      A versão básica é <strong>100% gratuita</strong> — nenhum estudante de escola pública pagará um centavo para ter foco e organização.<br><br>
+      Para quem deseja acelerar seus estudos, oferecemos o <strong>Plano Herói por R$ 19,90 mensais</strong> — valor menor que um lanche — dando acesso ilimitado ao Mentor IA e relatórios avançados. E no B2B, vendemos o <strong>Painel do Professor</strong> para escolas particulares e redes públicas monitorarem o engajamento das turmas."
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Destaque o impacto social gratuito na rede pública junto à sustentabilidade e escalabilidade financeira do B2C e B2B.</div>
+  </article>
+
+  <!-- SLIDE 9 -->
+  <article class="card" id="s9">
+    <div class="card-header">
+      <div class="card-title">09 · Fechamento & Chamada à Ação</div>
+      <div class="card-time">⏱️ 4:45 - 5:00 (15s)</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na tela:</strong> "Estudar não precisa ser ansiedade. É subir de nível.", créditos Equipe LAWS (Ana Karolina, Luiz Fellipe, Samuel Teles, William Brito), link do protótipo funcional.
+    </div>
+    <div class="speech-bubble">
+      "Para encerrar: <strong>estudar não precisa ser uma fonte de ansiedade e sofrimento. Pode ser a jornada em que o aluno se sente no controle e celebra cada pequena vitória.</strong><br><br>
+      A Equipe LAWS — eu, Ana Karolina, William e Samuel — construiu do zero a ferramenta que nós gostaríamos de ter tido quando estávamos paralisados pela procrastinação.<br><br>
+      O aplicativo está pronto, testado e de código aberto. Convidamos as escolas a adotarem nosso piloto e os jurados a nos apoiarem nessa jornada. Muito obrigado!"
+    </div>
+    <div class="tip-box">💡 Dica de Apresentação: Finalize cravando 5:00 no cronômetro. Voz firme, postura aberta e inspiradora, com agradecimento caloroso à banca.</div>
+  </article>
+
+  <!-- Q&A 10 -->
+  <article class="card qa-card" id="qa10">
+    <div class="card-header">
+      <div class="card-title">10 · [Q&A] Custo de Infraestrutura & Viabilidade</div>
+      <div class="card-time">🛡️ Resposta de Backup</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na pergunta:</strong> "Como vocês pagam servidores e IA sem cobrar do aluno pobre?"
+    </div>
+    <div class="speech-bubble">
+      <strong>Se perguntarem: "Como vocês vão pagar os servidores e a IA sem cobrar do aluno pobre?"</strong><br><br>
+      "Nós usamos Vanilla JS e Flask rodando em SQLite com Gunicorn. Todo o backend consome míseros <strong>120MB de RAM</strong>. Na IA, usamos o Gemini Flash, cujo custo é ínfimo. O custo operacional por aluno é de apenas <strong>R$ 0,04 por mês</strong>. Apenas 15 assinantes pagantes sustentam 2.000 estudantes da rede pública."
+    </div>
+    <div class="tip-box">💡 Dica de Q&A: Tenha os números exatos na ponta da língua: 120MB de RAM, R$ 0,04/aluno/mês e a proporção de 15 assinantes pagando 2.000 alunos públicos.</div>
+  </article>
+
+  <!-- Q&A 11 -->
+  <article class="card qa-card" id="qa11">
+    <div class="card-header">
+      <div class="card-title">11 · [Q&A] Concorrência Direta</div>
+      <div class="card-time">🛡️ Resposta de Backup</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na pergunta:</strong> "Por que não usar Forest, Duolingo ou Todoist?"
+    </div>
+    <div class="speech-bubble">
+      <strong>Se perguntarem: "Por que o aluno não usa o Forest ou um app de tarefas como o Todoist?"</strong><br><br>
+      "O Todoist só lista tarefas, mas não te dá foco nem recompensa. O Forest te prende por 25 minutos, mas te joga direto nas garras do TikTok na pausa de 5 minutos! O LevelUp Study é o único que fecha o ciclo completo: você planeja a tarefa, estuda combatendo o monstro, descansa com um minijogo que tem autolimite e ainda ganha EXP."
+    </div>
+    <div class="tip-box">💡 Dica de Q&A: Não deprecie o concorrente; mostre com elegância técnica que eles deixam a pausa desprotegida e o LevelUp fecha o ciclo.</div>
+  </article>
+
+  <!-- Q&A 12 -->
+  <article class="card qa-card" id="qa12">
+    <div class="card-header">
+      <div class="card-title">12 · [Q&A] Escalabilidade e ODS da ONU</div>
+      <div class="card-time">🛡️ Resposta de Backup</div>
+    </div>
+    <div class="context-box">
+      <strong>Foco na pergunta:</strong> "Como a solução se conecta aos ODS da ONU e escala em políticas públicas?"
+    </div>
+    <div class="speech-bubble">
+      <strong>Se os jurados perguntarem sobre os ODS da ONU ou como isso escala em políticas públicas:</strong><br><br>
+      "O LevelUp Study se conecta diretamente com a meta do <strong>ODS 4 (Educação de Qualidade)</strong> ao ensinar autogestão. No <strong>ODS 3 (Saúde Mental)</strong>, reduzimos a ansiedade de adolescentes em fase pré-vestibular. E no <strong>ODS 10 (Redução das Desigualdades)</strong>, quebramos a desigualdade: por ser uma aplicação web ultraleve, ela roda em qualquer celular usado de R$ 300, entregando IA e metodologia de ponta de graça para o aluno da periferia."
+    </div>
+    <div class="tip-box">💡 Dica de Q&A: Enfatize o impacto de inclusão: qualquer celular simples roda o app via web, democratizando tecnologia de ponta sem barreiras de hardware.</div>
+  </article>
+</div>
+
+</body>
+</html>

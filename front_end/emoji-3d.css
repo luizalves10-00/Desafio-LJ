@@ -1,0 +1,54 @@
+/* A arte acompanha o tamanho tipográfico de cada tela, botão e minijogo. */
+.emoji-3d {
+  display: inline-block;
+  position: relative;
+  width: 1.2em;
+  height: 1.2em;
+  flex: 0 0 auto;
+  vertical-align: -0.24em;
+  line-height: 1;
+  white-space: nowrap;
+  text-indent: 0;
+}
+.emoji-3d > .emoji-3d-native { opacity: 0; }
+.emoji-3d > img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
+}
+.emoji-3d.emoji-3d-failed > .emoji-3d-native { opacity: 1; }
+.emoji-3d.emoji-3d-failed > img { display: none; }
+.emoji-3d.emoji-3d-pending > .emoji-3d-native { opacity: 1; }
+.emoji-3d.emoji-3d-pending > img { display: none; }
+.emoji-select { position: relative; display: inline-block; min-width: 180px; }
+.emoji-select > select { display: none; }
+.emoji-select-button {
+  width: 100%; display: flex; align-items: center; gap: .45em;
+  padding: 10px 12px; font: inherit; color: var(--text, #e2e8f0);
+  background: var(--surface2, #18223d); border: 1px solid var(--border, #30304b);
+  border-radius: 8px; cursor: pointer; text-align: left;
+}
+.emoji-select-button::after { content: '▾'; margin-left: auto; }
+.emoji-select-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 100;
+  min-width: 100%; width: max-content; max-width: min(340px, 85vw);
+  padding: 4px; border: 1px solid var(--border, #30304b); border-radius: 8px;
+  background: var(--surface, #1a1a2e); box-shadow: 0 8px 24px #0005;
+}
+.emoji-select-menu[hidden] { display: none; }
+.emoji-select-option {
+  display: block; width: 100%; border: 0; border-radius: 5px;
+  padding: 9px 12px; background: transparent; color: var(--text, #e2e8f0);
+  font: inherit; text-align: left; cursor: pointer;
+}
+.emoji-select-option:hover, .emoji-select-option:focus-visible,
+.emoji-select-option[aria-selected='true'] { background: var(--surface2, #18223d); }
+@media (prefers-reduced-motion: reduce) {
+  .monster-icon, .badge.unlocked .badge-icon { animation: none !important; }
+}

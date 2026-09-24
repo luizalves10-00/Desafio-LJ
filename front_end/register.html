@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LevelUp Study – Criar conta</title>
+  <link rel="stylesheet" href="register.css" />
+  <link rel="stylesheet" href="emoji-3d.css" />
+  <script src="emoji-catalog.js" defer></script>
+  <script src="emoji-3d.js" defer></script>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">LevelUp <span>Study</span></div>
+    <p class="tagline">Crie sua conta e comece sua jornada</p>
+
+    <div class="perks">
+      <div class="perk"><span class="perk-icon">🍅</span> Timer Pomodoro com controle de foco</div>
+      <div class="perk"><span class="perk-icon">🏆</span> Sistema de XP, níveis e conquistas</div>
+      <div class="perk"><span class="perk-icon">🔥</span> Streak diário para manter consistência</div>
+    </div>
+
+    <div class="alert error"   id="alert-error"></div>
+    <div class="alert success" id="alert-success"></div>
+
+    <form id="register-form" novalidate>
+      <div class="form-group">
+        <label for="name">Nome completo</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Como quer ser chamado?"
+          autocomplete="name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          placeholder="seu@email.com"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Interesses (Opcional)</label>
+        <p class="field-hint" style="margin-top:-5px; margin-bottom:8px">Para a IA personalizar seus exemplos de estudos</p>
+        <div class="interests-grid" id="interests-grid">
+          <label class="interest-chip">
+            <input type="checkbox" value="Futebol">
+            <span>⚽ Futebol</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Jogos">
+            <span>🎮 Jogos</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Anime">
+            <span>⛩️ Anime</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Música">
+            <span>🎵 Música</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Tecnologia">
+            <span>💻 Tecnologia</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Fantasia & RPG">
+            <span>🐉 Fantasia & RPG</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Crimes Reais & Mistérios">
+            <span>🔍 Crimes Reais & Mistérios</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Super-Heróis & HQs">
+            <span>🦸 Super-Heróis & HQs</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Finanças & Negócios">
+            <span>💰 Finanças & Negócios</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Cinema & Séries">
+            <span>🎬 Cinema & Séries</span>
+          </label>
+          <label class="interest-chip">
+            <input type="checkbox" value="Ciência & Espaço">
+            <span>🚀 Ciência & Espaço</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Mínimo 6 caracteres"
+          autocomplete="new-password"
+          required
+        />
+        <div class="strength-bar"><div class="strength-fill" id="strength-fill"></div></div>
+        <span class="field-hint" id="strength-label"></span>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm">Confirmar senha</label>
+        <input
+          type="password"
+          id="confirm"
+          name="confirm"
+          placeholder="Repita a senha"
+          autocomplete="new-password"
+          required
+        />
+        <span class="field-hint error" id="confirm-hint"></span>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit">Criar conta</button>
+    </form>
+
+    <div class="divider">ou</div>
+
+    <div class="link-row">
+      Já tem conta? <a href="login.html">Entrar</a>
+    </div>
+  </div>
+
+  <script src="register.js"></script>
+</body>
+</html>

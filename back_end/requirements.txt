@@ -1,0 +1,10 @@
+flask
+flask-cors
+flask-sqlalchemy
+flask-migrate
+werkzeug
+google-genai
+python-dotenv
+emoji>=2,<3
+Pillow>=12.3,<13
+gunicorn>=23,<24

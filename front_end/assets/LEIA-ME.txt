@@ -1,0 +1,21 @@
+SPRITES DO PERSONAGEM — Jogo de Plataforma (LevelUp Study)
+===========================================================
+
+Sprites usados pelo jogo (tiras horizontais, quadros lado a lado):
+
+  1) corrida.png  -> 8 quadros (animação de corrida)
+  2) pulo.png     -> 6 quadros (animação de pulo)
+  3) vitoria.png  -> 6 quadros (animação de vitória)
+
+REGRAS IMPORTANTES:
+- Todos os quadros de uma tira devem ter a MESMA largura e altura.
+- Os quadros ficam lado a lado, da esquerda para a direita.
+- Fundo transparente (PNG) fica melhor, mas não é obrigatório.
+- Os nomes dos arquivos devem ser exatamente os de cima.
+
+Assim que as imagens estiverem nesta pasta, o personagem aparece
+animado no lugar do quadradinho vermelho — corrida ao andar, pulo no ar
+e dança de vitória ao chegar na bandeira.
+
+Se quiser usar outro número de quadros, me avise para ajustar o código
+(constante HERO_SPRITES em index.js).

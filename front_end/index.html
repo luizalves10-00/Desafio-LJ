@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LevelUp Study – Painel</title>
+  <link rel="stylesheet" href="index.css" />
+  <link rel="stylesheet" href="emoji-3d.css" />
+  <script src="emoji-catalog.js" defer></script>
+  <script src="emoji-3d.js" defer></script>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand">LevelUp <span>Study</span></div>
+    <div class="tagline">Estude como um herói</div>
+  </div>
+
+  <div class="sidebar-xp">
+    <div class="sidebar-xp-row">
+      <span class="sidebar-level" id="sb-level">Nível 1</span>
+      <span class="sidebar-xp-val" id="sb-xp">0 XP</span>
+    </div>
+    <div class="xp-bar"><div class="xp-fill" id="sb-xp-fill" style="width:0%"></div></div>
+    <div class="xp-next" id="sb-xp-next">200 XP para o próximo nível</div>
+  </div>
+
+  <div class="streak-badge" id="sb-streak">🔥 0 dias de streak</div>
+
+  <nav>
+    <div class="nav-section-label">Menu</div>
+    <button class="nav-item active" data-section="dashboard" onclick="navigate('dashboard', this)">
+      <span class="nav-icon">🏠</span> Dashboard
+    </button>
+    <button class="nav-item" data-section="pomodoro" onclick="navigate('pomodoro', this)">
+      <span class="nav-icon">⏱</span> Pomodoro
+    </button>
+    <button class="nav-item" data-section="tarefas" onclick="navigate('tarefas', this)">
+      <span class="nav-icon">📜</span> Missões
+    </button>
+    <button class="nav-item" data-section="conquistas" onclick="navigate('conquistas', this)">
+      <span class="nav-icon">🏆</span> Conquistas
+    </button>
+    <button class="nav-item" data-section="jogos" onclick="navigate('jogos', this)">
+      <span class="nav-icon">🎮</span> Jogos
+    </button>
+
+    <div class="nav-section-label">Configurações</div>
+    <button class="nav-item" data-section="temas" onclick="navigate('temas', this)">
+      <span class="nav-icon">🎨</span> Temas
+    </button>
+    <button class="nav-item" data-section="chat" onclick="navigate('chat', this)">
+      <span class="nav-icon">🤖</span> Chat com IA
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <div class="user-avatar" id="sb-avatar">?</div>
+      <div class="user-details">
+        <div class="user-name" id="sb-name">—</div>
+        <div class="user-email" id="sb-email">—</div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">↩ Sair da conta</button>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:.8rem;color:var(--muted)" id="topbar-date"></span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <section class="section active" id="section-dashboard">
+
+      <!-- Carteirinha do herói -->
+      <div class="card hero-card" style="margin-bottom:20px;">
+        <div class="hero-avatar" id="hero-avatar">🐣</div>
+        <div class="hero-info">
+          <div class="hero-class-row">
+            <span class="hero-class" id="hero-class">Aprendiz</span>
+            <span class="hero-level" id="hero-level">Nv. 1</span>
+          </div>
+          <div class="hero-name" id="hero-name">—</div>
+          <div class="hero-xpbar">
+            <div class="hero-xpbar-fill" id="hero-xpbar-fill" style="width:0%"></div>
+            <span class="hero-xpbar-label" id="hero-xpbar-label">0 EXP</span>
+          </div>
+        </div>
+        <div class="hero-attrs">
+          <div class="hero-attr">
+            <span class="attr-name">⚔️ Força <small>pomodoros</small></span>
+            <div class="attr-bar"><div class="attr-fill attr-red" id="attr-forca" style="width:0%"></div></div>
+            <b class="attr-val" id="attr-forca-val">0</b>
+          </div>
+          <div class="hero-attr">
+            <span class="attr-name">📖 Sabedoria <small>missões</small></span>
+            <div class="attr-bar"><div class="attr-fill attr-blue" id="attr-sabedoria" style="width:0%"></div></div>
+            <b class="attr-val" id="attr-sabedoria-val">0</b>
+          </div>
+          <div class="hero-attr">
+            <span class="attr-name">🔥 Disciplina <small>streak</small></span>
+            <div class="attr-bar"><div class="attr-fill attr-gold" id="attr-disciplina" style="width:0%"></div></div>
+            <b class="attr-val" id="attr-disciplina-val">0</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-card-icon icon-purple">🏅</div>
+          <div class="stat-info">
+            <div class="stat-val" id="d-level">1</div>
+            <div class="stat-label">Nível do herói</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon icon-gold">⚡</div>
+          <div class="stat-info">
+            <div class="stat-val" id="d-xp">0</div>
+            <div class="stat-label">EXP total</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon icon-green">🔥</div>
+          <div class="stat-info">
+            <div class="stat-val" id="d-streak">0</div>
+            <div class="stat-label">Dias de streak</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Sugestão -->
+        <div class="card">
+          <div class="card-title">🗺️ Missão recomendada</div>
+          <div class="suggest-box">
+            <div class="suggest-title" id="suggest-title">Carregando...</div>
+            <div class="suggest-body"  id="suggest-body"></div>
+            <div class="suggest-meta"  id="suggest-meta"></div>
+          </div>
+          <button class="btn btn-gold btn-full" style="margin-top:14px" onclick="loadSuggest()">
+            🎯 Atualizar sugestão
+          </button>
+        </div>
+
+        <!-- Pomodoro rápido -->
+        <div class="card">
+          <div class="card-title">⚔️ Batalha Rápida</div>
+          <div class="monster-mini" id="monster-mini">
+            <span id="monster-mini-icon">👹</span>
+            <div class="monster-mini-info">
+              <span class="monster-mini-name" id="monster-mini-name">—</span>
+              <div class="monster-hp"><div class="monster-hp-fill" id="monster-hp-mini" style="width:100%"></div></div>
+            </div>
+          </div>
+          <div class="timer-ring-wrap">
+            <svg class="timer-ring" width="150" height="150" viewBox="0 0 150 150">
+              <circle class="ring-bg"   cx="75" cy="75" r="64"/>
+              <circle class="ring-fill" id="ring-fill" cx="75" cy="75" r="64"
+                stroke-dasharray="402.1" stroke-dashoffset="0"/>
+            </svg>
+            <div class="timer-inner">
+              <div class="timer-display" id="timer-display" style="font-size:2.4rem;margin:0">25:00</div>
+              <div class="timer-mode"    id="timer-mode"    style="font-size:.7rem;margin:0">FOCO</div>
+            </div>
+          </div>
+          <div class="timer-btns">
+            <button class="btn btn-primary" id="btn-start">▶ Iniciar</button>
+            <button class="btn btn-secondary" id="btn-pause" disabled>⏸</button>
+            <button class="btn btn-secondary" id="btn-reset">↺</button>
+          </div>
+          <div class="pom-dots" id="pom-dots"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ POMODORO COMPLETO ══ -->
+    <section class="section" id="section-pomodoro">
+      <div class="grid-2">
+        <div class="card" style="text-align:center;">
+          <div class="card-title" style="justify-content:center;">⚔️ Batalha de Foco</div>
+          <div class="monster-box" id="monster-box">
+            <div class="monster-icon" id="monster-icon">👹</div>
+            <div class="monster-detail">
+              <div class="monster-name" id="monster-name">—</div>
+              <div class="monster-hp"><div class="monster-hp-fill" id="monster-hp-full" style="width:100%"></div></div>
+              <div class="monster-hp-label" id="monster-hp-label">HP 100%</div>
+            </div>
+          </div>
+          <div class="timer-ring-wrap">
+            <svg class="timer-ring" width="220" height="220" viewBox="0 0 220 220">
+              <circle class="ring-bg"    cx="110" cy="110" r="96"/>
+              <circle class="ring-fill"  id="ring-fill-full" cx="110" cy="110" r="96"
+                stroke-dasharray="603.2" stroke-dashoffset="0" style="stroke-width:7"/>
+            </svg>
+            <div class="timer-inner">
+              <div class="timer-display" id="timer-display-full" style="font-size:3.8rem;margin:0">25:00</div>
+              <div class="timer-mode"    id="timer-mode-full"    style="margin:0">SESSÃO DE FOCO</div>
+            </div>
+          </div>
+          <div class="timer-btns">
+            <button class="btn btn-primary"   id="btn-start-full">▶ Iniciar</button>
+            <button class="btn btn-secondary" id="btn-pause-full" disabled>⏸ Pausar</button>
+            <button class="btn btn-secondary" id="btn-reset-full">↺ Resetar</button>
+          </div>
+          <div class="pom-dots" id="pom-dots-full" style="margin-top:18px;"></div>
+          <div class="preset-row">
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(25,5)">25 / 5 min</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(50,10)">50 / 10 min</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(15,3)">15 / 3 min</button>
+            <button class="btn btn-secondary btn-sm" onclick="setDuration(45,15)">45 / 15 min</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 Estatísticas de hoje</div>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="stat-card">
+              <div class="stat-card-icon icon-purple">🍅</div>
+              <div class="stat-info">
+                <div class="stat-val" id="p-total-pom">0</div>
+                <div class="stat-label">Pomodoros concluídos</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-gold">⚡</div>
+              <div class="stat-info">
+                <div class="stat-val" id="p-xp">0 XP</div>
+                <div class="stat-label">XP acumulado</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-green">⏳</div>
+              <div class="stat-info">
+                <div class="stat-val" id="p-mins">0 min</div>
+                <div class="stat-label">Tempo de foco estimado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ MISSÕES (tarefas) ══ -->
+    <section class="section" id="section-tarefas">
+      <div class="card">
+        <div class="card-title">📜 Mural de Missões</div>
+        <div class="task-form">
+          <div class="task-form-row">
+            <input type="text" id="task-title" placeholder="Nome da missão (ex: Estudar Matemática)" />
+            <input type="text" id="task-subject" placeholder="Matéria" style="max-width:160px" />
+          </div>
+          <div class="task-form-row">
+            <div class="date-picker" id="task-date-picker">
+              <input type="hidden" id="task-due" />
+              <button class="date-picker-trigger" id="task-date-trigger" type="button"
+                      aria-haspopup="dialog" aria-expanded="false" aria-controls="task-date-popover">
+                <span class="date-picker-icon" aria-hidden="true">📅</span>
+                <span id="task-date-label">Escolher prazo</span>
+                <span class="date-picker-chevron" aria-hidden="true">▾</span>
+              </button>
+              <div class="date-picker-popover" id="task-date-popover" role="dialog"
+                   aria-modal="false" aria-label="Escolher prazo da missão" hidden>
+                <div class="date-picker-header">
+                  <button type="button" class="date-picker-nav" id="task-date-prev" aria-label="Mês anterior">‹</button>
+                  <button type="button" class="date-picker-month" id="task-date-month" aria-live="polite"></button>
+                  <button type="button" class="date-picker-nav" id="task-date-next" aria-label="Próximo mês">›</button>
+                </div>
+                <div class="date-picker-weekdays" aria-hidden="true">
+                  <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+                </div>
+                <div class="date-picker-grid" id="task-date-grid" role="grid"></div>
+                <div class="date-picker-actions">
+                  <button type="button" id="task-date-clear">Limpar</button>
+                  <button type="button" id="task-date-today">Hoje</button>
+                </div>
+              </div>
+            </div>
+            <select id="task-priority">
+              <option value="3">🗡️ Missão Normal (+20 XP)</option>
+              <option value="2" selected>🛡️ Missão Elite (+30 XP)</option>
+              <option value="1">⚔️ Missão Chefe (+40 XP)</option>
+            </select>
+            <button class="btn btn-primary" onclick="addTask()">📜 Aceitar missão</button>
+          </div>
+        </div>
+        <div class="task-list" id="task-list">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            Nenhuma missão no mural. Aceite a primeira!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CONQUISTAS ══ -->
+    <section class="section" id="section-conquistas">
+      <div class="card">
+        <div class="card-title">🏆 Conquistas</div>
+        <div id="ach-summary"></div>
+        <div id="ach-groups"></div>
+      </div>
+    </section>
+
+    <!-- ══ JOGOS ══ -->
+    <section class="section" id="section-jogos">
+
+      <!-- TELA DE BLOQUEIO (cooldown de punição) -->
+      <div class="game-lockout-screen hidden" id="game-lockout">
+        <div class="lockout-icon-wrap">
+          <div class="lockout-padlock">🔒</div>
+          <div class="lockout-sparks">
+            <span>⚡</span><span>🔥</span><span>⚡</span>
+          </div>
+        </div>
+        <h2 class="lockout-title">Jogos Bloqueados!</h2>
+        <p class="lockout-subtitle">Você ficou jogando além do tempo de pausa.<br>O cooldown é igual ao tempo extra que você usou.</p>
+        <div class="lockout-timer-wrap">
+          <div class="lockout-label">Libera em</div>
+          <div class="lockout-timer" id="lockout-timer-display">00:00</div>
+        </div>
+        <p class="lockout-hint">💡 Use o Pomodoro para estudar enquanto espera!</p>
+        <button class="btn btn-secondary btn-sm" onclick="navigate('pomodoro', document.querySelector('[onclick*=pomodoro]'))" style="margin-top:16px;">
+          ⏱️ Ir para o Pomodoro
+        </button>
+      </div>
+
+      <!-- TELA DE SELEÇÃO -->
+      <div class="card" id="game-menu">
+        <div class="card-title">🎮 Escolha um jogo</div>
+        <p class="game-desc" style="margin-bottom:18px;">Jogue nas pausas e ganhe XP de verdade! (até 150 XP de jogos por dia)</p>
+        <div class="game-menu-grid">
+          <div class="game-menu-card" onclick="openGameFromMenu('snake')">
+            <div class="gmc-icon">🐍</div><div class="gmc-name">Snake</div>
+            <div class="gmc-desc">Coma as frutas e cresça sem bater</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('2048')">
+            <div class="gmc-icon">🔢</div><div class="gmc-name">2048</div>
+            <div class="gmc-desc">Junte os números até 2048</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('memoria')">
+            <div class="gmc-icon">🧠</div><div class="gmc-name">Memória</div>
+            <div class="gmc-desc">Encontre todos os pares</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('minado')">
+            <div class="gmc-icon">💣</div><div class="gmc-name">Campo Minado</div>
+            <div class="gmc-desc">Revele as casas sem tocar nas minas</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('velha')">
+            <div class="gmc-icon">⭕</div><div class="gmc-name">Jogo da Velha</div>
+            <div class="gmc-desc">Vença a CPU imbatível</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('desliza')">
+            <div class="gmc-icon">🧩</div><div class="gmc-name">Deslizante</div>
+            <div class="gmc-desc">Ordene as peças de 1 a 15</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('wordle')">
+            <div class="gmc-icon">🔤</div><div class="gmc-name">Wordle</div>
+            <div class="gmc-desc">Adivinhe a palavra de 5 letras</div>
+          </div>
+          <div class="game-menu-card highlight" onclick="openGameFromMenu('quiz')">
+            <div class="gmc-icon">📚</div><div class="gmc-name">Quiz</div>
+            <div class="gmc-desc">Estude jogando — perguntas das matérias</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('forca')">
+            <div class="gmc-icon">🔠</div><div class="gmc-name">Forca</div>
+            <div class="gmc-desc">Adivinhe a palavra letra por letra</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('relampago')">
+            <div class="gmc-icon">⚡</div><div class="gmc-name">Desafio Relâmpago</div>
+            <div class="gmc-desc">Contas de matemática contra o tempo</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('associacao')">
+            <div class="gmc-icon">🔗</div><div class="gmc-name">Associação</div>
+            <div class="gmc-desc">Ligue cada par corretamente</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('anagrama')">
+            <div class="gmc-icon">🔡</div><div class="gmc-name">Anagrama</div>
+            <div class="gmc-desc">Desembaralhe as letras</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('vf')">
+            <div class="gmc-icon">✅</div><div class="gmc-name">Verdadeiro ou Falso</div>
+            <div class="gmc-desc">Responda rápido as afirmações</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('simon')">
+            <div class="gmc-icon">🎯</div><div class="gmc-name">Simon</div>
+            <div class="gmc-desc">Memorize a sequência de cores</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('tetris')">
+            <div class="gmc-icon">🧱</div><div class="gmc-name">Tetris</div>
+            <div class="gmc-desc">Encaixe as peças que caem</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('lig4')">
+            <div class="gmc-icon">🔴</div><div class="gmc-name">Lig 4</div>
+            <div class="gmc-desc">Alinhe 4 antes da CPU</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('breakout')">
+            <div class="gmc-icon">🏓</div><div class="gmc-name">Breakout</div>
+            <div class="gmc-desc">Quebre todos os blocos</div>
+          </div>
+          <div class="game-menu-card" onclick="openGameFromMenu('plataforma')">
+            <div class="gmc-icon">🍄</div><div class="gmc-name">Plataforma</div>
+            <div class="gmc-desc">Pule, pegue moedas e chegue à bandeira</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ÁREA DO JOGO (aberta ao escolher um card) -->
+      <div class="card hidden" id="game-area">
+        <button class="btn btn-secondary btn-sm" style="margin-bottom:16px;" onclick="backToMenu()">← Voltar aos jogos</button>
+
+        <!-- abas de jogos -->
+        <div class="game-tabs" id="game-tabs">
+          <button class="game-tab active" data-game="snake"   onclick="selectGame('snake', this)">🐍 Snake</button>
+          <button class="game-tab"        data-game="2048"    onclick="selectGame('2048', this)">🔢 2048</button>
+          <button class="game-tab"        data-game="memoria" onclick="selectGame('memoria', this)">🧠 Memória</button>
+          <button class="game-tab"        data-game="minado"  onclick="selectGame('minado', this)">💣 Campo Minado</button>
+          <button class="game-tab"        data-game="velha"   onclick="selectGame('velha', this)">⭕ Velha</button>
+          <button class="game-tab"        data-game="desliza" onclick="selectGame('desliza', this)">🧩 Deslizante</button>
+          <button class="game-tab"        data-game="wordle"  onclick="selectGame('wordle', this)">🔤 Wordle</button>
+          <button class="game-tab"        data-game="quiz"    onclick="selectGame('quiz', this)">📚 Quiz</button>
+          <button class="game-tab"        data-game="forca" onclick="selectGame('forca', this)">🔠 Forca</button>
+          <button class="game-tab"        data-game="relampago" onclick="selectGame('relampago', this)">⚡ Relâmpago</button>
+          <button class="game-tab"        data-game="associacao" onclick="selectGame('associacao', this)">🔗 Associação</button>
+          <button class="game-tab"        data-game="anagrama" onclick="selectGame('anagrama', this)">🔡 Anagrama</button>
+          <button class="game-tab"        data-game="vf" onclick="selectGame('vf', this)">✅ V ou F</button>
+          <button class="game-tab"        data-game="simon" onclick="selectGame('simon', this)">🎯 Simon</button>
+          <button class="game-tab"        data-game="tetris" onclick="selectGame('tetris', this)">🧱 Tetris</button>
+          <button class="game-tab"        data-game="lig4" onclick="selectGame('lig4', this)">🔴 Lig 4</button>
+          <button class="game-tab"        data-game="breakout" onclick="selectGame('breakout', this)">🏓 Breakout</button>
+          <button class="game-tab"        data-game="plataforma" onclick="selectGame('plataforma', this)">🍄 Plataforma</button>
+        </div>
+
+        <!-- ── SNAKE ── -->
+        <div class="game-pane active" id="game-pane-snake">
+          <p class="game-desc">Use as <strong>setas / WASD</strong> ou os botões. Coma as frutas 🍎 e cresça sem bater nas paredes.</p>
+          <div class="snake-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="snake-score">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="snake-best">0</span></div>
+            </div>
+            <div class="snake-board-wrap">
+              <canvas id="snake-canvas" width="360" height="360"></canvas>
+              <div class="snake-overlay" id="snake-overlay">
+                <div class="snake-overlay-msg" id="snake-overlay-msg">Pronto para jogar?</div>
+                <button class="btn btn-primary" onclick="snakeStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
+                <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
+                <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 2048 ── -->
+        <div class="game-pane" id="game-pane-2048">
+          <p class="game-desc">Use as <strong>setas / WASD</strong> ou os botões. Junte os números iguais até chegar no <strong>2048</strong>!</p>
+          <div class="g2048-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="g2048-score">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="g2048-best">0</span></div>
+            </div>
+            <div class="g2048-board-wrap">
+              <div class="g2048-board" id="g2048-board"></div>
+              <div class="snake-overlay hidden" id="g2048-overlay">
+                <div class="snake-overlay-msg" id="g2048-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="g2048Start()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onclick="g2048Move('up')">▲</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="g2048Move('left')">◀</button>
+                <button class="snake-dpad" onclick="g2048Move('down')">▼</button>
+                <button class="snake-dpad" onclick="g2048Move('right')">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── MEMÓRIA ── -->
+        <div class="game-pane" id="game-pane-memoria">
+          <p class="game-desc">Vire as cartas e encontre todos os <strong>pares</strong> com o menor número de jogadas!</p>
+          <div class="mem-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="mem-moves">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Pares</span><span class="snake-stat-val gold" id="mem-pairs">0/8</span></div>
+            </div>
+            <div class="mem-board-wrap">
+              <div class="mem-grid" id="mem-grid"></div>
+              <div class="snake-overlay hidden" id="mem-overlay">
+                <div class="snake-overlay-msg" id="mem-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="memStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="memStart()">🔀 Embaralhar</button>
+          </div>
+        </div>
+
+        <!-- ── CAMPO MINADO ── -->
+        <div class="game-pane" id="game-pane-minado">
+          <p class="game-desc">Revele as casas sem tocar nas 💣! Ative o <strong>modo bandeira</strong> para marcar suspeitas.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Minas</span><span class="snake-stat-val" id="mine-count">10</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Status</span><span class="snake-stat-val gold" id="mine-status">🙂</span></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="mine-flag-btn" onclick="mineToggleFlag()">🚩 Bandeira: OFF</button>
+            <div class="board-overlay-wrap">
+              <div class="mine-grid" id="mine-grid"></div>
+              <div class="snake-overlay hidden" id="mine-overlay">
+                <div class="snake-overlay-msg" id="mine-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="mineStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="mineStart()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── JOGO DA VELHA ── -->
+        <div class="game-pane" id="game-pane-velha">
+          <p class="game-desc">Você é o <strong>❌</strong>. Faça uma linha de três antes do <strong>⭕</strong> (CPU)!</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Vitórias</span><span class="snake-stat-val" id="velha-wins">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Derrotas</span><span class="snake-stat-val gold" id="velha-losses">0</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <div class="velha-grid" id="velha-grid"></div>
+              <div class="snake-overlay hidden" id="velha-overlay">
+                <div class="snake-overlay-msg" id="velha-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="velhaStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="velhaStart()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── QUEBRA-CABEÇA DESLIZANTE ── -->
+        <div class="game-pane" id="game-pane-desliza">
+          <p class="game-desc">Ordene os números de <strong>1 a 15</strong>. Clique numa peça vizinha do espaço vazio.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="desliza-moves">0</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <div class="desliza-grid" id="desliza-grid"></div>
+              <div class="snake-overlay hidden" id="desliza-overlay">
+                <div class="snake-overlay-msg" id="desliza-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="deslizaStart()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="deslizaStart()">🔀 Embaralhar</button>
+          </div>
+        </div>
+
+        <!-- ── WORDLE ── -->
+        <div class="game-pane" id="game-pane-wordle">
+          <p class="game-desc">Adivinhe a palavra de <strong>5 letras</strong> em 6 tentativas. 🟩 certa · 🟨 lugar errado · ⬛ não tem.</p>
+          <div class="wordle-wrap">
+            <div class="wordle-board" id="wordle-board"></div>
+            <input class="wordle-input" id="wordle-input" maxlength="5" placeholder="Digite e aperte Enter" autocomplete="off" onkeydown="wordleKey(event)" />
+            <div class="wordle-msg" id="wordle-msg"></div>
+            <button class="btn btn-secondary btn-sm" onclick="wordleStart()">🔄 Nova palavra</button>
+          </div>
+        </div>
+
+        <!-- ── QUIZ ── -->
+        <div class="game-pane" id="game-pane-quiz">
+          <p class="game-desc">Estude jogando! Escolha a matéria e responda 10 perguntas.</p>
+          <div class="quiz-wrap">
+            <div class="quiz-setup" id="quiz-setup">
+              <label class="quiz-label">Matéria:</label>
+              <select id="quiz-subject" class="quiz-select">
+                <option value="todas">📚 Todas as matérias</option>
+                <option value="Matemática">🔢 Matemática</option>
+                <option value="Português">📖 Português</option>
+                <option value="História">🏛 História</option>
+                <option value="Geografia">🌍 Geografia</option>
+                <option value="Ciências">🔬 Ciências</option>
+              </select>
+              <button class="btn btn-primary btn-full" onclick="quizStart()">▶ Começar quiz</button>
+            </div>
+
+            <div class="quiz-game hidden" id="quiz-game">
+              <div class="quiz-topbar">
+                <span class="quiz-progress" id="quiz-progress">1 / 10</span>
+                <span class="quiz-score" id="quiz-score">0 acertos</span>
+              </div>
+              <div class="quiz-question" id="quiz-question"></div>
+              <div class="quiz-options" id="quiz-options"></div>
+            </div>
+
+            <div class="quiz-result hidden" id="quiz-result">
+              <div class="quiz-result-icon" id="quiz-result-icon">🎉</div>
+              <div class="quiz-result-msg" id="quiz-result-msg"></div>
+              <button class="btn btn-primary btn-full" onclick="quizReset()">↺ Jogar de novo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── FORCA ── -->
+        <div class="game-pane" id="game-pane-forca">
+          <p class="game-desc">Adivinhe a palavra! Você pode errar até 6 vezes.</p>
+          <div class="mini-wrap board-overlay-wrap" style="width:100%;max-width:420px;">
+            <div class="forca-hangman" id="forca-hangman">😀</div>
+            <div class="forca-stat" id="forca-errors">Erros: 0 / 6</div>
+            <div class="forca-word" id="forca-word"></div>
+            <div class="forca-letters" id="forca-letters"></div>
+            <div class="snake-overlay hidden" id="forca-overlay">
+              <div class="snake-overlay-msg" id="forca-overlay-msg"></div>
+              <button class="btn btn-primary" onclick="forcaStart()">↺ Nova palavra</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── DESAFIO RELÂMPAGO ── -->
+        <div class="game-pane" id="game-pane-relampago">
+          <p class="game-desc">Resolva o máximo de contas em 60 segundos!</p>
+          <div class="mini-wrap">
+            <div class="relamp-setup" id="relamp-setup">
+              <button class="btn btn-primary btn-full" onclick="relampStart()">▶ Começar (60s)</button>
+            </div>
+            <div class="relamp-game hidden" id="relamp-game">
+              <div class="snake-stats">
+                <div class="snake-stat"><span class="snake-stat-label">Tempo</span><span class="snake-stat-val" id="relamp-time">60</span></div>
+                <div class="snake-stat"><span class="snake-stat-label">Acertos</span><span class="snake-stat-val gold" id="relamp-score">0</span></div>
+              </div>
+              <div class="relamp-problem" id="relamp-problem"></div>
+              <input class="wordle-input" id="relamp-input" inputmode="numeric" placeholder="Resposta" autocomplete="off" onkeydown="relampKey(event)" />
+            </div>
+            <div class="quiz-result hidden" id="relamp-result">
+              <div class="quiz-result-icon">⚡</div>
+              <div class="quiz-result-msg" id="relamp-result-msg"></div>
+              <button class="btn btn-primary btn-full" onclick="relampReset()">↺ Jogar de novo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ASSOCIAÇÃO ── -->
+        <div class="game-pane" id="game-pane-associacao">
+          <p class="game-desc">Toque numa opção da esquerda e depois no par correto da direita.</p>
+          <div class="mini-wrap">
+            <div class="assoc-cols">
+              <div class="assoc-col" id="assoc-left"></div>
+              <div class="assoc-col" id="assoc-right"></div>
+            </div>
+            <div class="wordle-msg" id="assoc-msg"></div>
+            <button class="btn btn-secondary btn-sm" onclick="assocStart()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── ANAGRAMA ── -->
+        <div class="game-pane" id="game-pane-anagrama">
+          <p class="game-desc">Descubra a palavra embaralhada!</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Acertos</span><span class="snake-stat-val gold" id="anag-score">0</span></div>
+            </div>
+            <div class="anag-letters" id="anag-letters"></div>
+            <input class="wordle-input" id="anag-input" placeholder="Sua resposta" autocomplete="off" onkeydown="anagKey(event)" />
+            <div class="wordle-msg" id="anag-msg"></div>
+            <button class="btn btn-secondary btn-sm" onclick="anagSkip()">⏭ Pular palavra</button>
+          </div>
+        </div>
+
+        <!-- ── VERDADEIRO OU FALSO ── -->
+        <div class="game-pane" id="game-pane-vf">
+          <p class="game-desc">A afirmação é verdadeira ou falsa? São 10 rodadas.</p>
+          <div class="mini-wrap">
+            <div class="vf-game" id="vf-game" style="width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+              <div class="quiz-topbar" style="width:100%;">
+                <span class="quiz-progress" id="vf-progress">1 / 10</span>
+                <span class="quiz-score" id="vf-score">0 acertos</span>
+              </div>
+              <div class="vf-statement" id="vf-statement"></div>
+              <div class="vf-buttons">
+                <button class="btn btn-green" onclick="vfAnswer(true)">✔ Verdadeiro</button>
+                <button class="btn btn-danger" onclick="vfAnswer(false)">✘ Falso</button>
+              </div>
+              <div class="wordle-msg" id="vf-msg"></div>
+            </div>
+            <div class="quiz-result hidden" id="vf-result">
+              <div class="quiz-result-icon" id="vf-result-icon">🎉</div>
+              <div class="quiz-result-msg" id="vf-result-msg"></div>
+              <button class="btn btn-primary btn-full" onclick="vfStart()">↺ Jogar de novo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SIMON ── -->
+        <div class="game-pane" id="game-pane-simon">
+          <p class="game-desc">Memorize a sequência de cores e repita na ordem!</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Nível</span><span class="snake-stat-val gold" id="simon-level">0</span></div>
+            </div>
+            <div class="simon-pad">
+              <button class="simon-btn simon-0" id="simon-0" onclick="simonClick(0)"></button>
+              <button class="simon-btn simon-1" id="simon-1" onclick="simonClick(1)"></button>
+              <button class="simon-btn simon-2" id="simon-2" onclick="simonClick(2)"></button>
+              <button class="simon-btn simon-3" id="simon-3" onclick="simonClick(3)"></button>
+            </div>
+            <div class="wordle-msg" id="simon-msg">Clique em Começar</div>
+            <button class="btn btn-primary" onclick="simonStart()">▶ Começar</button>
+          </div>
+        </div>
+
+        <!-- ── TETRIS ── -->
+        <div class="game-pane" id="game-pane-tetris">
+          <p class="game-desc">Encaixe as peças! ◀ ▶ move · ⟳ gira · ▼ desce.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="tetris-score">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Linhas</span><span class="snake-stat-val gold" id="tetris-lines">0</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="tetris-canvas" width="150" height="300"></canvas>
+              <div class="snake-overlay" id="tetris-overlay">
+                <div class="snake-overlay-msg" id="tetris-overlay-msg">Pronto?</div>
+                <button class="btn btn-primary" onclick="tetrisStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onclick="tetrisRotate()">⟳</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="tetrisMove(-1)">◀</button>
+                <button class="snake-dpad" onclick="tetrisDrop()">▼</button>
+                <button class="snake-dpad" onclick="tetrisMove(1)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LIG 4 ── -->
+        <div class="game-pane" id="game-pane-lig4">
+          <p class="game-desc">Você é 🔴. Alinhe 4 antes da CPU 🟡! Clique numa coluna.</p>
+          <div class="mini-wrap">
+            <div class="board-overlay-wrap">
+              <div class="lig4-board" id="lig4-board"></div>
+              <div class="snake-overlay hidden" id="lig4-overlay">
+                <div class="snake-overlay-msg" id="lig4-overlay-msg"></div>
+                <button class="btn btn-primary" onclick="lig4Start()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="lig4Start()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── BREAKOUT ── -->
+        <div class="game-pane" id="game-pane-breakout">
+          <p class="game-desc">Quebre todos os blocos! Mova com ◀ ▶ ou o mouse.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val gold" id="breakout-score">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="breakout-lives">3</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="breakout-canvas" width="300" height="300"></canvas>
+              <div class="snake-overlay" id="breakout-overlay">
+                <div class="snake-overlay-msg" id="breakout-overlay-msg">Pronto?</div>
+                <button class="btn btn-primary" onclick="breakoutStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="breakoutMove(-1)">◀</button>
+                <button class="snake-dpad" onclick="breakoutMove(1)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLATAFORMA ── -->
+        <div class="game-pane" id="game-pane-plataforma">
+          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙, pule na cabeça dos vilões 👾, desvie dos espinhos e derrote o chefão 👿 para liberar a bandeira 🚩. Vença a fase para avançar ao próximo cenário! 🌋</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Fase</span><span class="snake-stat-val" id="plat-level">1/2</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Moedas</span><span class="snake-stat-val gold" id="plat-coins">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vilões</span><span class="snake-stat-val" id="plat-kills">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="plat-lives">3</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="plat-canvas" width="600" height="340"></canvas>
+              <div class="snake-overlay" id="plat-overlay">
+                <div class="snake-overlay-msg" id="plat-overlay-msg">Pronto para a aventura?</div>
+                <button class="btn btn-primary" onclick="platStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
+                <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
+                <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══ TEMAS ══ -->
+    <section class="section" id="section-temas">
+      <div class="card">
+        <div class="card-title">🎨 Escolha um tema</div>
+        <div class="themes-grid">
+
+          <div class="theme-card tp-dark" id="theme-dark" onclick="setTheme('dark')">
+            <div class="theme-preview tp-dark">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-dark">
+              🌙 Dark
+              <span class="theme-check" id="check-dark"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-ocean" id="theme-ocean" onclick="setTheme('ocean')">
+            <div class="theme-preview tp-ocean">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-ocean">
+              🌊 Ocean
+              <span class="theme-check" id="check-ocean"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-forest" id="theme-forest" onclick="setTheme('forest')">
+            <div class="theme-preview tp-forest">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-forest">
+              🌿 Forest
+              <span class="theme-check" id="check-forest"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-sunset" id="theme-sunset" onclick="setTheme('sunset')">
+            <div class="theme-preview tp-sunset">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-sunset">
+              🌅 Sunset
+              <span class="theme-check" id="check-sunset"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-light" id="theme-light" onclick="setTheme('light')">
+            <div class="theme-preview tp-light">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-light">
+              ☀️ Light
+              <span class="theme-check" id="check-light"></span>
+            </div>
+          </div>
+
+          <div class="theme-card tp-midnight" id="theme-midnight" onclick="setTheme('midnight')">
+            <div class="theme-preview tp-midnight">
+              <div class="preview-bar"></div>
+              <div class="preview-card"></div>
+            </div>
+            <div class="theme-name tp-midnight">
+              💜 Midnight
+              <span class="theme-check" id="check-midnight"></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ CHAT COM IA ══ -->
+    <section class="section" id="section-chat">
+      <div class="card" style="display: flex; flex-direction: column; height: 600px;">
+        <div class="card-title">🤖 Converse com seu Mentor de Estudos</div>
+        
+        <div class="chat-messages" id="chat-messages" style="flex: 1; overflow-y: auto; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 14px; background: rgba(0,0,0,0.2);">
+          <div class="chat-message ai" style="margin-bottom: 10px; padding: 10px; border-radius: 8px; background: rgba(255,215,0,0.1); color: var(--gold);">
+            <strong>Mentor IA:</strong> Olá! Eu sou seu mentor gamificado. Como posso ajudar você com seus estudos ou planejamento hoje?
+          </div>
+        </div>
+
+        <div class="chat-input-area" style="display: flex; gap: 10px;">
+          <input type="text" id="chat-input" placeholder="Digite sua mensagem..." style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text);" onkeydown="if(event.key==='Enter') sendMessageAi()" />
+          <button class="btn btn-primary" onclick="sendMessageAi()" id="btn-chat-send">Enviar</button>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ── MODAL DE PAUSA COM JOGO ── -->
+<div class="break-modal" id="break-modal">
+  <div class="break-modal-card">
+    <div class="break-modal-header">
+      <div>
+        <div class="break-modal-title">⛹ Hora da pausa!</div>
+        <div class="break-modal-sub">Relaxe jogando — o foco volta em <span id="break-timer">5:00</span></div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="closeBreakModal()">✕ Fechar</button>
+    </div>
+
+    <!-- abas de jogos (modal) -->
+    <div class="game-tabs" id="game-tabs-modal">
+      <button class="game-tab active" data-game="snake"   onclick="selectGame('snake', this)">🐍 Snake</button>
+      <button class="game-tab"        data-game="2048"    onclick="selectGame('2048', this)">🔢 2048</button>
+      <button class="game-tab"        data-game="memoria" onclick="selectGame('memoria', this)">🧠 Memória</button>
+      <button class="game-tab"        data-game="minado"  onclick="selectGame('minado', this)">💣 Minado</button>
+      <button class="game-tab"        data-game="velha"   onclick="selectGame('velha', this)">⭕ Velha</button>
+      <button class="game-tab"        data-game="desliza" onclick="selectGame('desliza', this)">🧩 Deslizante</button>
+      <button class="game-tab"        data-game="wordle"  onclick="selectGame('wordle', this)">🔤 Wordle</button>
+      <button class="game-tab"        data-game="quiz"    onclick="selectGame('quiz', this)">📚 Quiz</button>
+          <button class="game-tab"        data-game="forca" onclick="selectGame('forca', this)">🔠 Forca</button>
+          <button class="game-tab"        data-game="relampago" onclick="selectGame('relampago', this)">⚡ Relâmpago</button>
+          <button class="game-tab"        data-game="associacao" onclick="selectGame('associacao', this)">🔗 Associação</button>
+          <button class="game-tab"        data-game="anagrama" onclick="selectGame('anagrama', this)">🔡 Anagrama</button>
+          <button class="game-tab"        data-game="vf" onclick="selectGame('vf', this)">✅ V ou F</button>
+          <button class="game-tab"        data-game="simon" onclick="selectGame('simon', this)">🎯 Simon</button>
+          <button class="game-tab"        data-game="tetris" onclick="selectGame('tetris', this)">🧱 Tetris</button>
+          <button class="game-tab"        data-game="lig4" onclick="selectGame('lig4', this)">🔴 Lig 4</button>
+          <button class="game-tab"        data-game="breakout" onclick="selectGame('breakout', this)">🏓 Breakout</button>
+          <button class="game-tab"        data-game="plataforma" onclick="selectGame('plataforma', this)">🍄 Plataforma</button>
+    </div>
+
+    <!-- ── SNAKE (modal) ── -->
+    <div class="game-pane active" id="game-pane-snake-modal">
+      <div class="snake-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="snake-score-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="snake-best-modal">0</span></div>
+        </div>
+        <div class="snake-board-wrap">
+          <canvas id="snake-canvas-modal" width="300" height="300"></canvas>
+          <div class="snake-overlay" id="snake-overlay-modal">
+            <div class="snake-overlay-msg" id="snake-overlay-msg-modal">Jogue enquanto descansa! 🐍</div>
+            <button class="btn btn-primary" onclick="snakeStart()">▶ Começar</button>
+          </div>
+        </div>
+        <div class="snake-controls">
+          <button class="snake-dpad" onclick="snakeSetDir('up')">▲</button>
+          <div class="snake-dpad-row">
+            <button class="snake-dpad" onclick="snakeSetDir('left')">◀</button>
+            <button class="snake-dpad" onclick="snakeSetDir('down')">▼</button>
+            <button class="snake-dpad" onclick="snakeSetDir('right')">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 2048 (modal) ── -->
+    <div class="game-pane" id="game-pane-2048-modal">
+      <div class="g2048-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="g2048-score-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Recorde</span><span class="snake-stat-val gold" id="g2048-best-modal">0</span></div>
+        </div>
+        <div class="g2048-board-wrap">
+          <div class="g2048-board" id="g2048-board-modal"></div>
+          <div class="snake-overlay hidden" id="g2048-overlay-modal">
+            <div class="snake-overlay-msg" id="g2048-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="g2048Start()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <div class="snake-controls">
+          <button class="snake-dpad" onclick="g2048Move('up')">▲</button>
+          <div class="snake-dpad-row">
+            <button class="snake-dpad" onclick="g2048Move('left')">◀</button>
+            <button class="snake-dpad" onclick="g2048Move('down')">▼</button>
+            <button class="snake-dpad" onclick="g2048Move('right')">▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MEMÓRIA (modal) ── -->
+    <div class="game-pane" id="game-pane-memoria-modal">
+      <div class="mem-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="mem-moves-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Pares</span><span class="snake-stat-val gold" id="mem-pairs-modal">0/8</span></div>
+        </div>
+        <div class="mem-board-wrap">
+          <div class="mem-grid" id="mem-grid-modal"></div>
+          <div class="snake-overlay hidden" id="mem-overlay-modal">
+            <div class="snake-overlay-msg" id="mem-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="memStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="memStart()">🔀 Embaralhar</button>
+      </div>
+    </div>
+
+    <!-- ── CAMPO MINADO (modal) ── -->
+    <div class="game-pane" id="game-pane-minado-modal">
+      <div class="mini-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Minas</span><span class="snake-stat-val" id="mine-count-modal">10</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Status</span><span class="snake-stat-val gold" id="mine-status-modal">🙂</span></div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="mine-flag-btn-modal" onclick="mineToggleFlag()">🚩 Bandeira: OFF</button>
+        <div class="board-overlay-wrap">
+          <div class="mine-grid" id="mine-grid-modal"></div>
+          <div class="snake-overlay hidden" id="mine-overlay-modal">
+            <div class="snake-overlay-msg" id="mine-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="mineStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="mineStart()">🔄 Novo jogo</button>
+      </div>
+    </div>
+
+    <!-- ── JOGO DA VELHA (modal) ── -->
+    <div class="game-pane" id="game-pane-velha-modal">
+      <div class="mini-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Vitórias</span><span class="snake-stat-val" id="velha-wins-modal">0</span></div>
+          <div class="snake-stat"><span class="snake-stat-label">Derrotas</span><span class="snake-stat-val gold" id="velha-losses-modal">0</span></div>
+        </div>
+        <div class="board-overlay-wrap">
+          <div class="velha-grid" id="velha-grid-modal"></div>
+          <div class="snake-overlay hidden" id="velha-overlay-modal">
+            <div class="snake-overlay-msg" id="velha-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="velhaStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="velhaStart()">🔄 Novo jogo</button>
+      </div>
+    </div>
+
+    <!-- ── DESLIZANTE (modal) ── -->
+    <div class="game-pane" id="game-pane-desliza-modal">
+      <div class="mini-wrap">
+        <div class="snake-stats">
+          <div class="snake-stat"><span class="snake-stat-label">Jogadas</span><span class="snake-stat-val" id="desliza-moves-modal">0</span></div>
+        </div>
+        <div class="board-overlay-wrap">
+          <div class="desliza-grid" id="desliza-grid-modal"></div>
+          <div class="snake-overlay hidden" id="desliza-overlay-modal">
+            <div class="snake-overlay-msg" id="desliza-overlay-msg-modal"></div>
+            <button class="btn btn-primary" onclick="deslizaStart()">↺ Jogar de novo</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="deslizaStart()">🔀 Embaralhar</button>
+      </div>
+    </div>
+
+    <!-- ── WORDLE (modal) ── -->
+    <div class="game-pane" id="game-pane-wordle-modal">
+      <div class="wordle-wrap">
+        <div class="wordle-board" id="wordle-board-modal"></div>
+        <input class="wordle-input" id="wordle-input-modal" maxlength="5" placeholder="Digite e aperte Enter" autocomplete="off" onkeydown="wordleKey(event)" />
+        <div class="wordle-msg" id="wordle-msg-modal"></div>
+        <button class="btn btn-secondary btn-sm" onclick="wordleStart()">🔄 Nova palavra</button>
+      </div>
+    </div>
+
+    <!-- ── QUIZ (modal) ── -->
+    <div class="game-pane" id="game-pane-quiz-modal">
+      <div class="quiz-wrap">
+        <div class="quiz-setup" id="quiz-setup-modal">
+          <label class="quiz-label">Matéria:</label>
+          <select id="quiz-subject-modal" class="quiz-select">
+            <option value="todas">📚 Todas as matérias</option>
+            <option value="Matemática">🔢 Matemática</option>
+            <option value="Português">📖 Português</option>
+            <option value="História">🏛 História</option>
+            <option value="Geografia">🌍 Geografia</option>
+            <option value="Ciências">🔬 Ciências</option>
+          </select>
+          <button class="btn btn-primary btn-full" onclick="quizStart()">▶ Começar quiz</button>
+        </div>
+
+        <div class="quiz-game hidden" id="quiz-game-modal">
+          <div class="quiz-topbar">
+            <span class="quiz-progress" id="quiz-progress-modal">1 / 10</span>
+            <span class="quiz-score" id="quiz-score-modal">0 acertos</span>
+          </div>
+          <div class="quiz-question" id="quiz-question-modal"></div>
+          <div class="quiz-options" id="quiz-options-modal"></div>
+        </div>
+
+        <div class="quiz-result hidden" id="quiz-result-modal">
+          <div class="quiz-result-icon" id="quiz-result-icon-modal">🎉</div>
+          <div class="quiz-result-msg" id="quiz-result-msg-modal"></div>
+          <button class="btn btn-primary btn-full" onclick="quizReset()">↺ Jogar de novo</button>
+        </div>
+      </div>
+    </div>
+
+        <!-- ── FORCA ── -->
+        <div class="game-pane" id="game-pane-forca-modal">
+          <p class="game-desc">Adivinhe a palavra! Você pode errar até 6 vezes.</p>
+          <div class="mini-wrap board-overlay-wrap" style="width:100%;max-width:420px;">
+            <div class="forca-hangman" id="forca-hangman-modal">😀</div>
+            <div class="forca-stat" id="forca-errors-modal">Erros: 0 / 6</div>
+            <div class="forca-word" id="forca-word-modal"></div>
+            <div class="forca-letters" id="forca-letters-modal"></div>
+            <div class="snake-overlay hidden" id="forca-overlay-modal">
+              <div class="snake-overlay-msg" id="forca-overlay-msg-modal"></div>
+              <button class="btn btn-primary" onclick="forcaStart()">↺ Nova palavra</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── DESAFIO RELÂMPAGO ── -->
+        <div class="game-pane" id="game-pane-relampago-modal">
+          <p class="game-desc">Resolva o máximo de contas em 60 segundos!</p>
+          <div class="mini-wrap">
+            <div class="relamp-setup" id="relamp-setup-modal">
+              <button class="btn btn-primary btn-full" onclick="relampStart()">▶ Começar (60s)</button>
+            </div>
+            <div class="relamp-game hidden" id="relamp-game-modal">
+              <div class="snake-stats">
+                <div class="snake-stat"><span class="snake-stat-label">Tempo</span><span class="snake-stat-val" id="relamp-time-modal">60</span></div>
+                <div class="snake-stat"><span class="snake-stat-label">Acertos</span><span class="snake-stat-val gold" id="relamp-score-modal">0</span></div>
+              </div>
+              <div class="relamp-problem" id="relamp-problem-modal"></div>
+              <input class="wordle-input" id="relamp-input-modal" inputmode="numeric" placeholder="Resposta" autocomplete="off" onkeydown="relampKey(event)" />
+            </div>
+            <div class="quiz-result hidden" id="relamp-result-modal">
+              <div class="quiz-result-icon">⚡</div>
+              <div class="quiz-result-msg" id="relamp-result-msg-modal"></div>
+              <button class="btn btn-primary btn-full" onclick="relampReset()">↺ Jogar de novo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ASSOCIAÇÃO ── -->
+        <div class="game-pane" id="game-pane-associacao-modal">
+          <p class="game-desc">Toque numa opção da esquerda e depois no par correto da direita.</p>
+          <div class="mini-wrap">
+            <div class="assoc-cols">
+              <div class="assoc-col" id="assoc-left-modal"></div>
+              <div class="assoc-col" id="assoc-right-modal"></div>
+            </div>
+            <div class="wordle-msg" id="assoc-msg-modal"></div>
+            <button class="btn btn-secondary btn-sm" onclick="assocStart()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── ANAGRAMA ── -->
+        <div class="game-pane" id="game-pane-anagrama-modal">
+          <p class="game-desc">Descubra a palavra embaralhada!</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Acertos</span><span class="snake-stat-val gold" id="anag-score-modal">0</span></div>
+            </div>
+            <div class="anag-letters" id="anag-letters-modal"></div>
+            <input class="wordle-input" id="anag-input-modal" placeholder="Sua resposta" autocomplete="off" onkeydown="anagKey(event)" />
+            <div class="wordle-msg" id="anag-msg-modal"></div>
+            <button class="btn btn-secondary btn-sm" onclick="anagSkip()">⏭ Pular palavra</button>
+          </div>
+        </div>
+
+        <!-- ── VERDADEIRO OU FALSO ── -->
+        <div class="game-pane" id="game-pane-vf-modal">
+          <p class="game-desc">A afirmação é verdadeira ou falsa? São 10 rodadas.</p>
+          <div class="mini-wrap">
+            <div class="vf-game" id="vf-game-modal" style="width:100%;max-width:440px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+              <div class="quiz-topbar" style="width:100%;">
+                <span class="quiz-progress" id="vf-progress-modal">1 / 10</span>
+                <span class="quiz-score" id="vf-score-modal">0 acertos</span>
+              </div>
+              <div class="vf-statement" id="vf-statement-modal"></div>
+              <div class="vf-buttons">
+                <button class="btn btn-green" onclick="vfAnswer(true)">✔ Verdadeiro</button>
+                <button class="btn btn-danger" onclick="vfAnswer(false)">✘ Falso</button>
+              </div>
+              <div class="wordle-msg" id="vf-msg-modal"></div>
+            </div>
+            <div class="quiz-result hidden" id="vf-result-modal">
+              <div class="quiz-result-icon" id="vf-result-icon-modal">🎉</div>
+              <div class="quiz-result-msg" id="vf-result-msg-modal"></div>
+              <button class="btn btn-primary btn-full" onclick="vfStart()">↺ Jogar de novo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SIMON ── -->
+        <div class="game-pane" id="game-pane-simon-modal">
+          <p class="game-desc">Memorize a sequência de cores e repita na ordem!</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Nível</span><span class="snake-stat-val gold" id="simon-level-modal">0</span></div>
+            </div>
+            <div class="simon-pad">
+              <button class="simon-btn simon-0" id="simon-0-modal" onclick="simonClick(0)"></button>
+              <button class="simon-btn simon-1" id="simon-1-modal" onclick="simonClick(1)"></button>
+              <button class="simon-btn simon-2" id="simon-2-modal" onclick="simonClick(2)"></button>
+              <button class="simon-btn simon-3" id="simon-3-modal" onclick="simonClick(3)"></button>
+            </div>
+            <div class="wordle-msg" id="simon-msg-modal">Clique em Começar</div>
+            <button class="btn btn-primary" onclick="simonStart()">▶ Começar</button>
+          </div>
+        </div>
+
+        <!-- ── TETRIS ── -->
+        <div class="game-pane" id="game-pane-tetris-modal">
+          <p class="game-desc">Encaixe as peças! ◀ ▶ move · ⟳ gira · ▼ desce.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val" id="tetris-score-modal">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Linhas</span><span class="snake-stat-val gold" id="tetris-lines-modal">0</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="tetris-canvas-modal" width="150" height="300"></canvas>
+              <div class="snake-overlay" id="tetris-overlay-modal">
+                <div class="snake-overlay-msg" id="tetris-overlay-msg-modal">Pronto?</div>
+                <button class="btn btn-primary" onclick="tetrisStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <button class="snake-dpad" onclick="tetrisRotate()">⟳</button>
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="tetrisMove(-1)">◀</button>
+                <button class="snake-dpad" onclick="tetrisDrop()">▼</button>
+                <button class="snake-dpad" onclick="tetrisMove(1)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── LIG 4 ── -->
+        <div class="game-pane" id="game-pane-lig4-modal">
+          <p class="game-desc">Você é 🔴. Alinhe 4 antes da CPU 🟡! Clique numa coluna.</p>
+          <div class="mini-wrap">
+            <div class="board-overlay-wrap">
+              <div class="lig4-board" id="lig4-board-modal"></div>
+              <div class="snake-overlay hidden" id="lig4-overlay-modal">
+                <div class="snake-overlay-msg" id="lig4-overlay-msg-modal"></div>
+                <button class="btn btn-primary" onclick="lig4Start()">↺ Jogar de novo</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="lig4Start()">🔄 Novo jogo</button>
+          </div>
+        </div>
+
+        <!-- ── BREAKOUT ── -->
+        <div class="game-pane" id="game-pane-breakout-modal">
+          <p class="game-desc">Quebre todos os blocos! Mova com ◀ ▶ ou o mouse.</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Pontos</span><span class="snake-stat-val gold" id="breakout-score-modal">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="breakout-lives-modal">3</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="breakout-canvas-modal" width="300" height="300"></canvas>
+              <div class="snake-overlay" id="breakout-overlay-modal">
+                <div class="snake-overlay-msg" id="breakout-overlay-msg-modal">Pronto?</div>
+                <button class="btn btn-primary" onclick="breakoutStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onclick="breakoutMove(-1)">◀</button>
+                <button class="snake-dpad" onclick="breakoutMove(1)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PLATAFORMA ── -->
+        <div class="game-pane" id="game-pane-plataforma-modal">
+          <p class="game-desc">Corra e pule! ◀ ▶ move · ⤒ pula. Pegue as moedas 🪙, pule na cabeça dos vilões 👾, desvie dos espinhos e derrote o chefão 👿 para liberar a bandeira 🚩. Vença a fase para avançar ao próximo cenário! 🌋</p>
+          <div class="mini-wrap">
+            <div class="snake-stats">
+              <div class="snake-stat"><span class="snake-stat-label">Fase</span><span class="snake-stat-val" id="plat-level-modal">1/2</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Moedas</span><span class="snake-stat-val gold" id="plat-coins-modal">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vilões</span><span class="snake-stat-val" id="plat-kills-modal">0</span></div>
+              <div class="snake-stat"><span class="snake-stat-label">Vidas</span><span class="snake-stat-val" id="plat-lives-modal">3</span></div>
+            </div>
+            <div class="board-overlay-wrap">
+              <canvas id="plat-canvas-modal" width="600" height="340"></canvas>
+              <div class="snake-overlay" id="plat-overlay-modal">
+                <div class="snake-overlay-msg" id="plat-overlay-msg-modal">Pronto para a aventura?</div>
+                <button class="btn btn-primary" onclick="platStart()">▶ Começar</button>
+              </div>
+            </div>
+            <div class="snake-controls">
+              <div class="snake-dpad-row">
+                <button class="snake-dpad" onpointerdown="platHold('left',true)" onpointerup="platHold('left',false)" onpointerleave="platHold('left',false)">◀</button>
+                <button class="snake-dpad" onpointerdown="platJump()">⤒</button>
+                <button class="snake-dpad" onpointerdown="platHold('right',true)" onpointerup="platHold('right',false)" onpointerleave="platHold('right',false)">▶</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+  </div>
+</div>
+
+<!-- celebração de level up / evolução de classe -->
+<div class="levelup-overlay" id="levelup-overlay" onclick="closeLevelUp()">
+  <div class="lvlup-confetti" id="lvlup-confetti"></div>
+  <div class="lvlup-card">
+    <div class="lvlup-icon" id="lvlup-icon">🎉</div>
+    <div class="lvlup-title">LEVEL UP!</div>
+    <div class="lvlup-msg" id="lvlup-msg"></div>
+    <div class="lvlup-hint">toque para continuar</div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="index.js"></script>
+</body>
+</html>
