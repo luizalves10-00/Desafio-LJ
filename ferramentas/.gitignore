@@ -1,0 +1,5 @@
+# saídas geradas pelos scripts — não versionar
+saida/
+imagens/
+*.svg
+*.jpg
