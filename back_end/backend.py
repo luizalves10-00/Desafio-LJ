@@ -479,7 +479,9 @@ class SubscriptionPlan(db.Model):
             "name": self.name,
             "description": self.description or "",
             "price_amount": self.price_amount,
+            "price_brl": self.price_amount,
             "formatted_price": f"R$ {self.price_amount:.2f}".replace(".", ","),
+            "price_formatted": f"R$ {self.price_amount:.2f}".replace(".", ","),
             "currency": self.currency,
             "interval": self.interval,
             "interval_count": self.interval_count,
@@ -1832,7 +1834,7 @@ def admin_create_plan():
     """Cria um novo plano no sistema e sincroniza automaticamente com o Stripe Live."""
     body = request.get_json(silent=True) or {}
     name = (body.get("name") or "").strip()
-    price_val = body.get("price_amount")
+    price_val = body.get("price_amount") if body.get("price_amount") is not None else body.get("price_brl")
     interval = (body.get("interval") or "month").strip().lower()
     interval_count = int(body.get("interval_count") or 1)
     trial_days = int(body.get("trial_days") or 7)
@@ -1855,7 +1857,7 @@ def admin_create_plan():
 
     # Gerar slug da chave do plano
     base_slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
-    plan_key = f"{base_slug}_{interval}"
+    plan_key = (body.get("plan_key") or f"{base_slug}_{interval}").strip().lower()
     counter = 1
     while SubscriptionPlan.query.filter_by(plan_key=plan_key).first():
         plan_key = f"{base_slug}_{interval}_{counter}"
@@ -1990,7 +1992,7 @@ def admin_update_plan(plan_id: int):
     if "permissions" in body and isinstance(body["permissions"], dict):
         plan.set_permissions(body["permissions"])
 
-    new_price = body.get("price_amount")
+    new_price = body.get("price_amount") if body.get("price_amount") is not None else body.get("price_brl")
     if new_price is not None:
         try:
             price_val = float(new_price)

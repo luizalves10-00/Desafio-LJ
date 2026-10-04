@@ -2037,9 +2037,9 @@
             ? `<span style="color:var(--green); font-size:0.7rem; font-weight:700;">● Ativo</span>` 
             : `<span style="color:var(--muted); font-size:0.7rem; font-weight:700;">○ Inativo</span>`;
 
-          const badgePill = p.badge ? `<span class="plan-badge-pill">${escapeHtml(p.badge)}</span>` : "";
+              const priceText = p.formatted_price || p.price_formatted || (p.price_amount != null ? `R$ ${Number(p.price_amount).toFixed(2).replace('.', ',')}` : (p.price_brl != null ? `R$ ${Number(p.price_brl).toFixed(2).replace('.', ',')}` : "R$ 0,00"));
 
-          return `
+              return `
             <div class="plan-card ${!isActive ? 'style="opacity:0.65;"' : ''}">
               <div class="plan-card-header">
                 <div class="plan-card-title-wrap">
@@ -2053,7 +2053,7 @@
               </div>
 
               <div class="plan-price-row">
-                <span class="plan-price-amount">${p.price_formatted || ("R$ " + p.price_brl)}</span>
+                <span class="plan-price-amount">${priceText}</span>
                 <span class="plan-price-period">/ ${p.interval_label || "mês"}</span>
               </div>
 
@@ -2131,6 +2131,7 @@
             plan_key: key,
             name,
             description: desc,
+            price_amount: amount,
             price_brl: amount,
             interval,
             interval_count,
@@ -2162,7 +2163,7 @@
       document.getElementById("edit-plan-emoji").value = plan.emoji || "⭐";
       document.getElementById("edit-plan-name").value = plan.name;
       document.getElementById("edit-plan-desc").value = plan.description || "";
-      document.getElementById("edit-plan-amount").value = plan.price_brl;
+      document.getElementById("edit-plan-amount").value = plan.price_amount ?? plan.price_brl ?? "";
       document.getElementById("edit-plan-trial").value = plan.trial_days || 0;
       document.getElementById("edit-plan-badge").value = plan.badge || "";
 
@@ -2194,6 +2195,7 @@
           body: JSON.stringify({
             name,
             description: desc,
+            price_amount: amount,
             price_brl: amount,
             trial_days: trial,
             badge,
