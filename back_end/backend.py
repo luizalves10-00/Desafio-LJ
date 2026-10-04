@@ -74,9 +74,38 @@ else:
         "pool_pre_ping": True,
     }
 
+# ── Hardening de Cookies e Sessão (OWASP / DevSecOps) ──────────────────────
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production" or not app.debug
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
-CORS(app, supports_credentials=True, origins=["http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:8080", "http://127.0.0.1:8080", "null"])
+# ── Regras Estritas de CORS (Cross-Origin Resource Sharing) ────────────────
+allowed_origins_env = os.environ.get("ALLOWED_ORIGINS")
+if allowed_origins_env:
+    ALLOWED_ORIGINS = [orig.strip() for orig in allowed_origins_env.split(",") if orig.strip()]
+elif os.environ.get("FLASK_ENV") == "production":
+    ALLOWED_ORIGINS = ["https://levelupstudy.com.br"]
+else:
+    ALLOWED_ORIGINS = [
+        "https://levelupstudy.com.br",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080"
+    ]
+
+CORS(app, supports_credentials=True, origins=ALLOWED_ORIGINS)
+
+# ── Importação e Ativação do Módulo DevSecOps ─────────────────────────────
+from security import (
+    encrypt_token,
+    decrypt_token,
+    init_csrf_protection,
+    rate_limit,
+    generate_csrf_token,
+)
+init_csrf_protection(app, ALLOWED_ORIGINS)
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -167,10 +196,20 @@ class User(db.Model):
     subscription_status    = db.Column(db.String(50), default="free", nullable=True)  # 'free', 'trialing', 'active', 'past_due', 'canceled'
     current_period_end     = db.Column(db.DateTime, nullable=True)
 
-    # Integração Google Calendar & OAuth 2.0
+    # Integração Google Calendar & OAuth 2.0 (Criptografia em Repouso via Fernet)
     google_access_token    = db.Column(db.Text, nullable=True)
-    google_refresh_token   = db.Column(db.Text, nullable=True)
+    _google_refresh_token  = db.Column("google_refresh_token", db.Text, nullable=True)
     google_token_expiry    = db.Column(db.DateTime, nullable=True)
+
+    @property
+    def google_refresh_token(self) -> str | None:
+        """Retorna o refresh token decriptografado em tempo de execução."""
+        return decrypt_token(self._google_refresh_token)
+
+    @google_refresh_token.setter
+    def google_refresh_token(self, value: str | None):
+        """Armazena o refresh token devidamente criptografado com Fernet em repouso."""
+        self._google_refresh_token = encrypt_token(value)
 
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -588,7 +627,14 @@ def get_or_create_stats(user: User) -> UserStats:
 
 
 # ── Auth routes ────────────────────────────────────────────────────────────
+@app.route("/api/auth/csrf-token", methods=["GET"])
+def get_csrf_token():
+    """Retorna o token CSRF vinculado à sessão segura do usuário."""
+    return jsonify({"csrf_token": generate_csrf_token()})
+
+
 @app.route("/api/auth/register", methods=["POST"])
+@rate_limit(max_requests=5, per_seconds=60, key_prefix="auth_register")
 def register():
     body = request.get_json(silent=True) or {}
     name      = (body.get("name") or "").strip()
@@ -621,6 +667,7 @@ def register():
 
 
 @app.route("/api/auth/login", methods=["POST"])
+@rate_limit(max_requests=5, per_seconds=60, key_prefix="auth_login")
 def login():
     body = request.get_json(silent=True) or {}
     email    = (body.get("email") or "").strip().lower()
@@ -1556,10 +1603,12 @@ def stripe_webhook():
         stripe.api_key = api_key
 
     try:
+        # Verificação criptográfica de assinatura HMAC-SHA256 com tolerância de 300 segundos (Anti-Replay Attack)
         event = stripe.Webhook.construct_event(
             payload=payload,
             sig_header=sig_header,
-            secret=webhook_secret
+            secret=webhook_secret,
+            tolerance=300
         )
     except ValueError as e:
         app.logger.error(f"Payload inválido no webhook do Stripe: {e}")
