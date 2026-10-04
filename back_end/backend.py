@@ -1,19 +1,26 @@
 import os
 import re
 import json
+import base64
+import requests
+import urllib.parse
+from urllib.parse import quote_plus
 import stripe
 from functools import wraps
-from urllib.parse import quote_plus
-from flask import Flask, jsonify, request, session, send_from_directory
+from flask import Flask, jsonify, request, session, send_from_directory, redirect
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime, timedelta
 from google import genai
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
 from dotenv import load_dotenv
 from emoji_cache import EmojiCache, CacheError, create_emoji_blueprint
 import concurseiro_bank
+
 
 # App setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -160,7 +167,13 @@ class User(db.Model):
     subscription_status    = db.Column(db.String(50), default="free", nullable=True)  # 'free', 'trialing', 'active', 'past_due', 'canceled'
     current_period_end     = db.Column(db.DateTime, nullable=True)
 
+    # Integração Google Calendar & OAuth 2.0
+    google_access_token    = db.Column(db.Text, nullable=True)
+    google_refresh_token   = db.Column(db.Text, nullable=True)
+    google_token_expiry    = db.Column(db.DateTime, nullable=True)
+
     created_at    = db.Column(db.DateTime, default=datetime.utcnow)
+
 
     stats  = db.relationship("UserStats", back_populates="user", uselist=False, cascade="all, delete-orphan")
     tasks  = db.relationship("Task",      back_populates="user", cascade="all, delete-orphan")
@@ -260,8 +273,10 @@ class User(db.Model):
             "plan_name": self.plan_name,
             "subscription_status": self.subscription_status,
             "current_period_end": self.current_period_end.isoformat() if self.current_period_end else None,
+            "google_calendar_connected": bool(self.google_access_token or self.google_refresh_token),
             "permissions": self.get_permissions()
         }
+
 
 
 class UserStats(db.Model):
@@ -778,6 +793,316 @@ def delete_task(task_id: int):
         db.session.delete(task)
         db.session.commit()
     return jsonify({"ok": True})
+
+
+# ── Google Calendar & OAuth 2.0 (Fase 5) ──────────────────────────────────
+def sync_study_plan_to_google_calendar(user_id: int, plan_tasks=None) -> dict:
+    """
+    Recebe um 'Plano de Estudo' do banco de dados e itera inserindo eventos via 
+    google-api-python-client na agenda primária do usuário.
+    
+    Os eventos criados DEVEM conter a propriedade reminders configurada para 
+    disparar alertas nativos no celular do aluno (ex: {'useDefault': False, 'overrides': [{'method': 'popup', 'minutes': 15}]}).
+    """
+    user = db.session.get(User, user_id)
+    if not user:
+        raise ValueError("Usuário não encontrado.")
+    
+    if not user.google_access_token and not user.google_refresh_token:
+        raise ValueError("Conta Google não conectada. Conecte sua conta Google antes de sincronizar.")
+
+    client_id = os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET")
+
+    # Monta as credenciais OAuth 2.0 usando a biblioteca oficial google-auth
+    creds = Credentials(
+        token=user.google_access_token,
+        refresh_token=user.google_refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=[
+            "https://www.googleapis.com/auth/calendar.events",
+            "https://www.googleapis.com/auth/calendar"
+        ]
+    )
+
+    # Renova token se estiver expirado ou sem access_token atual
+    if (not creds.valid or creds.expired) and creds.refresh_token:
+        try:
+            creds.refresh(Request())
+            user.google_access_token = creds.token
+            if creds.expiry:
+                user.google_token_expiry = creds.expiry
+            db.session.commit()
+        except Exception as refresh_err:
+            app.logger.error(f"Erro ao renovar token OAuth do Google: {refresh_err}")
+            raise ValueError(f"Não foi possível renovar o acesso à sua conta Google: {refresh_err}")
+
+    # Cria o client oficial da API do Google Calendar v3
+    service = build("calendar", "v3", credentials=creds)
+
+    # Busca o Plano de Estudo do banco de dados (Tarefas de estudo pendentes do usuário)
+    if plan_tasks is None:
+        plan_tasks = Task.query.filter_by(user_id=user.id, done=False).order_by(Task.priority.asc(), Task.due_date.asc()).all()
+
+    if not plan_tasks:
+        return {
+            "success": True,
+            "synced_count": 0,
+            "total_tasks": 0,
+            "message": "Nenhuma meta de estudo pendente no momento para sincronizar.",
+            "events": []
+        }
+
+    created_events = []
+    base_time = datetime.now()
+
+    for idx, task in enumerate(plan_tasks):
+        due_date_str = getattr(task, "due_date", None)
+        title = getattr(task, "title", "Sessão de Estudos")
+        subject = getattr(task, "subject", "Geral") or "Geral"
+        priority = getattr(task, "priority", 2)
+        priority_label = {1: "⚡ Alta Prioridade (Chefe)", 2: "🛡️ Média Prioridade (Elite)", 3: "🗡️ Normal"}.get(priority, "📌 Meta")
+
+        # Define data e horário da sessão de estudos
+        start_dt = None
+        if due_date_str:
+            try:
+                parsed_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+                event_hour = 9 + (idx % 6)
+                start_dt = datetime.combine(parsed_date, datetime.min.time()).replace(hour=event_hour, minute=0, second=0)
+            except Exception:
+                start_dt = None
+
+        if not start_dt or start_dt < base_time:
+            # Distribui tarefas a partir de hoje/amanhã nos horários de estudo
+            days_offset = idx // 3
+            hour_slot = 9 + ((idx % 3) * 2)
+            start_dt = (base_time + timedelta(days=days_offset)).replace(hour=hour_slot, minute=0, second=0, microsecond=0)
+            if start_dt < base_time:
+                start_dt = (base_time + timedelta(days=1)).replace(hour=hour_slot, minute=0, second=0, microsecond=0)
+
+        end_dt = start_dt + timedelta(minutes=50) # Sessão padrão de 50 min de foco
+
+        # Formata o evento com lembretes nativos (pop-up para smartphone/desktop)
+        event_body = {
+            "summary": f"⚔️ [LevelUp Study] {title} ({subject})",
+            "description": (
+                f"🎯 Meta de Estudo — LevelUp Study\n"
+                f"📚 Disciplina: {subject}\n"
+                f"🏷️ Nível: {priority_label}\n\n"
+                f"⚡ Inicie o Pomodoro no aplicativo para derrotar monstros, ganhar XP e manter seu Streak diário ativo!\n"
+                f"🔗 Acesse sua jornada: http://127.0.0.1:5000/index.html"
+            ),
+            "start": {
+                "dateTime": start_dt.strftime("%Y-%m-%dT%H:%M:%S"),
+                "timeZone": "America/Sao_Paulo",
+            },
+            "end": {
+                "dateTime": end_dt.strftime("%Y-%m-%dT%H:%M:%S"),
+                "timeZone": "America/Sao_Paulo",
+            },
+            # Configuração mandatória de lembretes para alertas nativos no celular
+            "reminders": {
+                "useDefault": False,
+                "overrides": [
+                    {"method": "popup", "minutes": 15},
+                    {"method": "email", "minutes": 60}
+                ]
+            },
+            "colorId": "11" if priority == 1 else "5"
+        }
+
+        try:
+            created = service.events().insert(calendarId="primary", body=event_body).execute()
+            created_events.append({
+                "id": created.get("id"),
+                "summary": created.get("summary"),
+                "htmlLink": created.get("htmlLink"),
+                "start": start_dt.isoformat()
+            })
+        except Exception as ins_err:
+            app.logger.warning(f"Erro ao inserir evento '{title}' no Google Calendar: {ins_err}")
+
+    return {
+        "success": True,
+        "synced_count": len(created_events),
+        "total_tasks": len(plan_tasks),
+        "events": created_events,
+        "message": f"{len(created_events)} missão(ões) de estudo sincronizada(s) com sucesso na sua Google Agenda com alertas de 15 minutos!"
+    }
+
+
+@app.route("/api/google/login", methods=["GET"])
+def google_login():
+    """
+    Inicia o fluxo OAuth 2.0 para autorizar o acesso à Google Calendar API.
+    Suporta tanto requisições do frontend (retornando auth_url JSON) quanto navegação direta (redirecionamento 302).
+    """
+    user = current_user()
+    if not user:
+        if request.args.get("json") == "true" or request.headers.get("Accept") == "application/json":
+            return jsonify({"error": "Não autenticado. Faça login no LevelUp Study primeiro."}), 401
+        return redirect("/login.html?redirect=/api/google/login")
+
+    client_id = os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET")
+    
+    if not client_id or not client_secret:
+        return jsonify({"error": "Credenciais do Google Calendar (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET) não configuradas no servidor."}), 500
+
+    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI")
+    if not redirect_uri:
+        redirect_uri = request.url_root.rstrip("/") + "/api/google/callback"
+
+    # Cria estado com user_id
+    state_payload = {
+        "user_id": user.id,
+        "nonce": os.urandom(8).hex(),
+        "created_at": int(datetime.utcnow().timestamp())
+    }
+    state_b64 = base64.urlsafe_b64encode(json.dumps(state_payload).encode()).decode()
+    session["google_oauth_state"] = state_b64
+
+    scopes = [
+        "https://www.googleapis.com/auth/calendar.events",
+        "https://www.googleapis.com/auth/calendar"
+    ]
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": " ".join(scopes),
+        "access_type": "offline",
+        "prompt": "consent",
+        "state": state_b64
+    }
+    auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
+
+    if request.args.get("json") == "true" or request.headers.get("Accept") == "application/json":
+        return jsonify({"auth_url": auth_url, "redirect_uri": redirect_uri})
+    
+    return redirect(auth_url)
+
+
+@app.route("/api/google/callback", methods=["GET"])
+def google_callback():
+    """
+    Recebe o código de autorização do Google após o consentimento do aluno,
+    troca pelo access_token e refresh_token, e persiste no banco de dados.
+    """
+    error = request.args.get("error")
+    if error:
+        app.logger.warning(f"Google OAuth cancelado ou com erro: {error}")
+        return redirect(f"/index.html?calendar_error={urllib.parse.quote(error)}")
+
+    code = request.args.get("code")
+    state_b64 = request.args.get("state")
+    if not code:
+        return redirect("/index.html?calendar_error=missing_code")
+
+    user = current_user()
+    if not user and state_b64:
+        try:
+            state_json = base64.urlsafe_b64decode(state_b64.encode()).decode()
+            state_data = json.loads(state_json)
+            uid = state_data.get("user_id")
+            if uid:
+                user = db.session.get(User, uid)
+                if user:
+                    session["user_id"] = user.id
+        except Exception as state_err:
+            app.logger.warning(f"Erro ao decodificar state OAuth: {state_err}")
+
+    if not user:
+        return redirect("/login.html?error=session_expired")
+
+    client_id = os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET")
+    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI") or (request.url_root.rstrip("/") + "/api/google/callback")
+
+    token_url = "https://oauth2.googleapis.com/token"
+    payload = {
+        "code": code,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "redirect_uri": redirect_uri,
+        "grant_type": "authorization_code"
+    }
+
+    try:
+        resp = requests.post(token_url, data=payload, timeout=20)
+        token_data = resp.json()
+    except Exception as net_err:
+        app.logger.error(f"Erro de conexão com OAuth Google: {net_err}")
+        return redirect("/index.html?calendar_error=google_connection_failed")
+
+    if "error" in token_data:
+        err_msg = token_data.get("error_description", token_data.get("error"))
+        app.logger.error(f"Erro retornado pelo Google OAuth: {err_msg}")
+        return redirect(f"/index.html?calendar_error={urllib.parse.quote(str(err_msg))}")
+
+    user.google_access_token = token_data.get("access_token")
+    if token_data.get("refresh_token"):
+        user.google_refresh_token = token_data.get("refresh_token")
+    
+    expires_in = token_data.get("expires_in", 3600)
+    user.google_token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
+    db.session.commit()
+
+    return redirect("/index.html?calendar_status=connected")
+
+
+@app.route("/api/google/status", methods=["GET"])
+def google_status():
+    """Retorna o status atual da integração com o Google Calendar para o aluno logado."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    is_connected = bool(user.google_access_token or user.google_refresh_token)
+    return jsonify({
+        "connected": is_connected,
+        "token_expiry": user.google_token_expiry.isoformat() if user.google_token_expiry else None
+    })
+
+
+@app.route("/api/google/sync-calendar", methods=["POST"])
+def google_sync_calendar():
+    """
+    Dispara a sincronização das metas de estudo do aluno com a sua Google Agenda primária.
+    """
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    try:
+        res = sync_study_plan_to_google_calendar(user.id)
+        return jsonify(res)
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        app.logger.error(f"Erro ao sincronizar tarefas com Google Calendar: {e}")
+        return jsonify({"error": f"Erro interno ao sincronizar com Google Agenda: {str(e)}"}), 500
+
+
+@app.route("/api/google/disconnect", methods=["POST"])
+def google_disconnect():
+    """Desconecta a conta do Google Calendar do aluno."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    user.google_access_token = None
+    user.google_refresh_token = None
+    user.google_token_expiry = None
+    db.session.commit()
+
+    return jsonify({"success": True, "message": "Conta do Google Agenda desconectada com sucesso."})
 
 
 # ── Suggest ────────────────────────────────────────────────────────────────
@@ -1637,6 +1962,243 @@ def admin_toggle_plan(plan_id: int):
     })
 
 
+@app.route("/api/admin/plans/<int:plan_id>", methods=["PUT"])
+@require_role("superadmin")
+def admin_update_plan(plan_id: int):
+    """Atualiza as propriedades e permissões de um plano existente."""
+    plan = db.session.get(SubscriptionPlan, plan_id)
+    if not plan:
+        return jsonify({"error": "Plano não encontrado."}), 404
+
+    body = request.get_json(silent=True) or {}
+    
+    if "name" in body and body["name"]:
+        plan.name = str(body["name"]).strip()
+    if "description" in body:
+        plan.description = str(body["description"] or "").strip()
+    if "badge" in body:
+        plan.badge = str(body["badge"] or "").strip()
+    if "emoji" in body and body["emoji"]:
+        plan.emoji = str(body["emoji"]).strip()
+    if "trial_days" in body:
+        try:
+            plan.trial_days = max(0, int(body["trial_days"]))
+        except (ValueError, TypeError):
+            pass
+    if "is_active" in body:
+        plan.is_active = bool(body["is_active"])
+    if "permissions" in body and isinstance(body["permissions"], dict):
+        plan.set_permissions(body["permissions"])
+
+    new_price = body.get("price_amount")
+    if new_price is not None:
+        try:
+            price_val = float(new_price)
+            if price_val > 0 and abs(price_val - plan.price_amount) > 0.001:
+                plan.price_amount = price_val
+                stripe_key = os.environ.get("STRIPE_SECRET_KEY")
+                if stripe_key and plan.stripe_product_id:
+                    try:
+                        stripe.api_key = stripe_key
+                        unit_amount = int(round(price_val * 100))
+                        new_price_obj = stripe.Price.create(
+                            product=plan.stripe_product_id,
+                            unit_amount=unit_amount,
+                            currency="brl",
+                            recurring={"interval": plan.interval, "interval_count": plan.interval_count},
+                            nickname=f"LevelUp - {plan.name}",
+                            metadata={"plan_key": plan.plan_key, "updated_by": "superadmin"}
+                        )
+                        plan.stripe_price_id = new_price_obj.id
+                    except Exception as se:
+                        app.logger.warning(f"Aviso ao sincronizar novo preço na Stripe: {se}")
+        except (ValueError, TypeError):
+            pass
+
+    db.session.commit()
+    return jsonify({
+        "ok": True,
+        "message": f"Plano '{plan.name}' atualizado com sucesso!",
+        "plan": plan.to_dict()
+    })
+
+
+@app.route("/api/admin/plans/<int:plan_id>", methods=["DELETE"])
+@require_role("superadmin")
+def admin_delete_plan(plan_id: int):
+    """Exclui ou desativa um plano no sistema com validação de segurança para alunos ativos."""
+    plan = db.session.get(SubscriptionPlan, plan_id)
+    if not plan:
+        return jsonify({"error": "Plano não encontrado."}), 404
+
+    active_subscribers = User.query.filter(
+        db.or_(
+            User.stripe_plan_id == plan.plan_key,
+            User.stripe_plan_id == plan.stripe_price_id
+        )
+    ).count()
+
+    if active_subscribers > 0:
+        plan.is_active = False
+        if plan.stripe_price_id and os.environ.get("STRIPE_SECRET_KEY"):
+            try:
+                stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+                stripe.Price.modify(plan.stripe_price_id, active=False)
+            except Exception:
+                pass
+        db.session.commit()
+        return jsonify({
+            "ok": True,
+            "action": "deactivated",
+            "message": f"O plano '{plan.name}' possui {active_subscribers} aluno(s) com assinatura ativa. Ele foi desativado para novas compras para preservar o histórico e acesso dos alunos.",
+            "plan": plan.to_dict()
+        })
+
+    if plan.stripe_price_id and os.environ.get("STRIPE_SECRET_KEY"):
+        try:
+            stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+            stripe.Price.modify(plan.stripe_price_id, active=False)
+        except Exception as se:
+            app.logger.warning(f"Aviso ao desativar preço no Stripe: {se}")
+
+    db.session.delete(plan)
+    db.session.commit()
+    return jsonify({
+        "ok": True,
+        "action": "deleted",
+        "message": f"Plano '{plan.name}' excluído com sucesso."
+    })
+
+
+@app.route("/api/admin/plans/<int:plan_id>/sync", methods=["POST"])
+@require_role("superadmin")
+def admin_sync_single_plan(plan_id: int):
+    """Força a sincronização do plano com a Stripe Live."""
+    plan = db.session.get(SubscriptionPlan, plan_id)
+    if not plan:
+        return jsonify({"error": "Plano não encontrado."}), 404
+
+    stripe_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not stripe_key:
+        return jsonify({"error": "STRIPE_SECRET_KEY não configurada no servidor."}), 500
+
+    stripe.api_key = stripe_key
+    try:
+        product_id = os.environ.get("STRIPE_PRODUCT_ID") or plan.stripe_product_id
+        if not product_id:
+            prod = stripe.Product.create(
+                name="LevelUp Study - Concurseiro Pro",
+                description="Planos de Assinatura LevelUp Study",
+                metadata={"app": "levelup_study"}
+            )
+            product_id = prod.id
+            plan.stripe_product_id = product_id
+
+        unit_amount = int(round(plan.price_amount * 100))
+        price_obj = stripe.Price.create(
+            product=product_id,
+            unit_amount=unit_amount,
+            currency="brl",
+            recurring={"interval": plan.interval, "interval_count": plan.interval_count},
+            nickname=f"LevelUp - {plan.name}",
+            metadata={"app": "levelup_study", "plan_key": plan.plan_key}
+        )
+        plan.stripe_price_id = price_obj.id
+        db.session.commit()
+
+        return jsonify({
+            "ok": True,
+            "message": f"Plano '{plan.name}' sincronizado com a Stripe com sucesso! (Price ID: {price_obj.id})",
+            "plan": plan.to_dict()
+        })
+    except Exception as e:
+        return jsonify({"error": f"Falha na sincronização com a Stripe: {str(e)}"}), 400
+
+
+@app.route("/api/admin/report", methods=["GET"])
+@require_role("superadmin", "admin")
+def admin_executive_report():
+    """Retorna o relatório executivo completo com Unit Economics e viabilidade financeira."""
+    total_users = User.query.count()
+    pro_users = User.query.filter(User.subscription_status.in_(["active", "trialing"])).count()
+    free_users = max(0, total_users - pro_users)
+    trial_users = User.query.filter_by(subscription_status="trialing").count()
+    churned_users = User.query.filter_by(subscription_status="canceled").count()
+
+    mrr = 0.0
+    users_with_sub = User.query.filter(User.subscription_status.in_(["active", "trialing"])).all()
+    for u in users_with_sub:
+        plan_id = (u.stripe_plan_id or "").lower()
+        sub_plan = SubscriptionPlan.query.filter(
+            db.or_(SubscriptionPlan.stripe_price_id == u.stripe_plan_id, SubscriptionPlan.plan_key == plan_id)
+        ).first()
+        if sub_plan:
+            if sub_plan.interval == "year":
+                mrr += (sub_plan.price_amount / 12.0)
+            else:
+                mrr += sub_plan.price_amount
+        else:
+            if "year" in plan_id:
+                mrr += (199.00 / 12.0)
+            elif u.stripe_plan_id:
+                mrr += 19.90
+
+    server_cost = 149.00
+    ai_api_cost = 99.50
+    tools_cost = 50.00
+    total_fixed_cost = server_cost + ai_api_cost + tools_cost
+
+    ticket_medio = (mrr / pro_users) if pro_users > 0 else 19.90
+    breakeven_subscribers = int(round(total_fixed_cost / 19.90))
+    coverage_pct = min(100.0, round((mrr / total_fixed_cost) * 100, 1)) if total_fixed_cost > 0 else 100.0
+
+    ltv = ticket_medio * 9.0
+    cac = 12.40
+    ltv_cac_ratio = round(ltv / cac, 1) if cac > 0 else 0
+
+    return jsonify({
+        "ok": True,
+        "generated_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+        "executive_summary": {
+            "total_users": total_users,
+            "pro_users": pro_users,
+            "free_users": free_users,
+            "trial_users": trial_users,
+            "churned_users": churned_users,
+            "conversion_rate": round((pro_users / total_users * 100), 1) if total_users > 0 else 0.0,
+            "mrr": round(mrr, 2),
+            "arr": round(mrr * 12, 2),
+            "formatted_mrr": f"R$ {mrr:.2f}".replace(".", ","),
+            "formatted_arr": f"R$ {mrr * 12:.2f}".replace(".", ",")
+        },
+        "unit_economics": {
+            "breakeven_subscribers": breakeven_subscribers,
+            "breakeven_cost": total_fixed_cost,
+            "formatted_breakeven_cost": f"R$ {total_fixed_cost:.2f}".replace(".", ","),
+            "coverage_pct": coverage_pct,
+            "subscribers_needed": max(0, breakeven_subscribers - pro_users),
+            "ltv": round(ltv, 2),
+            "formatted_ltv": f"R$ {ltv:.2f}".replace(".", ","),
+            "cac": cac,
+            "formatted_cac": f"R$ {cac:.2f}".replace(".", ","),
+            "ltv_cac_ratio": ltv_cac_ratio,
+            "retention_months": 9,
+            "payback_months": 0.8
+        },
+        "cost_breakdown": [
+            {"item": "Servidor VPS Dedicado (HestiaCP / Nginx / MySQL)", "cost": server_cost, "formatted": f"R$ {server_cost:.2f}".replace(".", ",")},
+            {"item": "APIs de Inteligência Artificial (Google Gemini Flash)", "cost": ai_api_cost, "formatted": f"R$ {ai_api_cost:.2f}".replace(".", ",")},
+            {"item": "Infraestrutura de Rede, SSL & Ferramentas", "cost": tools_cost, "formatted": f"R$ {tools_cost:.2f}".replace(".", ",")}
+        ],
+        "projections": [
+            {"scenario": "Cenário Atual", "subscribers": pro_users, "mrr": round(mrr, 2), "coverage": coverage_pct},
+            {"scenario": "Break-Even (Ponto de Equilíbrio)", "subscribers": breakeven_subscribers, "mrr": total_fixed_cost, "coverage": 100.0},
+            {"scenario": "Crescimento Moderado (6 meses)", "subscribers": 50, "mrr": 995.00, "coverage": 333.3},
+            {"scenario": "Escala Nacional (12 meses)", "subscribers": 200, "mrr": 3980.00, "coverage": 1333.3}
+        ]
+    })
+
+
 @app.route("/api/plans", methods=["GET"])
 def public_get_plans():
     """Retorna os planos ativos para exibição pública."""
@@ -2406,15 +2968,36 @@ def frontend_files(filename):
     return send_from_directory(FRONTEND_DIR, filename)
 
 
+def check_and_apply_db_migrations():
+    """Garante que as novas colunas do Google Calendar e OAuth existam no banco de dados."""
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.engine)
+        if "users" in inspector.get_table_names():
+            cols = [c["name"] for c in inspector.get_columns("users")]
+            with db.engine.connect() as conn:
+                if "google_access_token" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN google_access_token TEXT"))
+                if "google_refresh_token" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN google_refresh_token TEXT"))
+                if "google_token_expiry" not in cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN google_token_expiry DATETIME"))
+                conn.commit()
+    except Exception as e:
+        app.logger.warning(f"Aviso na migração de colunas Google Calendar: {e}")
+
+
 # ── Entry point ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     with app.app_context():
         try:
             db.create_all()
+            check_and_apply_db_migrations()
         except Exception as e:
             print(f"\n[AVISO DE BANCO DE DADOS] Não foi possível executar db.create_all(): {e}")
             if "2003" in str(e) or "10061" in str(e):
                 print("[DICA] O serviço MySQL não está rodando localmente na porta 3306.")
                 print("[DICA] Em desenvolvimento local, certifique-se de que USE_SQLITE=true esteja no seu arquivo .env.\n")
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)))
+
 

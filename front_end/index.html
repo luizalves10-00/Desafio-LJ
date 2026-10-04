@@ -233,6 +233,15 @@
             <button class="btn btn-secondary btn-sm" onclick="setDuration(15,3)">15 / 3 min</button>
             <button class="btn btn-secondary btn-sm" onclick="setDuration(45,15)">45 / 15 min</button>
           </div>
+          <div class="notif-bar" id="notif-bar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;">
+            <div style="display:flex;align-items:center;gap:8px;text-align:left;">
+              <span style="font-size:1.1rem;">🔔</span>
+              <span style="font-size:0.78rem;color:var(--text2);" id="notif-status-text">Receba alertas no fim de cada Pomodoro</span>
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-prompt-notifications" type="button" onclick="window.studyNotifier && window.studyNotifier.requestPermissionWithModal()">
+              🔔 Ativar Alertas
+            </button>
+          </div>
         </div>
 
         <div class="card">
@@ -268,6 +277,26 @@
     <section class="section" id="section-tarefas">
       <div class="card">
         <div class="card-title">📜 Mural de Missões</div>
+        <div class="calendar-sync-bar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:1.4rem;">📅</span>
+            <div>
+              <div style="font-weight:700;font-size:0.88rem;color:var(--text);display:flex;align-items:center;gap:6px;">
+                Google Agenda
+                <span class="badge" id="calendar-badge" style="font-size:0.68rem;padding:2px 8px;border-radius:6px;background:rgba(255,255,255,0.06);color:var(--muted);">Verificando...</span>
+              </div>
+              <div style="font-size:0.76rem;color:var(--text2);" id="calendar-sync-msg">Sincronize suas missões e receba alertas nativos 15 min antes no celular.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="btn btn-secondary btn-sm" id="btn-sync-calendar" type="button" onclick="syncGoogleCalendar()">
+              🔄 Sincronizar Agenda
+            </button>
+            <button class="btn btn-primary btn-sm" id="btn-connect-calendar" type="button" onclick="connectGoogleCalendar()" style="display:none;">
+              🔗 Conectar Google
+            </button>
+          </div>
+        </div>
         <div class="task-form">
           <div class="task-form-row">
             <input type="text" id="task-title" placeholder="Nome da missão (ex: Estudar Matemática)" />
@@ -1337,8 +1366,60 @@
   </div>
 </div>
 
+<!-- ── MODAL DE PERMISSÃO DE NOTIFICAÇÕES NATIVAS ── -->
+<div class="break-modal" id="notification-modal">
+  <div class="break-modal-card" style="max-width: 440px;">
+    <div class="break-modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.8rem;">🔔</span>
+        <div>
+          <div class="break-modal-title" style="color: var(--gold);">Alertas em Tempo Real</div>
+          <div class="break-modal-sub">Evolua seu foco sem perder os horários</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" type="button" onclick="window.studyNotifier && window.studyNotifier.closePermissionModal()">✕</button>
+    </div>
+
+    <div style="margin: 16px 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; color: var(--text2); line-height: 1.5;">
+      <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--surface2); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+        <span style="font-size: 1.2rem;">⏱️</span>
+        <div>
+          <strong style="color: var(--text); display: block;">Fim do Pomodoro de Foco</strong>
+          Avisamos no seu desktop ou celular quando a batalha de estudo terminar para você descansar e pontuar.
+        </div>
+      </div>
+      
+      <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--surface2); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+        <span style="font-size: 1.2rem;">🚀</span>
+        <div>
+          <strong style="color: var(--text); display: block;">Fim da Pausa dos Jogos</strong>
+          Notificamos quando os 5 minutos de descanso acabarem para você retomar o ritmo e vencer seu edital.
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: flex-start; gap: 10px; background: var(--surface2); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+        <span style="font-size: 1.2rem;">🛡️</span>
+        <div>
+          <strong style="color: var(--text); display: block;">100% Livre de Spam</strong>
+          Apenas alertas essenciais de produtividade e metas do LevelUp Study.
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+      <button class="btn btn-primary btn-full" id="btn-allow-notif" type="button" onclick="window.studyNotifier && window.studyNotifier.confirmPermission()">
+        🔔 Ativar Alertas Nativos
+      </button>
+      <button class="btn btn-secondary btn-full" type="button" onclick="window.studyNotifier && window.studyNotifier.closePermissionModal()">
+        Agora não
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
+<script src="js/notifier.js"></script>
 <script src="js/index.js"></script>
 </body>
 </html>

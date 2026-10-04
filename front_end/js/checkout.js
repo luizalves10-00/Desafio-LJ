@@ -23,16 +23,34 @@
   const btnText = document.getElementById('btn-text');
   const btnSpinner = document.getElementById('btn-spinner');
 
+  let availablePlansMap = {};
+
   // 1. Atualizar textos e dados do plano na tela
   function updatePlanUI(selectedPlan) {
     currentPlan = selectedPlan.toLowerCase().trim();
-    const isYearly = currentPlan === 'yearly' || currentPlan === 'anual';
+    const planObj = availablePlansMap[currentPlan];
 
-    if (planSelect && planSelect.value !== (isYearly ? 'yearly' : 'monthly')) {
-      planSelect.value = isYearly ? 'yearly' : 'monthly';
+    if (planSelect && planSelect.value !== currentPlan) {
+      // Verifica se o valor existe nas opções
+      const optExists = Array.from(planSelect.options).some(o => o.value.toLowerCase() === currentPlan);
+      if (optExists) {
+        planSelect.value = currentPlan;
+      }
       if (planSelect._emojiSync) planSelect._emojiSync();
     }
 
+    if (planObj) {
+      if (summaryTitle) summaryTitle.textContent = planObj.name;
+      if (summaryDesc) summaryDesc.textContent = planObj.description || 'Acesso completo às ferramentas de alta performance.';
+      if (summaryPlanTag) summaryPlanTag.textContent = planObj.badge || planObj.interval_label;
+      if (recurringLabel) recurringLabel.textContent = `Após os ${planObj.trial_days || 7} dias (${planObj.interval_label})`;
+      if (recurringVal) recurringVal.textContent = `${planObj.formatted_price} / ${planObj.interval_label.toLowerCase()}`;
+      if (disclaimerPrice) disclaimerPrice.textContent = `${planObj.formatted_price} / ${planObj.interval_label.toLowerCase()}`;
+      return;
+    }
+
+    // Fallback padrão se os planos ainda não carregaram da API
+    const isYearly = currentPlan === 'yearly' || currentPlan === 'anual';
     if (isYearly) {
       if (summaryTitle) summaryTitle.textContent = 'Concurseiro Pro Anual';
       if (summaryDesc) summaryDesc.textContent = 'O plano definitivo até a posse com 17% de desconto e ferramentas completas por 1 ano.';
@@ -50,8 +68,49 @@
     }
   }
 
-  // Inicializar UI do plano
+  async function loadPlansFromAPI() {
+    try {
+      const res = await fetch('/api/plans');
+      if (!res.ok) return;
+      const data = await res.json();
+      const plans = data.plans || [];
+      if (plans.length === 0) return;
+
+      availablePlansMap = {};
+      if (planSelect) {
+        planSelect.innerHTML = '';
+        plans.forEach(p => {
+          availablePlansMap[p.plan_key.toLowerCase()] = p;
+          const opt = document.createElement('option');
+          opt.value = p.plan_key;
+          const badgeText = p.badge ? ` (${p.badge})` : '';
+          opt.textContent = `${p.emoji || '🛡️'} ${p.name} — ${p.formatted_price}/${p.interval_label.toLowerCase()}${badgeText}`;
+          planSelect.appendChild(opt);
+        });
+
+        // Seleciona o plano atual ou o primeiro
+        const matchingPlan = plans.find(p => p.plan_key.toLowerCase() === currentPlan);
+        if (matchingPlan) {
+          planSelect.value = matchingPlan.plan_key;
+        } else if (plans.length > 0) {
+          planSelect.value = plans[0].plan_key;
+          currentPlan = plans[0].plan_key;
+        }
+      }
+
+      updatePlanUI(currentPlan);
+
+      if (window.Emoji3D && window.Emoji3D.enhanceSelect && planSelect) {
+        window.Emoji3D.enhanceSelect(planSelect);
+      }
+    } catch (e) {
+      console.warn('Erro ao carregar planos da API no checkout:', e);
+    }
+  }
+
+  // Inicializar UI do plano imediatamente e carregar da API
   updatePlanUI(currentPlan);
+  loadPlansFromAPI();
 
   // Manipular alteração do select de planos
   if (planSelect) {

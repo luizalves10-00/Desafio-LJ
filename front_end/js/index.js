@@ -157,6 +157,16 @@ function startTimer() {
   running = true;
   setSyncBtns(true);
   interval = setInterval(tick, 1000);
+
+  // Se o aluno ainda não decidiu sobre notificações, exibe o modal explicativo
+  if (window.studyNotifier && window.studyNotifier.permission === "default" && !window._promptedNotif) {
+    window._promptedNotif = true;
+    setTimeout(() => {
+      if (window.studyNotifier && Notification.permission === "default") {
+        window.studyNotifier.requestPermissionWithModal();
+      }
+    }, 1500);
+  }
 }
 function pauseTimer() {
   running = false;
@@ -194,6 +204,12 @@ function tick() {
       secondsLeft = totalSecs;
       showToast(`⚔️ ${pomMonster[0]} ${pomMonster[1]} derrotado! Descanse jogando.`, "gold");
       playBeep(880);
+
+      // Dispara Notificação Nativa Web de fim do Pomodoro
+      if (window.studyNotifier) {
+        window.studyNotifier.notifyPomodoroEnd(`${pomMonster[0]} ${pomMonster[1]}`);
+      }
+
       openBreakModal();
     } else {
       isBreak = false;
@@ -202,6 +218,12 @@ function tick() {
       rollMonster(); // um novo monstro aparece!
       showToast(`🚀 Pausa encerrada! ${pomMonster[0]} ${pomMonster[1]} apareceu — ao ataque!`, "");
       playBeep(440);
+
+      // Dispara Notificação Nativa Web de fim da pausa
+      if (window.studyNotifier) {
+        window.studyNotifier.notifyBreakEnd(`${pomMonster[0]} ${pomMonster[1]}`);
+      }
+
       closeBreakModal();
     }
     updateDisplay();
@@ -542,6 +564,106 @@ async function deleteTask(id) {
     loadTasks(); loadSuggest();
   } catch(e) {}
 }
+
+// ── Sincronização Google Calendar (Fase 5) ─────────────────────────────────
+let googleCalendarConnected = false;
+
+async function checkGoogleCalendarStatus() {
+  try {
+    const res = await apiFetch(`${API}/google/status`);
+    if (!res.ok) return;
+    const data = await res.json();
+    googleCalendarConnected = !!data.connected;
+
+    const badge = document.getElementById("calendar-badge");
+    const msg = document.getElementById("calendar-sync-msg");
+    const btnSync = document.getElementById("btn-sync-calendar");
+    const btnConnect = document.getElementById("btn-connect-calendar");
+
+    if (googleCalendarConnected) {
+      if (badge) {
+        badge.textContent = "Conectado";
+        badge.style.background = "rgba(34, 197, 94, 0.15)";
+        badge.style.color = "var(--green)";
+      }
+      if (msg) msg.textContent = "Agenda sincronizada. Suas metas disparam lembretes nativos 15 min antes no celular.";
+      if (btnSync) btnSync.style.display = "inline-flex";
+      if (btnConnect) btnConnect.style.display = "none";
+    } else {
+      if (badge) {
+        badge.textContent = "Não conectado";
+        badge.style.background = "rgba(239, 68, 68, 0.15)";
+        badge.style.color = "var(--red)";
+      }
+      if (msg) msg.textContent = "Conecte sua Google Agenda para receber alertas no smartphone 15 min antes.";
+      if (btnSync) btnSync.style.display = "none";
+      if (btnConnect) btnConnect.style.display = "inline-flex";
+    }
+  } catch (e) {
+    console.warn("[Google Calendar] Erro ao verificar status:", e);
+  }
+}
+
+function connectGoogleCalendar() {
+  // Redireciona para o fluxo OAuth 2.0 do Google Calendar
+  window.location.href = `${API}/google/login`;
+}
+
+async function syncGoogleCalendar() {
+  const btnSync = document.getElementById("btn-sync-calendar");
+  let origHtml = "";
+  if (btnSync) {
+    origHtml = btnSync.innerHTML;
+    btnSync.disabled = true;
+    btnSync.innerHTML = "⏳ Sincronizando...";
+  }
+
+  try {
+    const res = await apiFetch(`${API}/google/sync-calendar`, { method: "POST" });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (res.status === 400 && data.error && (data.error.includes("não conectada") || data.error.includes("Conecte sua conta"))) {
+        showToast("Conecte sua conta do Google primeiro.", "gold");
+        connectGoogleCalendar();
+        return;
+      }
+      showToast(data.error || "Erro ao sincronizar tarefas com Google Agenda.", "red");
+      return;
+    }
+
+    showToast(`📅 ${data.message}`, "gold");
+
+    if (window.studyNotifier && data.synced_count > 0) {
+      window.studyNotifier.notifyCalendarSync(data.synced_count);
+    }
+  } catch (err) {
+    console.error("[Google Calendar] Erro na requisição de sincronização:", err);
+    showToast("Falha ao comunicar com o servidor para sincronizar a agenda.", "red");
+  } finally {
+    if (btnSync) {
+      btnSync.disabled = false;
+      btnSync.innerHTML = origHtml;
+    }
+  }
+}
+
+function checkUrlParamsForCalendar() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get("calendar_status");
+  const error = params.get("calendar_error");
+
+  if (status === "connected") {
+    showToast("📅 Google Agenda conectada com sucesso!", "gold");
+    window.history.replaceState({}, document.title, window.location.pathname);
+    checkGoogleCalendarStatus();
+    setTimeout(() => syncGoogleCalendar(), 800);
+  } else if (error) {
+    showToast(`Aviso Google Calendar: ${decodeURIComponent(error)}`, "red");
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}
+
 
 async function loadSuggest() {
   try {
@@ -3522,6 +3644,9 @@ async function init() {
   loadStatus();
   loadSuggest();
   snakeReset();
+  checkGoogleCalendarStatus();
+  checkUrlParamsForCalendar();
 }
 
 init();
+
