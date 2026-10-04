@@ -953,6 +953,72 @@
     .text-blue   { color: var(--blue) !important; }
     .text-gold   { color: var(--gold) !important; }
 
+    /* ── PLANS & PERMISSIONS STYLES ────────────────────────────────────── */
+    .plan-perm-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .plan-perm-item:hover {
+      background: rgba(124, 58, 237, 0.08);
+      border-color: rgba(124, 58, 237, 0.35);
+    }
+    .plan-perm-item input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: var(--accent);
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+    }
+    .plan-perm-info {
+      flex: 1;
+    }
+    .plan-perm-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .plan-perm-desc {
+      font-size: 0.74rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .badge-stripe-live {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .perm-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      border-radius: 6px;
+      background: rgba(124, 58, 237, 0.12);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      color: #c4b5fd;
+      margin: 2px;
+    }
+
     /* ── USERS TABLE SECTION ───────────────────────────────────────────── */
     .table-section {
       background: var(--surface);
@@ -1881,6 +1947,9 @@
         <button class="nav-item" onclick="scrollToSection('section-users')">
           <span class="nav-icon">👥</span> Gestão de Concurseiros
         </button>
+        <button class="nav-item" onclick="scrollToSection('section-plans')">
+          <span class="nav-icon">💳</span> Planos & Stripe
+        </button>
 
         <div class="nav-section-label">Gestão de Usuários (CRUD)</div>
         <button class="nav-item" onclick="openCreateUserModal()">
@@ -1890,7 +1959,10 @@
           <span class="nav-icon">🔍</span> Buscar & Gerenciar
         </button>
 
-        <div class="nav-section-label">Ações Rápidas</div>
+        <div class="nav-section-label">Planos & Faturamento</div>
+        <button class="nav-item" onclick="openCreatePlanModal()">
+          <span class="nav-icon">➕</span> Criar Novo Plano
+        </button>
         <button class="nav-item" onclick="triggerStripeSync()">
           <span class="nav-icon">⚡</span> Sincronizar Planos Stripe
         </button>
@@ -2197,7 +2269,141 @@
           </table>
         </div>
       </section>
+
+      <!-- ── SECTION: GESTÃO DE PLANOS & STRIPE ───────────────────────── -->
+      <section class="table-section" id="section-plans" style="margin-top: 2rem;">
+        <div class="table-toolbar">
+          <div class="toolbar-left-group">
+            <button class="btn-create-user" onclick="openCreatePlanModal()" title="Criar novo plano de assinatura com sincronização Stripe">
+              <span>➕</span> <span>Novo Plano</span>
+            </button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-weight:700; font-size:1.05rem; color:#fff;">💳 Planos & Sincronização Stripe Live</span>
+              <span class="badge badge-superadmin" style="font-size:0.7rem; padding: 2px 8px;">Super Admin</span>
+            </div>
+          </div>
+
+          <div class="toolbar-filters">
+            <button class="btn-topbar" onclick="triggerStripeSync()" title="Sincronizar todos os planos com a conta do Stripe">
+              <span>⚡</span> Sincronizar Stripe
+            </button>
+            <button class="btn-topbar" onclick="loadPlans(); showToast('Planos atualizados!', 'success')" title="Recarregar lista de planos">
+              <span>🔄</span> Atualizar
+            </button>
+          </div>
+        </div>
+
+        <div style="padding: 12px 18px; background: rgba(124, 58, 237, 0.08); border-bottom: 1px solid var(--border); font-size: 0.82rem; color: var(--text2);">
+          💡 Novos planos criados aqui geram automaticamente o <strong>Produto e Preço oficial no Stripe Live</strong> e liberam as permissões selecionadas aos assinantes.
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Plano & Identificador</th>
+                <th>Valor & Recorrência</th>
+                <th>Degustação</th>
+                <th>Status Stripe Live</th>
+                <th>Permissões Incluídas</th>
+                <th>Assinantes</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="plans-table-body">
+              <tr>
+                <td colspan="7" style="text-align:center; padding: 2rem; color: var(--muted);">Carregando planos da plataforma...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
+  </div>
+
+  <!-- MODAL: CRIAR NOVO PLANO STRIPE -->
+  <div class="modal-overlay" id="create-plan-modal">
+    <div class="modal-card modal-card-lg" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3><span>💳</span> Criar Novo Plano & Sincronizar com Stripe</h3>
+        <button class="btn-close-modal" onclick="closeCreatePlanModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group" style="flex:2;">
+            <label for="plan-name">Nome do Plano *</label>
+            <input type="text" id="plan-name" placeholder="Ex: Concurseiro VIP Semestral" required />
+          </div>
+          <div class="form-group" style="flex:1;">
+            <label for="plan-emoji">Emoji 3D</label>
+            <select id="plan-emoji">
+              <option value="🛡️" selected>🛡️ Escudo</option>
+              <option value="⚔️">⚔️ Espadas</option>
+              <option value="👑">👑 Coroa</option>
+              <option value="💎">💎 Diamante</option>
+              <option value="⚡">⚡ Raio</option>
+              <option value="🏆">🏆 Troféu</option>
+              <option value="⭐">⭐ Estrela</option>
+              <option value="🚀">🚀 Foguete</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="plan-price">Valor (R$) *</label>
+            <input type="number" id="plan-price" step="0.01" min="1" placeholder="Ex: 89.90" required />
+          </div>
+          <div class="form-group">
+            <label for="plan-interval">Intervalo de Cobrança</label>
+            <select id="plan-interval">
+              <option value="month-1" selected>📅 Mensal (A cada 1 mês)</option>
+              <option value="month-3">📊 Trimestral (A cada 3 meses)</option>
+              <option value="month-6">🗓️ Semestral (A cada 6 meses)</option>
+              <option value="year-1">⭐ Anual (A cada 1 ano)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="plan-trial">Período de Degustação Grátis (Trial)</label>
+            <select id="plan-trial">
+              <option value="7" selected>✨ 7 Dias Gratuitos (Padrão)</option>
+              <option value="14">✨ 14 Dias Gratuitos</option>
+              <option value="30">✨ 30 Dias Gratuitos</option>
+              <option value="0">🚫 Sem período de teste (Cobrança imediata)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="plan-badge">Badge Promocional (Opcional)</label>
+            <input type="text" id="plan-badge" placeholder="Ex: MAIS POPULAR, 20% OFF, LANÇAMENTO" />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="plan-desc">Descrição / Proposta de Valor</label>
+          <input type="text" id="plan-desc" placeholder="Ex: Acesso total ao Mentor IA e simulados intensivos até a aprovação" />
+        </div>
+
+        <!-- SELEÇÃO DE PERMISSÕES DO PLANO -->
+        <div style="margin-top: 12px;">
+          <label style="display:block; font-size:0.82rem; font-weight:700; color:var(--text); margin-bottom:8px;">
+            Permissões Disponíveis no Plano (Selecione os recursos liberados)
+          </label>
+          <div class="plan-perms-grid" id="plan-permissions-list" style="display:grid; grid-template-columns: 1fr; gap: 8px; max-height: 240px; overflow-y: auto; padding-right: 4px;">
+            <!-- Carregado dinamicamente via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeCreatePlanModal()">Cancelar</button>
+        <button class="btn-modal-confirm" id="btn-submit-create-plan" onclick="submitCreatePlan()">
+          <span>⚡</span> Salvar e Sincronizar com Stripe
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL: CADASTRAR NOVO USUÁRIO -->
@@ -2497,6 +2703,8 @@
     let searchTimeout = null;
     let currentChartTab = "mrr";
     let chartCachedData = null;
+    let cachedPlans = [];
+    let availablePermissions = [];
 
     // ── INITIALIZATION ───────────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", async () => {
@@ -2568,7 +2776,7 @@
     }
 
     async function refreshAllData() {
-      await Promise.all([loadStats(), loadUsers()]);
+      await Promise.all([loadStats(), loadUsers(), loadPlans()]);
     }
 
     // ── STATS LOADING & CANVAS KPIS ──────────────────────────────────────────
@@ -3431,6 +3639,236 @@
       } finally {
         btn.disabled = false;
         btn.textContent = "Salvar Cargo";
+      }
+    }
+
+    // ── PLANS & STRIPE CONTROLLER ───────────────────────────────────────────
+    async function loadPlans() {
+      const tbody = document.getElementById("plans-table-body");
+      if (!tbody) return;
+
+      try {
+        const res = await fetch("/api/admin/plans");
+        if (!res.ok) throw new Error("Erro ao carregar planos");
+        const data = await res.json();
+        cachedPlans = data.plans || [];
+        availablePermissions = data.available_permissions || [];
+
+        renderPlansTable();
+      } catch (err) {
+        console.error("Erro ao carregar planos:", err);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--red);">Falha ao carregar planos: ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function renderPlansTable() {
+      const tbody = document.getElementById("plans-table-body");
+      if (!tbody) return;
+
+      if (!cachedPlans.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem; color: var(--muted);">Nenhum plano cadastrado. Clique em "+ Novo Plano" para criar e sincronizar com o Stripe.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = cachedPlans.map(p => {
+        const perms = p.permissions || {};
+        const activePermsKeys = Object.keys(perms).filter(k => perms[k] === true);
+        
+        const permsHtml = activePermsKeys.length 
+          ? activePermsKeys.map(k => {
+              const def = availablePermissions.find(ap => ap.key === k) || { name: k, icon: "✨" };
+              return `<span class="perm-pill" title="${escapeHtml(def.description || def.name)}">${def.icon} ${escapeHtml(def.name)}</span>`;
+            }).join("")
+          : `<span style="color:var(--muted); font-size:0.75rem;">Nenhuma permissão específica</span>`;
+
+        const stripeStatusBadge = p.stripe_price_id && p.stripe_price_id.startsWith("price_")
+          ? `<span class="badge-stripe-live" title="Preço ativo e sincronizado na Stripe">🟢 ${escapeHtml(p.stripe_price_id)}</span>`
+          : `<span class="badge badge-trialing" title="Preço pendente de sincronização">🟡 Pendente Stripe</span>`;
+
+        const badgeHtml = p.badge 
+          ? `<span class="badge badge-active" style="margin-left:6px; font-size:0.68rem;">${escapeHtml(p.badge)}</span>` 
+          : "";
+
+        return `
+          <tr style="opacity: ${p.is_active ? 1 : 0.55};">
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:1.4rem;">${escapeHtml(p.emoji || '🛡️')}</span>
+                <div>
+                  <div style="font-weight:700; color:#fff; display:flex; align-items:center;">
+                    ${escapeHtml(p.name)} ${badgeHtml}
+                  </div>
+                  <div style="font-size:0.72rem; color:var(--muted); font-family:monospace;">
+                    chave: ${escapeHtml(p.plan_key)}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div style="font-weight:800; color:var(--text); font-size:0.95rem;">
+                ${escapeHtml(p.formatted_price)}
+              </div>
+              <div style="font-size:0.75rem; color:var(--muted);">
+                a cada ${p.interval_count > 1 ? p.interval_count + ' ' : ''}${escapeHtml(p.interval_label.toLowerCase())}
+              </div>
+            </td>
+            <td>
+              <span style="font-size:0.8rem; color:${p.trial_days > 0 ? 'var(--green)' : 'var(--muted)'}; font-weight:600;">
+                ${p.trial_days > 0 ? `✨ ${p.trial_days} dias grátis` : 'Sem trial'}
+              </span>
+            </td>
+            <td>
+              ${stripeStatusBadge}
+            </td>
+            <td style="max-width: 260px;">
+              <div style="display:flex; flex-wrap:wrap; gap:3px;">
+                ${permsHtml}
+              </div>
+            </td>
+            <td style="text-align:center;">
+              <span class="user-status-pill" style="background:rgba(255,255,255,0.06); font-weight:700;">
+                👥 ${p.subscribers_count || 0}
+              </span>
+            </td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-action ${p.is_active ? 'btn-action-revoke' : 'btn-action-view'}" 
+                        onclick="togglePlanStatus(${p.id})" 
+                        title="${p.is_active ? 'Desativar plano' : 'Ativar plano'}">
+                  ${p.is_active ? 'Desativar' : 'Ativar'}
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(tbody);
+      }
+    }
+
+    function openCreatePlanModal() {
+      closeSidebar();
+      document.getElementById("plan-name").value = "";
+      document.getElementById("plan-price").value = "";
+      document.getElementById("plan-interval").value = "month-1";
+      document.getElementById("plan-trial").value = "7";
+      document.getElementById("plan-badge").value = "";
+      document.getElementById("plan-emoji").value = "🛡️";
+      document.getElementById("plan-desc").value = "";
+
+      renderPermissionsCheckboxes();
+      document.getElementById("create-plan-modal").classList.add("active");
+      initCustomSelects();
+    }
+
+    function closeCreatePlanModal() {
+      document.getElementById("create-plan-modal").classList.remove("active");
+    }
+
+    function renderPermissionsCheckboxes() {
+      const list = document.getElementById("plan-permissions-list");
+      if (!list) return;
+
+      const perms = availablePermissions.length ? availablePermissions : [
+        { key: "can_access_unlimited_ai", name: "Mentor IA Gemini Ilimitado", description: "Perguntas e orientações ilimitadas com o tutor IA Gemini 2.5", default: true, icon: "🤖" },
+        { key: "concurseiro_simulados", name: "Simulados Cronometrados Ilimitados", description: "Simulados completos por banca oficial (Cebraspe, FGV, FCC, etc.)", default: true, icon: "⏱️" },
+        { key: "ai_commented_answers", name: "Gabaritos e Análise de Erros com IA", description: "Comentários pedagógicos e fundamentação jurídica questão por questão", default: true, icon: "💡" },
+        { key: "can_access_all_themes", name: "Todos os Temas RPG Desbloqueados", description: "Acesso livre a todos os 6 temas e skins da interface (raros e lendários)", default: true, icon: "🎨" },
+        { key: "can_access_advanced_analytics", name: "Painel de Métricas Avançadas", description: "Gráficos de evolução, mapas de calor e análise de pontos fracos", default: true, icon: "📊" },
+        { key: "priority_support", name: "Suporte Prioritário Pedagógico", description: "Atendimento preferencial com especialistas em concursos", default: false, icon: "⭐" },
+        { key: "offline_downloads", name: "Cadernos de Questões em PDF", description: "Download e impressão de simulados e cadernos para estudo offline", default: false, icon: "📥" }
+      ];
+
+      list.innerHTML = perms.map(p => `
+        <label class="plan-perm-item" for="perm-${p.key}">
+          <input type="checkbox" id="perm-${p.key}" data-perm="${p.key}" ${p.default ? 'checked' : ''} />
+          <div class="plan-perm-info">
+            <div class="plan-perm-title">
+              <span>${p.icon}</span> <span>${escapeHtml(p.name)}</span>
+            </div>
+            <div class="plan-perm-desc">${escapeHtml(p.description)}</div>
+          </div>
+        </label>
+      `).join("");
+
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(list);
+      }
+    }
+
+    async function submitCreatePlan() {
+      const btn = document.getElementById("btn-submit-create-plan");
+      const name = document.getElementById("plan-name").value.trim();
+      const priceVal = document.getElementById("plan-price").value.trim();
+      const intervalRaw = document.getElementById("plan-interval").value;
+      const trialDays = parseInt(document.getElementById("plan-trial").value, 10);
+      const badge = document.getElementById("plan-badge").value.trim();
+      const emoji = document.getElementById("plan-emoji").value.trim();
+      const description = document.getElementById("plan-desc").value.trim();
+
+      if (!name) {
+        showToast("Digite o nome do plano.", "error");
+        return;
+      }
+      const price = parseFloat(priceVal);
+      if (isNaN(price) || price <= 0) {
+        showToast("Informe um valor válido em Reais (ex: 89.90).", "error");
+        return;
+      }
+
+      const [intervalType, intervalCountStr] = intervalRaw.split("-");
+      const intervalCount = parseInt(intervalCountStr || "1", 10);
+
+      const perms = {};
+      document.querySelectorAll('#plan-permissions-list input[type="checkbox"]').forEach(cb => {
+        perms[cb.dataset.perm] = cb.checked;
+      });
+
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="display:inline-block; width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin 0.6s linear infinite; margin-right:6px;"></span> Sincronizando com Stripe Live...`;
+
+      try {
+        const res = await fetch("/api/admin/plans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            price_amount: price,
+            interval: intervalType,
+            interval_count: intervalCount,
+            trial_days: trialDays,
+            badge,
+            emoji,
+            description,
+            permissions: perms
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao criar plano");
+
+        showToast(`Plano '${name}' criado com sucesso no Stripe! (${data.plan.stripe_price_id})`, "success");
+        closeCreatePlanModal();
+        await loadPlans();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>⚡</span> Salvar e Sincronizar com Stripe`;
+      }
+    }
+
+    async function togglePlanStatus(planId) {
+      try {
+        const res = await fetch(`/api/admin/plans/${planId}/toggle`, { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao alterar status");
+        showToast(data.message, "success");
+        await loadPlans();
+      } catch (err) {
+        showToast(err.message, "error");
       }
     }
 

@@ -1,4 +1,6 @@
 import os
+import re
+import json
 import stripe
 from functools import wraps
 from urllib.parse import quote_plus
@@ -192,6 +194,14 @@ class User(db.Model):
             return "Super Admin (Acesso Total)" if self.role == "superadmin" else "Administrador"
         if self.is_premium:
             plan_id = (self.stripe_plan_id or "").lower()
+            try:
+                sub_plan = SubscriptionPlan.query.filter(
+                    db.or_(SubscriptionPlan.stripe_price_id == self.stripe_plan_id, SubscriptionPlan.plan_key == plan_id)
+                ).first()
+                if sub_plan:
+                    return sub_plan.name
+            except Exception:
+                pass
             if "year" in plan_id or "anual" in plan_id:
                 return "Herói / Concurseiro Pro (Anual)"
             elif self.stripe_plan_id:
@@ -202,21 +212,40 @@ class User(db.Model):
     def get_permissions(self) -> dict:
         is_pro = self.is_premium
         ai_used = get_ai_requests_today(self.id)
-        daily_limit = None if is_pro else 3
+        
+        plan_perms = {}
+        if is_pro and self.stripe_plan_id:
+            try:
+                sub_plan = SubscriptionPlan.query.filter(
+                    db.or_(SubscriptionPlan.stripe_price_id == self.stripe_plan_id, SubscriptionPlan.plan_key == self.stripe_plan_id.lower())
+                ).first()
+                if sub_plan:
+                    plan_perms = sub_plan.get_permissions()
+            except Exception:
+                pass
+
+        unlimited_ai = plan_perms.get("can_access_unlimited_ai", is_pro)
+        daily_limit = plan_perms.get("daily_ai_limit") if not unlimited_ai else None
+        if not is_pro:
+            daily_limit = 3
+
         return {
             "is_premium": is_pro,
             "role": self.role,
             "plan_name": self.plan_name,
             "subscription_status": self.subscription_status or "free",
             "current_period_end": self.current_period_end.isoformat() if self.current_period_end else None,
-            "can_access_unlimited_ai": is_pro,
+            "can_access_unlimited_ai": unlimited_ai,
             "can_access_concurseiro_pro": is_pro,
-            "can_access_advanced_analytics": is_pro,
-            "can_access_all_themes": is_pro,
+            "can_access_advanced_analytics": plan_perms.get("can_access_advanced_analytics", is_pro),
+            "can_access_all_themes": plan_perms.get("can_access_all_themes", is_pro),
+            "ai_commented_answers": plan_perms.get("ai_commented_answers", is_pro),
+            "priority_support": plan_perms.get("priority_support", False),
+            "offline_downloads": plan_perms.get("offline_downloads", False),
             "daily_ai_limit": daily_limit,
             "ai_requests_today": ai_used,
-            "ai_requests_remaining": None if is_pro else max(0, 3 - ai_used),
-            "concurseiro_simulados": "unlimited" if is_pro else "preview_only (3 questões)"
+            "ai_requests_remaining": None if unlimited_ai else max(0, (daily_limit or 3) - ai_used),
+            "concurseiro_simulados": "unlimited" if plan_perms.get("concurseiro_simulados", is_pro) else "preview_only (3 questões)"
         }
 
     def to_public(self) -> dict:
@@ -331,6 +360,124 @@ class SimuladoHistory(db.Model):
             "accuracy_pct": self.accuracy_pct,
             "xp_awarded": self.xp_awarded,
             "created_at": self.created_at.isoformat() if self.created_at else None
+        }
+
+
+# ── Catálogo de Permissões dos Planos ──────────────────────────────────────
+AVAILABLE_PERMISSIONS = [
+    {
+        "key": "can_access_unlimited_ai",
+        "name": "Mentor IA Gemini Ilimitado",
+        "description": "Perguntas e orientações ilimitadas com o tutor de IA Gemini 2.5",
+        "default": True,
+        "icon": "🤖"
+    },
+    {
+        "key": "concurseiro_simulados",
+        "name": "Simulados Cronometrados Ilimitados",
+        "description": "Simulados completos por banca oficial (Cebraspe, FGV, FCC, Vunesp)",
+        "default": True,
+        "icon": "⏱️"
+    },
+    {
+        "key": "ai_commented_answers",
+        "name": "Gabaritos e Análise de Erros com IA",
+        "description": "Comentários pedagógicos e fundamentação jurídica questão por questão",
+        "default": True,
+        "icon": "💡"
+    },
+    {
+        "key": "can_access_all_themes",
+        "name": "Todos os Temas RPG Desbloqueados",
+        "description": "Acesso livre a todos os 6 temas e skins da interface (raros e lendários)",
+        "default": True,
+        "icon": "🎨"
+    },
+    {
+        "key": "can_access_advanced_analytics",
+        "name": "Painel de Métricas Avançadas",
+        "description": "Gráficos de evolução, mapas de calor e análise de pontos fracos",
+        "default": True,
+        "icon": "📊"
+    },
+    {
+        "key": "priority_support",
+        "name": "Suporte Prioritário Pedagógico",
+        "description": "Atendimento preferencial com especialistas em concursos",
+        "default": False,
+        "icon": "⭐"
+    },
+    {
+        "key": "offline_downloads",
+        "name": "Cadernos de Questões em PDF",
+        "description": "Download e impressão de simulados e cadernos para estudo offline",
+        "default": False,
+        "icon": "📥"
+    }
+]
+
+
+class SubscriptionPlan(db.Model):
+    __tablename__ = "subscription_plans"
+
+    id                = db.Column(db.Integer, primary_key=True)
+    plan_key          = db.Column(db.String(60), unique=True, nullable=False, index=True)
+    name              = db.Column(db.String(120), nullable=False)
+    description       = db.Column(db.Text, default="")
+    price_amount      = db.Column(db.Float, nullable=False)
+    currency          = db.Column(db.String(10), default="brl")
+    interval          = db.Column(db.String(20), default="month")
+    interval_count    = db.Column(db.Integer, default=1)
+    trial_days        = db.Column(db.Integer, default=7)
+    badge             = db.Column(db.String(60), default="")
+    emoji             = db.Column(db.String(30), default="🛡️")
+    is_active         = db.Column(db.Boolean, default=True)
+
+    stripe_product_id = db.Column(db.String(120), nullable=True)
+    stripe_price_id   = db.Column(db.String(120), nullable=True)
+    permissions_json  = db.Column(db.Text, default="{}")
+    created_at        = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def get_permissions(self) -> dict:
+        try:
+            return json.loads(self.permissions_json or "{}")
+        except Exception:
+            return {}
+
+    def set_permissions(self, perms: dict):
+        self.permissions_json = json.dumps(perms, ensure_ascii=False)
+
+    def to_dict(self) -> dict:
+        label = "Mensal"
+        if self.interval == "year" and self.interval_count == 1:
+            label = "Anual"
+        elif self.interval == "month" and self.interval_count == 6:
+            label = "Semestral"
+        elif self.interval == "month" and self.interval_count == 3:
+            label = "Trimestral"
+        elif self.interval == "month" and self.interval_count > 1:
+            label = f"{self.interval_count} Meses"
+
+        return {
+            "id": self.id,
+            "plan_key": self.plan_key,
+            "name": self.name,
+            "description": self.description or "",
+            "price_amount": self.price_amount,
+            "formatted_price": f"R$ {self.price_amount:.2f}".replace(".", ","),
+            "currency": self.currency,
+            "interval": self.interval,
+            "interval_count": self.interval_count,
+            "interval_label": label,
+            "trial_days": self.trial_days,
+            "badge": self.badge or "",
+            "emoji": self.emoji or "🛡️",
+            "is_active": self.is_active,
+            "stripe_product_id": self.stripe_product_id or "",
+            "stripe_price_id": self.stripe_price_id or "",
+            "is_synced_stripe": bool(self.stripe_price_id and str(self.stripe_price_id).startswith("price_")),
+            "permissions": self.get_permissions(),
+            "created_at": self.created_at.strftime("%d/%m/%Y %H:%M") if self.created_at else None,
         }
 
 
@@ -975,7 +1122,16 @@ def activate_subscription():
     if not payment_method_id:
         return jsonify({"error": "Método de pagamento (payment_method_id) não fornecido."}), 400
 
-    if plan in ("monthly", "mensal"):
+    sub_plan = SubscriptionPlan.query.filter(
+        db.or_(SubscriptionPlan.plan_key == plan, SubscriptionPlan.stripe_price_id == plan)
+    ).first()
+
+    trial_days = 7
+    if sub_plan and sub_plan.stripe_price_id:
+        price_id = sub_plan.stripe_price_id
+        plan_name = sub_plan.plan_key
+        trial_days = sub_plan.trial_days or 7
+    elif plan in ("monthly", "mensal"):
         price_id = os.environ.get("STRIPE_PRICE_MONTHLY")
         plan_name = "monthly"
     elif plan in ("yearly", "anual"):
@@ -995,11 +1151,11 @@ def activate_subscription():
             invoice_settings={"default_payment_method": payment_method_id}
         )
 
-        # 2. Criar a assinatura com 7 dias de trial
+        # 2. Criar a assinatura com trial
         sub = stripe.Subscription.create(
             customer=user.stripe_customer_id,
             items=[{"price": price_id}],
-            trial_period_days=7,
+            trial_period_days=trial_days,
             default_payment_method=payment_method_id,
             metadata={
                 "user_id": str(user.id),
@@ -1010,7 +1166,6 @@ def activate_subscription():
         )
 
         # 3. Atualizar dados no banco de dados local
-        user.is_premium = True
         user.subscription_status = "trialing"
         user.stripe_subscription_id = sub.id
         user.stripe_plan_id = price_id
@@ -1254,6 +1409,244 @@ def admin_sync_stripe_plans():
     except Exception as e:
         app.logger.error(f"Erro ao sincronizar planos com o Stripe: {e}")
         return jsonify({"error": f"Falha na sincronização com o Stripe: {str(e)}"}), 500
+
+
+def seed_default_subscription_plans():
+    """Garante que os planos padrão (Mensal e Anual) existam no banco de dados com permissões."""
+    try:
+        monthly_price = os.environ.get("STRIPE_PRICE_MONTHLY")
+        yearly_price = os.environ.get("STRIPE_PRICE_YEARLY")
+        product_id = os.environ.get("STRIPE_PRODUCT_ID")
+
+        default_pro_perms = {p["key"]: True for p in AVAILABLE_PERMISSIONS}
+
+        # 1. Plano mensal
+        p_monthly = SubscriptionPlan.query.filter_by(plan_key="monthly").first()
+        if not p_monthly:
+            p_monthly = SubscriptionPlan(
+                plan_key="monthly",
+                name="Concurseiro Pro Mensal",
+                description="Acesso completo e irrestrito ao Mentor IA, simulados cronometrados por banca e banco de questões.",
+                price_amount=19.90,
+                currency="brl",
+                interval="month",
+                interval_count=1,
+                trial_days=7,
+                badge="MENSAL FLEXÍVEL",
+                emoji="🛡️",
+                stripe_product_id=product_id,
+                stripe_price_id=monthly_price,
+                is_active=True
+            )
+            p_monthly.set_permissions(default_pro_perms)
+            db.session.add(p_monthly)
+        elif monthly_price and not p_monthly.stripe_price_id:
+            p_monthly.stripe_price_id = monthly_price
+
+        # 2. Plano anual
+        p_yearly = SubscriptionPlan.query.filter_by(plan_key="yearly").first()
+        if not p_yearly:
+            p_yearly = SubscriptionPlan(
+                plan_key="yearly",
+                name="Concurseiro Pro Anual",
+                description="O plano definitivo até a posse com 17% de desconto e ferramentas completas por 1 ano.",
+                price_amount=199.00,
+                currency="brl",
+                interval="year",
+                interval_count=1,
+                trial_days=7,
+                badge="17% OFF",
+                emoji="⚔️",
+                stripe_product_id=product_id,
+                stripe_price_id=yearly_price,
+                is_active=True
+            )
+            p_yearly.set_permissions(default_pro_perms)
+            db.session.add(p_yearly)
+        elif yearly_price and not p_yearly.stripe_price_id:
+            p_yearly.stripe_price_id = yearly_price
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        app.logger.warning(f"Aviso ao inicializar planos padrão: {e}")
+
+
+@app.route("/api/admin/plans", methods=["GET"])
+@require_role("superadmin", "admin")
+def admin_get_plans():
+    """Lista todos os planos cadastrados, permissões e status no Stripe."""
+    seed_default_subscription_plans()
+    plans = SubscriptionPlan.query.order_by(SubscriptionPlan.price_amount.asc()).all()
+
+    # Contagem de assinantes por plano
+    user_counts = {}
+    users_with_sub = User.query.filter(User.subscription_status.in_(["active", "trialing"])).all()
+    for u in users_with_sub:
+        pk = (u.stripe_plan_id or "").lower()
+        user_counts[pk] = user_counts.get(pk, 0) + 1
+
+    plans_data = []
+    for p in plans:
+        pd = p.to_dict()
+        subscribers = user_counts.get(p.plan_key, 0) + (user_counts.get((p.stripe_price_id or "").lower(), 0) if p.stripe_price_id else 0)
+        pd["subscribers_count"] = subscribers
+        plans_data.append(pd)
+
+    return jsonify({
+        "ok": True,
+        "plans": plans_data,
+        "available_permissions": AVAILABLE_PERMISSIONS,
+        "stripe_configured": bool(os.environ.get("STRIPE_SECRET_KEY"))
+    })
+
+
+@app.route("/api/admin/plans", methods=["POST"])
+@require_role("superadmin")
+def admin_create_plan():
+    """Cria um novo plano no sistema e sincroniza automaticamente com o Stripe Live."""
+    body = request.get_json(silent=True) or {}
+    name = (body.get("name") or "").strip()
+    price_val = body.get("price_amount")
+    interval = (body.get("interval") or "month").strip().lower()
+    interval_count = int(body.get("interval_count") or 1)
+    trial_days = int(body.get("trial_days") or 7)
+    badge = (body.get("badge") or "").strip()
+    emoji = (body.get("emoji") or "🛡️").strip()
+    description = (body.get("description") or "").strip()
+    permissions = body.get("permissions") or {}
+
+    if not name:
+        return jsonify({"error": "O nome do plano é obrigatório."}), 400
+    try:
+        price_amount = float(price_val)
+        if price_amount <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return jsonify({"error": "Valor do plano inválido. Digite um número positivo."}), 400
+
+    if interval not in ("day", "week", "month", "year"):
+        interval = "month"
+
+    # Gerar slug da chave do plano
+    base_slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    plan_key = f"{base_slug}_{interval}"
+    counter = 1
+    while SubscriptionPlan.query.filter_by(plan_key=plan_key).first():
+        plan_key = f"{base_slug}_{interval}_{counter}"
+        counter += 1
+
+    # Sincronização com Stripe Live
+    stripe_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not stripe_key:
+        return jsonify({"error": "STRIPE_SECRET_KEY não configurada no servidor."}), 500
+
+    stripe.api_key = stripe_key
+    stripe_product_id = os.environ.get("STRIPE_PRODUCT_ID")
+
+    try:
+        # 1. Garantir que o produto existe na conta Stripe
+        if not stripe_product_id:
+            existing_prods = stripe.Product.list(limit=20, active=True)
+            for p in existing_prods.data:
+                meta = p.metadata.to_dict() if hasattr(p, "metadata") and p.metadata else {}
+                if meta.get("app") == "levelup_study" or "LevelUp Study" in (p.name or ""):
+                    stripe_product_id = p.id
+                    break
+            if not stripe_product_id:
+                prod = stripe.Product.create(
+                    name="LevelUp Study - Concurseiro Pro",
+                    description="Planos de Assinatura LevelUp Study",
+                    metadata={"app": "levelup_study"}
+                )
+                stripe_product_id = prod.id
+
+        # 2. Criar o preço correspondente na Stripe
+        unit_amount = int(round(price_amount * 100))  # valor em centavos
+        price_obj = stripe.Price.create(
+            product=stripe_product_id,
+            unit_amount=unit_amount,
+            currency="brl",
+            recurring={"interval": interval, "interval_count": interval_count},
+            nickname=f"LevelUp - {name}",
+            metadata={
+                "app": "levelup_study",
+                "plan_key": plan_key,
+                "created_by": "superadmin"
+            }
+        )
+        stripe_price_id = price_obj.id
+
+    except stripe.error.StripeError as se:
+        app.logger.error(f"Erro Stripe ao criar plano: {se}")
+        return jsonify({"error": f"Erro retornado pela Stripe: {se.user_message or str(se)}"}), 400
+    except Exception as e:
+        app.logger.error(f"Erro inesperado ao sincronizar com Stripe: {e}")
+        return jsonify({"error": f"Falha na comunicação com o Stripe: {str(e)}"}), 500
+
+    # 3. Salvar no banco de dados
+    new_plan = SubscriptionPlan(
+        plan_key=plan_key,
+        name=name,
+        description=description,
+        price_amount=price_amount,
+        currency="brl",
+        interval=interval,
+        interval_count=interval_count,
+        trial_days=trial_days,
+        badge=badge,
+        emoji=emoji,
+        stripe_product_id=stripe_product_id,
+        stripe_price_id=stripe_price_id,
+        is_active=True
+    )
+    new_plan.set_permissions(permissions)
+    db.session.add(new_plan)
+    db.session.commit()
+
+    return jsonify({
+        "ok": True,
+        "message": f"Plano '{name}' criado e sincronizado com o Stripe Live com sucesso!",
+        "plan": new_plan.to_dict()
+    }), 201
+
+
+@app.route("/api/admin/plans/<int:plan_id>/toggle", methods=["POST"])
+@require_role("superadmin")
+def admin_toggle_plan(plan_id: int):
+    """Ativa ou desativa um plano no sistema e na Stripe."""
+    plan = db.session.get(SubscriptionPlan, plan_id)
+    if not plan:
+        return jsonify({"error": "Plano não encontrado."}), 404
+
+    plan.is_active = not plan.is_active
+
+    if plan.stripe_price_id and os.environ.get("STRIPE_SECRET_KEY"):
+        try:
+            stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+            stripe.Price.modify(plan.stripe_price_id, active=plan.is_active)
+        except Exception as e:
+            app.logger.warning(f"Aviso ao alterar status do preço na Stripe: {e}")
+
+    db.session.commit()
+    return jsonify({
+        "ok": True,
+        "is_active": plan.is_active,
+        "message": f"Plano '{plan.name}' {'ativado' if plan.is_active else 'desativado'} com sucesso.",
+        "plan": plan.to_dict()
+    })
+
+
+@app.route("/api/plans", methods=["GET"])
+def public_get_plans():
+    """Retorna os planos ativos para exibição pública."""
+    seed_default_subscription_plans()
+    plans = SubscriptionPlan.query.filter_by(is_active=True).order_by(SubscriptionPlan.price_amount.asc()).all()
+    return jsonify({
+        "ok": True,
+        "plans": [p.to_dict() for p in plans],
+        "available_permissions": AVAILABLE_PERMISSIONS
+    })
 
 
 # ── Super Admin Endpoints ──────────────────────────────────────────────────
