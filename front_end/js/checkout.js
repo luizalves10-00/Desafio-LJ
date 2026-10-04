@@ -281,12 +281,18 @@
         fields: {
           billingDetails: {
             name: 'never',
+            address: {
+              country: 'never',
+            }
           }
         },
         defaultValues: {
           billingDetails: {
             name: user.name || '',
             email: user.email || '',
+            address: {
+              country: 'BR',
+            }
           }
         }
       });
@@ -335,6 +341,9 @@
           payment_method_data: {
             billing_details: {
               name: billingName,
+              address: {
+                country: 'BR',
+              }
             }
           },
           return_url: `${window.location.origin}/index.html?payment=success`,
@@ -352,7 +361,19 @@
         });
 
         if (error) {
-          showAlert(error.message || 'Falha ao validar os dados do cartão.', 'error');
+          let errorMsg = error.message || 'Falha ao validar os dados do cartão.';
+          if (
+            error.code === 'card_declined' ||
+            (errorMsg && (
+              errorMsg.toLowerCase().includes('debit') ||
+              errorMsg.toLowerCase().includes('débito') ||
+              errorMsg.toLowerCase().includes('not support') ||
+              errorMsg.toLowerCase().includes('off_session')
+            ))
+          ) {
+            errorMsg = 'Cartões de débito não são aceitos para assinaturas recorrentes com 7 dias de degustação grátis. Por favor, insira um cartão de crédito.';
+          }
+          showAlert(errorMsg, 'error');
           setLoading(false);
           return;
         }
