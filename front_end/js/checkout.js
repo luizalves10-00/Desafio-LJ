@@ -232,9 +232,6 @@
           billingDetails: {
             name: user.name || '',
             email: user.email || '',
-            address: {
-              country: 'BR',
-            }
           }
         }
       });
