@@ -281,12 +281,6 @@
         fields: {
           billingDetails: {
             name: 'never',
-            email: 'never',
-            phone: 'never',
-            address: {
-              country: 'never',
-              postalCode: 'never',
-            }
           }
         },
         defaultValues: {
