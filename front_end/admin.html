@@ -2037,9 +2037,10 @@
             ? `<span style="color:var(--green); font-size:0.7rem; font-weight:700;">● Ativo</span>` 
             : `<span style="color:var(--muted); font-size:0.7rem; font-weight:700;">○ Inativo</span>`;
 
-              const priceText = p.formatted_price || p.price_formatted || (p.price_amount != null ? `R$ ${Number(p.price_amount).toFixed(2).replace('.', ',')}` : (p.price_brl != null ? `R$ ${Number(p.price_brl).toFixed(2).replace('.', ',')}` : "R$ 0,00"));
+          const badgePill = p.badge ? `<span class="plan-badge-pill">${escapeHtml(p.badge)}</span>` : "";
+          const priceText = p.formatted_price || p.price_formatted || (p.price_amount != null ? `R$ ${Number(p.price_amount).toFixed(2).replace('.', ',')}` : (p.price_brl != null ? `R$ ${Number(p.price_brl).toFixed(2).replace('.', ',')}` : "R$ 0,00"));
 
-              return `
+          return `
             <div class="plan-card ${!isActive ? 'style="opacity:0.65;"' : ''}">
               <div class="plan-card-header">
                 <div class="plan-card-title-wrap">
