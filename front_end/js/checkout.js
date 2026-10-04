@@ -137,6 +137,7 @@
           fontFamily: 'Manrope, system-ui, sans-serif',
           borderRadius: '12px',
           spacingUnit: '4.5px',
+          colorIconChevronDown: '#c4b5fd',
         },
         rules: {
           '.Input': {
@@ -154,6 +155,18 @@
             fontWeight: '600',
             fontSize: '0.86rem',
             marginBottom: '6px',
+          },
+          '.p-Select': {
+            backgroundColor: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid rgba(196, 181, 253, 0.18)',
+            borderRadius: '12px',
+          },
+          '.p-Select-select': {
+            backgroundColor: '#15122a',
+            color: '#f6f3ff',
+          },
+          '.p-InputIcon': {
+            color: '#c4b5fd',
           },
           '.Select': {
             border: '1px solid rgba(196, 181, 253, 0.18)',
@@ -203,7 +216,28 @@
         appearance,
       });
 
-      const paymentElement = elements.create('payment');
+      const paymentElement = elements.create('payment', {
+        fields: {
+          billingDetails: {
+            name: 'never',
+            email: 'never',
+            phone: 'never',
+            address: {
+              country: 'never',
+              postalCode: 'never',
+            }
+          }
+        },
+        defaultValues: {
+          billingDetails: {
+            name: user.name || '',
+            email: user.email || '',
+            address: {
+              country: 'BR',
+            }
+          }
+        }
+      });
       paymentElement.mount('#payment-element');
 
       paymentElement.on('ready', () => {
