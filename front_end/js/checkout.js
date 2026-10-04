@@ -146,6 +146,7 @@
 
   let stripe = null;
   let elements = null;
+  let currentUser = null;
 
   async function initCheckout() {
     try {
@@ -156,7 +157,8 @@
         return;
       }
       const authData = await authRes.json();
-      const user = authData.user;
+      currentUser = authData.user || {};
+      const user = currentUser;
 
       if (userName) userName.textContent = user.name || 'Concurseiro';
       if (userEmail) userEmail.textContent = user.email || '';
@@ -327,9 +329,31 @@
       setLoading(true, 'Validando cartão seguro...');
 
       try {
+        const billingName = (currentUser && currentUser.name && currentUser.name.trim())
+          ? currentUser.name.trim()
+          : (userName && userName.textContent && userName.textContent !== 'Carregando...' ? userName.textContent.trim() : 'Aluno LevelUp');
+
+        const billingEmail = (currentUser && currentUser.email && currentUser.email.trim())
+          ? currentUser.email.trim()
+          : (userEmail && userEmail.textContent && userEmail.textContent !== '...' ? userEmail.textContent.trim() : undefined);
+
+        const confirmParams = {
+          payment_method_data: {
+            billing_details: {
+              name: billingName,
+            }
+          },
+          return_url: `${window.location.origin}/index.html?payment=success`,
+        };
+
+        if (billingEmail) {
+          confirmParams.payment_method_data.billing_details.email = billingEmail;
+        }
+
         // Confirma o SetupIntent no Stripe com 3D Secure integrado se necessário
         const { setupIntent, error } = await stripe.confirmSetup({
           elements,
+          confirmParams,
           redirect: 'if_required',
         });
 
