@@ -1008,10 +1008,8 @@ def activate_subscription():
         if hasattr(sub, "current_period_end") and sub.current_period_end:
             user.current_period_end = datetime.utcfromtimestamp(sub.current_period_end)
 
-        log_activity(
-            user.id,
-            "subscription_started",
-            f"Assinatura {plan_name.upper()} ativada com 7 dias de teste grátis via Stripe Elements"
+        app.logger.info(
+            f"Assinatura {plan_name.upper()} do usuário {user.id} ({user.email}) ativada com 7 dias de teste grátis via Stripe Elements."
         )
         db.session.commit()
 
