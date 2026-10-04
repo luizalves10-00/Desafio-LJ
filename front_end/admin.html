@@ -130,15 +130,20 @@
     .brand-logo span { color: var(--accent2); }
 
     .sidebar-badge {
-      font-size: 0.62rem;
+      display: inline-block;
+      width: fit-content;
+      font-size: 0.58rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(245, 158, 11, 0.25));
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.35), rgba(245, 158, 11, 0.25));
+      border: 1px solid rgba(245, 158, 11, 0.45);
       color: var(--gold);
-      padding: 0.15rem 0.45rem;
+      padding: 0.08rem 0.45rem;
       border-radius: 999px;
+      line-height: 1.35;
+      white-space: nowrap;
+      box-shadow: 0 1px 4px rgba(245, 158, 11, 0.15);
     }
 
     .sidebar-close-btn {
@@ -260,6 +265,9 @@
     .user-details {
       min-width: 0;
       flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
     .user-name {
       font-size: 0.82rem;
@@ -268,6 +276,12 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.25;
+    }
+    .user-role-badge-wrap {
+      display: flex;
+      align-items: center;
+      margin: 1px 0;
     }
     .user-email {
       font-size: 0.72rem;
@@ -275,6 +289,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      line-height: 1.25;
     }
 
     .btn-logout {
@@ -1055,19 +1070,6 @@
       letter-spacing: -0.02em;
       white-space: nowrap;
     }
-    .sidebar-badge {
-      font-size: 0.62rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(245, 158, 11, 0.25));
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      color: var(--gold);
-      padding: 0.15rem 0.45rem;
-      border-radius: 999px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
     .sidebar-close-btn {
       display: none;
       background: none;
@@ -1342,7 +1344,6 @@
         <span style="font-size:1.3rem;">⚡</span>
         <span class="brand-logo">LevelUp <span>Study</span></span>
       </a>
-      <span class="sidebar-badge">Super Admin</span>
       <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Fechar menu">&times;</button>
     </div>
 
@@ -1387,6 +1388,9 @@
         <div class="user-avatar" id="admin-user-avatar">A</div>
         <div class="user-details">
           <div class="user-name" id="admin-user-name">Administrador</div>
+          <div class="user-role-badge-wrap">
+            <span class="sidebar-badge" id="admin-user-badge">Super Admin</span>
+          </div>
           <div class="user-email" id="admin-user-email">admin@levelupstudy.com</div>
         </div>
       </div>
@@ -2205,10 +2209,12 @@
         const nameEl = document.getElementById("admin-user-name");
         const emailEl = document.getElementById("admin-user-email");
         const avatarEl = document.getElementById("admin-user-avatar");
+        const badgeEl = document.getElementById("admin-user-badge");
 
         if (nameEl) nameEl.textContent = user.name || "Administrador";
         if (emailEl) emailEl.textContent = user.email || "";
         if (avatarEl) avatarEl.textContent = (user.name || "A").charAt(0).toUpperCase();
+        if (badgeEl) badgeEl.textContent = (user.role === "superadmin" || user.is_superadmin) ? "Super Admin" : "Admin";
 
         const dateEl = document.getElementById("dash-date-indicator");
         if (dateEl) {
