@@ -2,10 +2,10 @@
   'use strict';
 
   const params = new URLSearchParams(window.location.search);
-  const plan = (params.get('plan') || 'monthly').toLowerCase().trim();
-  const isYearly = plan === 'yearly' || plan === 'anual';
+  let currentPlan = (params.get('plan') || 'monthly').toLowerCase().trim();
 
   // Elementos do DOM
+  const planSelect = document.getElementById('plan-select');
   const summaryTitle = document.getElementById('summary-title');
   const summaryDesc = document.getElementById('summary-desc');
   const summaryPlanTag = document.getElementById('summary-plan-tag');
@@ -23,21 +23,47 @@
   const btnText = document.getElementById('btn-text');
   const btnSpinner = document.getElementById('btn-spinner');
 
-  // 1. Ajustar textos do plano na tela
-  if (isYearly) {
-    if (summaryTitle) summaryTitle.textContent = 'Concurseiro Pro Anual';
-    if (summaryDesc) summaryDesc.textContent = 'O plano definitivo até a posse com 17% de desconto e ferramentas completas por 1 ano.';
-    if (summaryPlanTag) summaryPlanTag.textContent = 'Anual · 17% OFF';
-    if (recurringLabel) recurringLabel.textContent = 'Após os 7 dias (Anual)';
-    if (recurringVal) recurringVal.textContent = 'R$ 199,00 / ano (~R$ 16,58/mês)';
-    if (disclaimerPrice) disclaimerPrice.textContent = 'R$ 199,00 / ano';
-  } else {
-    if (summaryTitle) summaryTitle.textContent = 'Concurseiro Pro Mensal';
-    if (summaryDesc) summaryDesc.textContent = 'Acesso completo e irrestrito ao Mentor IA, simulados cronometrados por banca e banco de questões.';
-    if (summaryPlanTag) summaryPlanTag.textContent = 'Mensal Flexível';
-    if (recurringLabel) recurringLabel.textContent = 'Após os 7 dias (Mensal)';
-    if (recurringVal) recurringVal.textContent = 'R$ 19,90 / mês';
-    if (disclaimerPrice) disclaimerPrice.textContent = 'R$ 19,90 / mês';
+  // 1. Atualizar textos e dados do plano na tela
+  function updatePlanUI(selectedPlan) {
+    currentPlan = selectedPlan.toLowerCase().trim();
+    const isYearly = currentPlan === 'yearly' || currentPlan === 'anual';
+
+    if (planSelect && planSelect.value !== (isYearly ? 'yearly' : 'monthly')) {
+      planSelect.value = isYearly ? 'yearly' : 'monthly';
+      if (planSelect._emojiSync) planSelect._emojiSync();
+    }
+
+    if (isYearly) {
+      if (summaryTitle) summaryTitle.textContent = 'Concurseiro Pro Anual';
+      if (summaryDesc) summaryDesc.textContent = 'O plano definitivo até a posse com 17% de desconto e ferramentas completas por 1 ano.';
+      if (summaryPlanTag) summaryPlanTag.textContent = 'Anual · 17% OFF';
+      if (recurringLabel) recurringLabel.textContent = 'Após os 7 dias (Anual)';
+      if (recurringVal) recurringVal.textContent = 'R$ 199,00 / ano (~R$ 16,58/mês)';
+      if (disclaimerPrice) disclaimerPrice.textContent = 'R$ 199,00 / ano';
+    } else {
+      if (summaryTitle) summaryTitle.textContent = 'Concurseiro Pro Mensal';
+      if (summaryDesc) summaryDesc.textContent = 'Acesso completo e irrestrito ao Mentor IA, simulados cronometrados por banca e banco de questões.';
+      if (summaryPlanTag) summaryPlanTag.textContent = 'Mensal Flexível';
+      if (recurringLabel) recurringLabel.textContent = 'Após os 7 dias (Mensal)';
+      if (recurringVal) recurringVal.textContent = 'R$ 19,90 / mês';
+      if (disclaimerPrice) disclaimerPrice.textContent = 'R$ 19,90 / mês';
+    }
+  }
+
+  // Inicializar UI do plano
+  updatePlanUI(currentPlan);
+
+  // Manipular alteração do select de planos
+  if (planSelect) {
+    planSelect.addEventListener('change', () => {
+      updatePlanUI(planSelect.value);
+      history.replaceState(null, '', `?plan=${encodeURIComponent(planSelect.value)}`);
+    });
+    setTimeout(() => {
+      if (window.Emoji3D && window.Emoji3D.enhanceSelect) {
+        window.Emoji3D.enhanceSelect(planSelect);
+      }
+    }, 60);
   }
 
   function showAlert(msg, type = 'error') {
@@ -67,7 +93,7 @@
       // 2. Verificar Autenticação do Usuário
       const authRes = await fetch('/api/auth/me', { credentials: 'include' });
       if (!authRes.ok) {
-        window.location.href = `login.html?redirect=checkout&plan=${encodeURIComponent(plan)}`;
+        window.location.href = `login.html?redirect=checkout&plan=${encodeURIComponent(currentPlan)}`;
         return;
       }
       const authData = await authRes.json();
@@ -92,7 +118,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan: currentPlan }),
       });
       const setupData = await setupRes.json();
       if (!setupRes.ok || !setupData.client_secret) {
@@ -128,6 +154,38 @@
             fontWeight: '600',
             fontSize: '0.86rem',
             marginBottom: '6px',
+          },
+          '.Select': {
+            border: '1px solid rgba(196, 181, 253, 0.18)',
+            backgroundColor: '#15122a',
+            color: '#f6f3ff',
+            padding: '12px 14px',
+            borderRadius: '12px',
+          },
+          '.Select:focus': {
+            borderColor: '#8b5cf6',
+            boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.28)',
+          },
+          '.Select--empty': {
+            color: '#aba3c4',
+          },
+          '.Dropdown': {
+            backgroundColor: '#17142b',
+            border: '1px solid rgba(196, 181, 253, 0.25)',
+            borderRadius: '12px',
+            color: '#f6f3ff',
+            boxShadow: '0 14px 40px rgba(0, 0, 0, 0.65)',
+          },
+          '.DropdownItem': {
+            color: '#f6f3ff',
+            padding: '10px 14px',
+          },
+          '.DropdownItem--selected': {
+            backgroundColor: 'rgba(139, 92, 246, 0.25)',
+            color: '#c4b5fd',
+          },
+          '.DropdownItem:hover': {
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
           },
           '.Tab': {
             border: '1px solid rgba(196, 181, 253, 0.16)',
@@ -201,7 +259,7 @@
             credentials: 'include',
             body: JSON.stringify({
               payment_method_id: setupIntent.payment_method,
-              plan,
+              plan: currentPlan,
             }),
           });
           const actData = await actRes.json();

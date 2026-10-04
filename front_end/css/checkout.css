@@ -49,7 +49,61 @@
   color: var(--mist);
   font-size: 0.9rem;
   line-height: 1.45;
-  margin: 0 0 24px;
+  margin: 0 0 20px;
+}
+
+.checkout-plan-select-group {
+  margin-bottom: 22px;
+}
+
+.checkout-plan-select-group label {
+  display: block;
+  color: var(--mist);
+  font-size: 0.76rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.checkout-plan-select-group .emoji-select {
+  width: 100%;
+  display: block;
+}
+
+.checkout-plan-select-group .emoji-select-button {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  padding: 13px 16px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.checkout-plan-select-group .emoji-select-button:hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(196, 181, 253, 0.4);
+}
+
+.checkout-plan-select-group .emoji-select-menu {
+  width: 100%;
+  max-width: 100%;
+  background: #17142b;
+  border: 1px solid rgba(196, 181, 253, 0.25);
+  border-radius: 14px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.65);
+  padding: 8px;
+}
+
+.checkout-plan-select-group .emoji-select-option {
+  padding: 11px 14px;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 0.88rem;
 }
 
 .pricing-breakdown {
