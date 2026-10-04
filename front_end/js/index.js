@@ -23,6 +23,7 @@ const SECTION_TITLES = {
   tarefas:    "Missões",
   conquistas: "Conquistas",
   jogos:      "Jogos",
+  assinatura: "Minha Assinatura & Plano",
   temas:      "Temas",
   chat:       "Chat com IA",
 };
@@ -38,12 +39,13 @@ function navigate(name, btn) {
   document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
   document.getElementById("section-" + name).classList.add("active");
   btn.classList.add("active");
-  document.getElementById("topbar-title").textContent = SECTION_TITLES[name];
+  document.getElementById("topbar-title").textContent = SECTION_TITLES[name] || "Painel";
   closeSidebar();
   if (name === "tarefas")    loadTasks();
   if (name === "conquistas") renderAchievements();
   if (name === "dashboard")  loadSuggest();
   if (name === "jogos")      showGameMenu();
+  if (name === "assinatura") loadSubscriptionDetails();
 }
 
 // ── SIDEBAR MOBILE ─────────────────────────────────────────────────────────
@@ -3616,6 +3618,221 @@ document.addEventListener("keyup", (e) => {
   else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") platKeys.right = false;
 });
 
+// ── GESTÃO DE ASSINATURA & PLANO ──────────────────────────────────────────
+let userSubscriptionData = null;
+
+async function checkSubscriptionBadges() {
+  try {
+    const res = await apiFetch(`${API}/stripe/subscription`);
+    if (!res.ok) return;
+    const sub = await res.json();
+    userSubscriptionData = sub;
+    updateSubBadges(sub);
+  } catch (err) {
+    console.error("Erro ao verificar badges de assinatura:", err);
+  }
+}
+
+function updateSubBadges(sub) {
+  const heroTag = document.getElementById("hero-plan-tag");
+  const sbTag = document.getElementById("sb-sub-tag");
+
+  let label = "Free";
+  let cls = "free";
+
+  if (sub && sub.is_premium) {
+    if (sub.status === "trialing") {
+      label = "Pro (7 Dias Grátis)";
+      cls = "trialing";
+    } else if (sub.cancel_at_period_end) {
+      label = "Pro (Cancelando)";
+      cls = "canceled";
+    } else {
+      label = "Concurseiro Pro";
+      cls = "active";
+    }
+  } else if (sub && sub.status === "canceled") {
+    label = "Cancelada";
+    cls = "canceled";
+  }
+
+  if (heroTag) {
+    heroTag.textContent = label;
+    heroTag.className = `hero-plan-tag ${cls}`;
+  }
+  if (sbTag) {
+    sbTag.textContent = label;
+    sbTag.className = `sb-sub-badge ${cls}`;
+  }
+}
+
+async function loadSubscriptionDetails() {
+  const planTitle = document.getElementById("sub-plan-title");
+  const statusBadge = document.getElementById("sub-status-badge");
+  const priceVal = document.getElementById("sub-price-val");
+  const periodVal = document.getElementById("sub-period-val");
+  const infoStatus = document.getElementById("sub-info-status");
+  const renewalLabel = document.getElementById("sub-renewal-label");
+  const infoRenewal = document.getElementById("sub-info-renewal");
+  const infoTrial = document.getElementById("sub-info-trial");
+  const actionsActive = document.getElementById("sub-actions-active");
+  const actionsFree = document.getElementById("sub-actions-free");
+  const actionsCanceled = document.getElementById("sub-actions-canceled");
+  const accessUntil = document.getElementById("sub-access-until");
+
+  if (planTitle) planTitle.textContent = "Carregando informações...";
+
+  try {
+    const res = await apiFetch(`${API}/stripe/subscription`);
+    if (res.status === 401) { redirectLogin(); return; }
+
+    const sub = await res.json();
+    userSubscriptionData = sub;
+    updateSubBadges(sub);
+
+    // Oculta todas as ações inicialmente
+    if (actionsActive) actionsActive.style.display = "none";
+    if (actionsFree) actionsFree.style.display = "none";
+    if (actionsCanceled) actionsCanceled.style.display = "none";
+
+    if (!sub.has_subscription || !sub.is_premium) {
+      // Aluno Free ou sem assinatura ativa
+      if (planTitle) planTitle.textContent = "Plano Concurseiro Free";
+      if (statusBadge) {
+        statusBadge.textContent = "Gratuito";
+        statusBadge.className = "sub-status-pill free";
+      }
+      if (priceVal) priceVal.textContent = "R$ 0";
+      if (periodVal) periodVal.textContent = "/sempre";
+      if (infoStatus) infoStatus.textContent = "Modo Degustação Ativo";
+      if (renewalLabel) renewalLabel.textContent = "Validade";
+      if (infoRenewal) infoRenewal.textContent = "Acesso vitalício gratuito";
+      if (infoTrial) infoTrial.textContent = "Não utilizado";
+      if (actionsFree) actionsFree.style.display = "flex";
+      return;
+    }
+
+    // Assinante Pro
+    if (planTitle) planTitle.textContent = sub.plan_name || "Concurseiro Pro";
+    if (priceVal) priceVal.textContent = sub.price_formatted || "R$ 29,90";
+    if (periodVal) periodVal.textContent = sub.interval === "year" ? "/ano" : "/mês";
+
+    if (sub.status === "trialing") {
+      if (statusBadge) {
+        statusBadge.textContent = "7 Dias Grátis Ativos";
+        statusBadge.className = "sub-status-pill trialing";
+      }
+      if (infoStatus) infoStatus.textContent = "Período de Experimentação Gratuita";
+      if (renewalLabel) renewalLabel.textContent = "Primeira Cobrança";
+      if (infoRenewal) infoRenewal.textContent = sub.current_period_end_formatted || "Em 7 dias";
+      if (infoTrial) infoTrial.textContent = "Ativo (Sem cobrança imediata)";
+    } else if (sub.cancel_at_period_end) {
+      if (statusBadge) {
+        statusBadge.textContent = "Cancelamento Agendado";
+        statusBadge.className = "sub-status-pill canceled";
+      }
+      if (infoStatus) infoStatus.textContent = "Cancelada (Em período de carência)";
+      if (renewalLabel) renewalLabel.textContent = "Expira em";
+      if (infoRenewal) infoRenewal.textContent = sub.current_period_end_formatted || "Fim do ciclo";
+      if (infoTrial) infoTrial.textContent = sub.trial_days > 0 ? "Finalizado" : "Não aplicável";
+      if (accessUntil) accessUntil.textContent = sub.current_period_end_formatted || "o fim do ciclo";
+      if (actionsCanceled) actionsCanceled.style.display = "flex";
+      return;
+    } else {
+      if (statusBadge) {
+        statusBadge.textContent = "Assinatura Ativa";
+        statusBadge.className = "sub-status-pill active";
+      }
+      if (infoStatus) infoStatus.textContent = "Regular / Renovação Automática";
+      if (renewalLabel) renewalLabel.textContent = "Próxima Renovação";
+      if (infoRenewal) infoRenewal.textContent = sub.current_period_end_formatted || "Próximo mês";
+      if (infoTrial) infoTrial.textContent = sub.trial_days > 0 ? "Degustado com sucesso" : "Plano Pro Regular";
+    }
+
+    if (actionsActive) actionsActive.style.display = "flex";
+
+  } catch (err) {
+    console.error("Erro ao carregar detalhes da assinatura:", err);
+    showToast("Erro ao sincronizar assinatura.", "err");
+  }
+}
+
+async function openStripePortal() {
+  const btn = document.getElementById("btn-stripe-portal");
+  const origText = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:6px;vertical-align:middle;"></span> Conectando Stripe...`;
+  }
+  try {
+    const res = await apiFetch(`${API}/stripe/create-portal-session`, {
+      method: "POST"
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      if (data.code === "PORTAL_NOT_CONFIGURED") {
+        showToast("O portal de clientes do Stripe ainda não foi configurado no painel da Stripe. Para cancelamento, utilize o botão ao lado.", "warn");
+      } else {
+        showToast(data.detail || "Não foi possível abrir o portal de faturas.", "err");
+      }
+      return;
+    }
+    if (data.url) {
+      window.location.href = data.url;
+    }
+  } catch (err) {
+    showToast("Falha na comunicação com o servidor.", "err");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    }
+  }
+}
+
+function openCancelSubModal() {
+  const modal = document.getElementById("modal-cancel-subscription");
+  if (modal) modal.style.display = "flex";
+}
+
+function closeCancelSubModal() {
+  const modal = document.getElementById("modal-cancel-subscription");
+  if (modal) modal.style.display = "none";
+}
+
+async function confirmCancelSubscription() {
+  const btn = document.getElementById("btn-confirm-cancel-sub");
+  const origText = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:6px;vertical-align:middle;"></span> Cancelando...`;
+  }
+
+  try {
+    const res = await apiFetch(`${API}/stripe/cancel-subscription`, {
+      method: "POST"
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast(data.detail || "Não foi possível cancelar a assinatura.", "err");
+      return;
+    }
+
+    closeCancelSubModal();
+    showToast(data.message || "Assinatura cancelada com sucesso! Você mantém seu acesso até o fim do período.", "ok");
+
+    // Atualiza imediatamente a visualização
+    await loadSubscriptionDetails();
+  } catch (err) {
+    showToast("Erro ao processar solicitação de cancelamento.", "err");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    }
+  }
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 async function init() {
   loadTheme();
@@ -3646,6 +3863,7 @@ async function init() {
   snakeReset();
   checkGoogleCalendarStatus();
   checkUrlParamsForCalendar();
+  checkSubscriptionBadges();
 }
 
 init();

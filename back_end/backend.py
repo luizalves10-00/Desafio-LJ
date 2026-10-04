@@ -1694,32 +1694,123 @@ def create_portal_session():
         return jsonify({"error": "Chave da API do Stripe não configurada."}), 500
 
     stripe.api_key = api_key
-    frontend_url = os.environ.get("FRONTEND_URL", "https://levelupstudy.com.br").rstrip("/")
+    origin = request.headers.get("Origin") or request.headers.get("Referer") or os.environ.get("FRONTEND_URL", "https://levelupstudy.com.br")
+    return_url = origin.rstrip("/")
+    if not return_url.endswith("/index.html") and not return_url.endswith("/"):
+        return_url += "/index.html"
+    elif return_url.endswith("/"):
+        return_url += "index.html"
 
     try:
         portal_session = stripe.billing_portal.Session.create(
             customer=user.stripe_customer_id,
-            return_url=f"{frontend_url}/index.html",
+            return_url=return_url,
         )
         return jsonify({"url": portal_session.url})
     except stripe.error.StripeError as e:
-        return jsonify({"error": e.user_message or str(e)}), 400
+        app.logger.warning(f"Erro ao abrir portal da Stripe: {e}")
+        return jsonify({
+            "error": e.user_message or str(e),
+            "code": "PORTAL_NOT_CONFIGURED"
+        }), 400
 
 
-@app.route("/api/stripe/subscription", methods=["GET"])
-def get_subscription_status():
-    """Consulta os dados e status da assinatura do usuário atual."""
+@app.route("/api/stripe/cancel-subscription", methods=["POST"])
+def cancel_subscription():
+    """Cancela a assinatura do usuário no Stripe de forma segura, mantendo o acesso até o fim do ciclo."""
     result = require_auth()
     if isinstance(result, tuple):
         return result
     user = result
 
+    if not user.stripe_subscription_id:
+        return jsonify({"error": "Nenhuma assinatura ativa encontrada para este usuário."}), 400
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not api_key:
+        return jsonify({"error": "Chave da API do Stripe não configurada."}), 500
+
+    stripe.api_key = api_key
+
+    try:
+        sub = stripe.Subscription.modify(
+            user.stripe_subscription_id,
+            cancel_at_period_end=True
+        )
+
+        user.subscription_status = "canceled"
+        db.session.commit()
+
+        period_end_str = ""
+        if user.current_period_end:
+            period_end_str = f" Seu acesso Pro continua ativo até {user.current_period_end.strftime('%d/%m/%Y')}."
+
+        return jsonify({
+            "success": True,
+            "message": f"Assinatura cancelada com sucesso! Nenhuma cobrança futura será realizada.{period_end_str}",
+            "subscription_status": "canceled",
+            "cancel_at_period_end": True,
+            "current_period_end": user.current_period_end.isoformat() if user.current_period_end else None
+        })
+    except stripe.error.StripeError as e:
+        app.logger.error(f"Erro ao cancelar assinatura no Stripe: {e}")
+        return jsonify({"error": e.user_message or str(e)}), 400
+    except Exception as e:
+        app.logger.error(f"Erro inesperado ao cancelar assinatura: {e}")
+        return jsonify({"error": f"Erro interno ao processar cancelamento: {str(e)}"}), 500
+
+
+@app.route("/api/stripe/subscription", methods=["GET"])
+def get_subscription_status():
+    """Consulta os dados e status detalhado da assinatura do usuário atual."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    plan_name = user.plan_name
+    price_formatted = "R$ 19,90 / mês"
+    interval = "mês"
+    trial_days = 7
+
+    if user.stripe_plan_id:
+        sub_plan = SubscriptionPlan.query.filter(
+            db.or_(SubscriptionPlan.stripe_price_id == user.stripe_plan_id, SubscriptionPlan.plan_key == user.stripe_plan_id)
+        ).first()
+        if sub_plan:
+            plan_name = sub_plan.name
+            price_formatted = sub_plan.formatted_price
+            interval = sub_plan.interval_label
+            trial_days = sub_plan.trial_days or 7
+
+    cancel_at_period_end = False
+    if user.stripe_subscription_id and os.environ.get("STRIPE_SECRET_KEY"):
+        try:
+            stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
+            sub_obj = stripe.Subscription.retrieve(user.stripe_subscription_id)
+            cancel_at_period_end = bool(getattr(sub_obj, "cancel_at_period_end", False))
+            if sub_obj.status in ("canceled", "unpaid") and user.subscription_status != sub_obj.status:
+                user.subscription_status = sub_obj.status
+                db.session.commit()
+        except Exception:
+            pass
+
+    period_end_formatted = None
+    if user.current_period_end:
+        period_end_formatted = user.current_period_end.strftime("%d/%m/%Y")
+
     return jsonify({
         "is_premium": user.is_premium,
         "subscription_status": user.subscription_status or "free",
-        "plan_id": user.stripe_plan_id,
+        "plan_name": plan_name,
+        "price_formatted": price_formatted,
+        "interval": interval,
+        "trial_days": trial_days,
         "current_period_end": user.current_period_end.isoformat() if user.current_period_end else None,
+        "current_period_end_formatted": period_end_formatted,
+        "cancel_at_period_end": cancel_at_period_end,
         "has_customer": bool(user.stripe_customer_id),
+        "has_subscription": bool(user.stripe_subscription_id),
     })
 @app.route("/api/admin/stripe/sync-plans", methods=["POST"])
 @require_role("superadmin")

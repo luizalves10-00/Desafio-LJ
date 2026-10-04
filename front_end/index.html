@@ -51,6 +51,9 @@
     </button>
 
     <div class="nav-section-label">Configurações</div>
+    <button class="nav-item" data-section="assinatura" id="nav-btn-assinatura" onclick="navigate('assinatura', this)">
+      <span class="nav-icon">💎</span> Minha Assinatura
+    </button>
     <button class="nav-item" data-section="temas" onclick="navigate('temas', this)">
       <span class="nav-icon">🎨</span> Temas
     </button>
@@ -70,6 +73,7 @@
       <div class="user-details">
         <div class="user-name" id="sb-name">—</div>
         <div class="user-email" id="sb-email">—</div>
+        <span class="sb-sub-badge free" id="sb-sub-tag">Free</span>
       </div>
     </div>
     <button class="btn-logout" onclick="logout()">↩ Sair da conta</button>
@@ -102,6 +106,7 @@
           <div class="hero-class-row">
             <span class="hero-class" id="hero-class">Aprendiz</span>
             <span class="hero-level" id="hero-level">Nv. 1</span>
+            <span class="hero-plan-tag free" id="hero-plan-tag">Plano Free</span>
           </div>
           <div class="hero-name" id="hero-name">—</div>
           <div class="hero-xpbar">
@@ -952,6 +957,98 @@
       </div>
     </section>
 
+    <!-- ══ MINHA ASSINATURA ══ -->
+    <section class="section" id="section-assinatura">
+      <div class="sub-hero-card" id="sub-card-container">
+        <!-- Topo da Assinatura -->
+        <div class="sub-hero-header">
+          <div class="sub-badge-group">
+            <span class="sub-icon-box">💎</span>
+            <div>
+              <div class="sub-title-row">
+                <h2 class="sub-title" id="sub-plan-title">Carregando plano...</h2>
+                <span class="sub-status-pill trialing" id="sub-status-badge">Verificando...</span>
+              </div>
+              <p class="sub-subtitle" id="sub-plan-desc">Acesso completo ao ecossistema gamificado e mentoria inteligente.</p>
+            </div>
+          </div>
+          <div class="sub-price-tag" id="sub-price-wrapper">
+            <span class="sub-price" id="sub-price-val">R$ --</span>
+            <span class="sub-period" id="sub-period-val">/mês</span>
+          </div>
+        </div>
+
+        <!-- Metadados da Assinatura -->
+        <div class="sub-info-grid">
+          <div class="sub-info-item">
+            <div class="sub-info-label">Status da Assinatura</div>
+            <div class="sub-info-value" id="sub-info-status">—</div>
+          </div>
+          <div class="sub-info-item">
+            <div class="sub-info-label" id="sub-renewal-label">Próxima Renovação</div>
+            <div class="sub-info-value" id="sub-info-renewal">—</div>
+          </div>
+          <div class="sub-info-item">
+            <div class="sub-info-label">Período de Teste</div>
+            <div class="sub-info-value" id="sub-info-trial">—</div>
+          </div>
+          <div class="sub-info-item">
+            <div class="sub-info-label">Método de Pagamento</div>
+            <div class="sub-info-value" id="sub-info-payment">Cartão de Crédito (Stripe)</div>
+          </div>
+        </div>
+
+        <!-- Benefícios Ativos -->
+        <div class="sub-features-box">
+          <div class="sub-features-title">Benefícios do seu plano ativo:</div>
+          <div class="sub-features-list">
+            <div class="sub-feature-item"><span>✨</span> Acesso ilimitado ao Mentor IA & Simulados</div>
+            <div class="sub-feature-item"><span>🎮</span> 10 Minijogos de Foco & Descompressão</div>
+            <div class="sub-feature-item"><span>📊</span> Relatórios de produtividade & EXP diário</div>
+            <div class="sub-feature-item"><span>⚡</span> Streak Booster e Conquistas Lendárias</div>
+            <div class="sub-feature-item"><span>🎨</span> Todos os temas Dark & RPG Desbloqueados</div>
+            <div class="sub-feature-item"><span>🛡️</span> Cancelamento flexível a qualquer instante sem burocracia</div>
+          </div>
+        </div>
+
+        <!-- Ações do Assinante Ativo / Em Trial -->
+        <div class="sub-actions-bar" id="sub-actions-active" style="display:none;">
+          <div class="sub-actions-left">
+            <button class="btn btn-secondary" id="btn-stripe-portal" onclick="openStripePortal()">
+              💳 Alterar Cartão / Ver Faturas
+            </button>
+          </div>
+          <div class="sub-actions-right">
+            <button class="btn btn-danger-soft" id="btn-open-cancel" onclick="openCancelSubModal()">
+              ✕ Cancelar Assinatura
+            </button>
+          </div>
+        </div>
+
+        <!-- Ação para Aluno Free -->
+        <div class="sub-actions-bar" id="sub-actions-free" style="display:none;">
+          <div style="flex:1;">
+            <p style="margin:0; font-size:0.9rem; color:var(--text2);">Você está utilizando a versão de degustação Free com limites diários.</p>
+          </div>
+          <a href="checkout.html" class="btn btn-primary" style="text-decoration:none;">
+            🚀 Fazer Upgrade para o Pro (7 Dias Grátis)
+          </a>
+        </div>
+
+        <!-- Ação para Cancelada em período de carência -->
+        <div class="sub-actions-bar" id="sub-actions-canceled" style="display:none;">
+          <div style="flex:1;">
+            <p style="margin:0; font-size:0.9rem; color:var(--gold);">
+              ⚠️ Sua assinatura foi cancelada. Seu acesso Pro continuará liberado até <strong id="sub-access-until">—</strong>.
+            </p>
+          </div>
+          <a href="checkout.html" class="btn btn-primary" style="text-decoration:none;">
+            🔄 Reativar Plano Pro
+          </a>
+        </div>
+      </div>
+    </section>
+
   </div><!-- /content -->
 </div><!-- /main -->
 
@@ -1363,6 +1460,46 @@
     <div class="lvlup-title">LEVEL UP!</div>
     <div class="lvlup-msg" id="lvlup-msg"></div>
     <div class="lvlup-hint">toque para continuar</div>
+  </div>
+</div>
+
+<!-- ── MODAL CANCELAR ASSINATURA ── -->
+<div class="break-modal" id="modal-cancel-subscription" style="display:none;">
+  <div class="break-modal-card" style="max-width: 480px;">
+    <div class="break-modal-header">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 1.8rem;">⚠️</span>
+        <div>
+          <div class="break-modal-title" style="color: #ef4444;">Cancelar Assinatura Pro?</div>
+          <div class="break-modal-sub">Sentiremos sua falta na guilda dos aprovados</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm" type="button" onclick="closeCancelSubModal()">✕</button>
+    </div>
+
+    <div style="margin: 16px 0; display: flex; flex-direction: column; gap: 12px; font-size: 0.88rem; color: var(--text2); line-height: 1.5;">
+      <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 14px;">
+        <strong style="color: #f87171; display: block; margin-bottom: 6px;">Como funciona o cancelamento:</strong>
+        <ul style="margin: 0; padding-left: 20px; color: var(--text);">
+          <li><strong>Você não será mais cobrado</strong> no próximo ciclo.</li>
+          <li>Seu acesso Pro permanecerá <strong>totalmente ativo até o fim do período já contratado/trial</strong>.</li>
+          <li>Ao expirar o ciclo, sua conta retornará automaticamente ao plano Free com histórico e EXP preservados.</li>
+        </ul>
+      </div>
+
+      <div style="font-size: 0.82rem; color: var(--muted); text-align: center;">
+        Deseja confirmar a interrupção da renovação automática da sua assinatura?
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 20px;">
+      <button class="btn btn-secondary btn-full" type="button" onclick="closeCancelSubModal()">
+        🛡️ Manter Meu Plano
+      </button>
+      <button class="btn btn-danger btn-full" id="btn-confirm-cancel-sub" type="button" onclick="confirmCancelSubscription()">
+        Confirmar Cancelamento
+      </button>
+    </div>
   </div>
 </div>
 
