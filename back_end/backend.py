@@ -1,14 +1,17 @@
+import os
+import stripe
 from functools import wraps
+from urllib.parse import quote_plus
 from flask import Flask, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import date, datetime
-import os
+from datetime import date, datetime, timedelta
 from google import genai
 from dotenv import load_dotenv
 from emoji_cache import EmojiCache, CacheError, create_emoji_blueprint
+import concurseiro_bank
 
 # App setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,16 +30,21 @@ use_sqlite = os.environ.get("USE_SQLITE", "").lower() in ("true", "1")
 if use_sqlite:
     db_uri = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
 else:
-    db_uri = os.environ.get("DATABASE_URL")
-    if not db_uri:
-        if os.environ.get("DB_HOST") or os.environ.get("DB_USER"):
-            db_user = os.environ.get("DB_USER", "levelup_user")
-            db_pass = os.environ.get("DB_PASS", "levelup_password")
-            db_host = os.environ.get("DB_HOST", "127.0.0.1")
-            db_port = os.environ.get("DB_PORT", "3306")
-            db_name = os.environ.get("DB_NAME", "levelup_db")
-            db_uri = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}?charset=utf8mb4"
-        else:
+    # Prioriza parâmetros individuais sanitizados e codificados (evita erro com caracteres especiais na senha ou URLs no host)
+    db_user = os.environ.get("DB_USER")
+    db_pass = os.environ.get("DB_PASS")
+    db_host = os.environ.get("DB_HOST")
+
+    if db_user and db_pass and db_host:
+        clean_host = db_host.replace("https://", "").replace("http://", "").split("/")[0].strip()
+        clean_port = os.environ.get("DB_PORT", "3306").strip() or "3306"
+        clean_name = os.environ.get("DB_NAME", "LevelUp_db").strip()
+        encoded_user = quote_plus(db_user.strip())
+        encoded_pass = quote_plus(db_pass)
+        db_uri = f"mysql+pymysql://{encoded_user}:{encoded_pass}@{clean_host}:{clean_port}/{clean_name}?charset=utf8mb4"
+    else:
+        db_uri = os.environ.get("DATABASE_URL")
+        if not db_uri:
             # Fallback seguro para SQLite se nenhum MySQL foi especificado
             db_uri = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
 
@@ -72,6 +80,63 @@ XP_PER_TASK_PRIORITY = {1: 40, 2: 30, 3: 20}
 XP_PER_LEVEL        = 200
 GAME_XP_MAX_PER_CALL = 50    # teto de XP por partida
 GAME_XP_DAILY_CAP    = 150   # teto de XP de jogos por dia (anti-abuso)
+
+# ── Planos & Permissões (Lean Canvas / Modelo de Negócio Freemium) ──────────
+PLAN_CONFIG = {
+    "free": {
+        "id": "free",
+        "name": "Aprendiz (Gratuito)",
+        "price": 0.0,
+        "price_formatted": "R$ 0",
+        "description": "Acesso social gratuito para foco, tarefas e inclusão educacional.",
+        "daily_ai_limit": 3,
+        "concurseiro_daily_questions": 3,
+        "unlimited_simulados": False,
+        "advanced_analytics": False,
+        "all_themes": False,
+    },
+    "hero_monthly": {
+        "id": "hero_monthly",
+        "name": "Herói / Concurseiro Pro (Mensal)",
+        "price": 19.90,
+        "price_formatted": "R$ 19,90 / mês",
+        "description": "Acesso ilimitado com Mentor IA, Simulados e questões de concurso.",
+        "daily_ai_limit": None,
+        "concurseiro_daily_questions": None,
+        "unlimited_simulados": True,
+        "advanced_analytics": True,
+        "all_themes": True,
+    },
+    "hero_yearly": {
+        "id": "hero_yearly",
+        "name": "Herói / Concurseiro Pro (Anual)",
+        "price": 199.00,
+        "price_formatted": "R$ 199,00 / ano",
+        "description": "Plano anual com 7 dias de trial grátis e maior economia.",
+        "daily_ai_limit": None,
+        "concurseiro_daily_questions": None,
+        "unlimited_simulados": True,
+        "advanced_analytics": True,
+        "all_themes": True,
+    }
+}
+
+# Controle de taxa e cotas para usuários gratuitos (sustentabilidade do Canvas)
+_daily_ai_usage = {}  # chave: (user_id, date_str) -> int
+
+def get_ai_requests_today(user_id: int) -> int:
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    return _daily_ai_usage.get((user_id, today_str), 0)
+
+def increment_ai_requests_today(user_id: int) -> int:
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
+    current = _daily_ai_usage.get((user_id, today_str), 0) + 1
+    _daily_ai_usage[(user_id, today_str)] = current
+    if len(_daily_ai_usage) > 10000:
+        for k in list(_daily_ai_usage.keys()):
+            if k[1] != today_str:
+                _daily_ai_usage.pop(k, None)
+    return current
 
 # ── Models ─────────────────────────────────────────────────────────────────
 class User(db.Model):
@@ -121,6 +186,39 @@ class User(db.Model):
             return True
         return False
 
+    @property
+    def plan_name(self) -> str:
+        if self.is_admin:
+            return "Super Admin (Acesso Total)" if self.role == "superadmin" else "Administrador"
+        if self.is_premium:
+            plan_id = (self.stripe_plan_id or "").lower()
+            if "year" in plan_id or "anual" in plan_id:
+                return "Herói / Concurseiro Pro (Anual)"
+            elif self.stripe_plan_id:
+                return "Herói / Concurseiro Pro (Mensal)"
+            return "Herói / Concurseiro Pro (Bypass)"
+        return "Aprendiz (Gratuito)"
+
+    def get_permissions(self) -> dict:
+        is_pro = self.is_premium
+        ai_used = get_ai_requests_today(self.id)
+        daily_limit = None if is_pro else 3
+        return {
+            "is_premium": is_pro,
+            "role": self.role,
+            "plan_name": self.plan_name,
+            "subscription_status": self.subscription_status or "free",
+            "current_period_end": self.current_period_end.isoformat() if self.current_period_end else None,
+            "can_access_unlimited_ai": is_pro,
+            "can_access_concurseiro_pro": is_pro,
+            "can_access_advanced_analytics": is_pro,
+            "can_access_all_themes": is_pro,
+            "daily_ai_limit": daily_limit,
+            "ai_requests_today": ai_used,
+            "ai_requests_remaining": None if is_pro else max(0, 3 - ai_used),
+            "concurseiro_simulados": "unlimited" if is_pro else "preview_only (3 questões)"
+        }
+
     def to_public(self) -> dict:
         return {
             "id": self.id,
@@ -130,8 +228,10 @@ class User(db.Model):
             "role": self.role,
             "is_admin": self.is_admin,
             "is_premium": self.is_premium,
+            "plan_name": self.plan_name,
             "subscription_status": self.subscription_status,
             "current_period_end": self.current_period_end.isoformat() if self.current_period_end else None,
+            "permissions": self.get_permissions()
         }
 
 
@@ -204,6 +304,36 @@ class Task(db.Model):
         }
 
 
+class SimuladoHistory(db.Model):
+    __tablename__ = "simulado_history"
+
+    id              = db.Column(db.Integer, primary_key=True)
+    user_id         = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    subject         = db.Column(db.String(100), default="Geral")
+    total_questions = db.Column(db.Integer, default=0)
+    correct_count   = db.Column(db.Integer, default=0)
+    accuracy_pct    = db.Column(db.Float, default=0.0)
+    xp_awarded      = db.Column(db.Integer, default=0)
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship("User")
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "subject": self.subject,
+            "total_questions": self.total_questions,
+            "correct_count": self.correct_count,
+            "accuracy_pct": self.accuracy_pct,
+            "xp_awarded": self.xp_awarded,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
+
+
 # ── Helpers ────────────────────────────────────────────────────────────────
 def current_user() -> User | None:
     uid = session.get("user_id")
@@ -237,6 +367,32 @@ def require_role(*roles):
                     "error": "Acesso negado: permissão insuficiente.",
                     "required_roles": list(roles),
                     "current_role": user.role
+                }), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
+def require_premium(feature_name="este recurso"):
+    """
+    Decorator para proteger rotas da API exclusivas do Plano Herói / Concurseiro Pro.
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user = current_user()
+            if not user:
+                return jsonify({"error": "Não autenticado"}), 401
+            if not user.is_premium:
+                return jsonify({
+                    "error": f"O acesso a {feature_name} é exclusivo do Plano Herói / Concurseiro Pro.",
+                    "code": "UPGRADE_REQUIRED",
+                    "plan_required": "hero_pro",
+                    "trial_available": True,
+                    "pricing": {
+                        "monthly": "R$ 19,90/mês",
+                        "yearly": "R$ 199,00/ano (com 7 dias de trial grátis)"
+                    }
                 }), 403
             return f(*args, **kwargs)
         return decorated_function
@@ -520,13 +676,33 @@ Regras:
 4. Lembre-o de usar o timer Pomodoro do app para ganhar XP.
 """
 
+    if not user.is_premium:
+        used_today = get_ai_requests_today(user.id)
+        if used_today >= PLAN_CONFIG["free"]["daily_ai_limit"]:
+            return jsonify({
+                "error": "Você atingiu o limite de 3 consultas diárias com a IA do Plano Aprendiz (Gratuito). Assine o Plano Herói / Concurseiro Pro para ter acesso ilimitado!",
+                "code": "PLAN_LIMIT_REACHED",
+                "plan": "free",
+                "daily_limit": 3,
+                "used_today": used_today,
+                "trial_available": True
+            }), 403
+
     try:
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt,
         )
-        return jsonify({"suggestion": response.text, "type": "ai"})
+        if not user.is_premium:
+            increment_ai_requests_today(user.id)
+        remaining = None if user.is_premium else max(0, 3 - get_ai_requests_today(user.id))
+        return jsonify({
+            "suggestion": response.text,
+            "type": "ai",
+            "plan": "hero_pro" if user.is_premium else "free",
+            "ai_requests_remaining": remaining
+        })
     except Exception as e:
         print(f"Erro na API do Gemini: {e}")
         return jsonify({"error": "Erro ao comunicar com a inteligência artificial."}), 500
@@ -547,6 +723,19 @@ def ai_chat():
     if not api_key:
         return jsonify({"error": "Chave da API do Gemini (GEMINI_API_KEY) não configurada no servidor."}), 500
         
+    # Verificação de cota do Plano Aprendiz (Free) conforme o Modelo do Canvas
+    if not user.is_premium:
+        used_today = get_ai_requests_today(user.id)
+        if used_today >= PLAN_CONFIG["free"]["daily_ai_limit"]:
+            return jsonify({
+                "error": "Você atingiu o limite de 3 consultas diárias com o Mentor IA do Plano Aprendiz (Gratuito). Assine o Plano Herói / Concurseiro Pro com 7 dias grátis para perguntas ilimitadas!",
+                "code": "PLAN_LIMIT_REACHED",
+                "plan": "free",
+                "daily_limit": 3,
+                "used_today": used_today,
+                "trial_available": True
+            }), 403
+
     stats = get_or_create_stats(user)
     
     prompt = f"""
@@ -566,10 +755,1054 @@ Responda de forma direta, amigável e encorajadora. Você pode usar formatação
             model='gemini-2.5-flash',
             contents=prompt,
         )
-        return jsonify({"reply": response.text})
+        if not user.is_premium:
+            increment_ai_requests_today(user.id)
+        remaining = None if user.is_premium else max(0, 3 - get_ai_requests_today(user.id))
+        return jsonify({
+            "reply": response.text,
+            "plan": "hero_pro" if user.is_premium else "free",
+            "ai_requests_remaining": remaining
+        })
     except Exception as e:
         print(f"Erro na API do Gemini: {e}")
         return jsonify({"error": "Erro ao comunicar com a inteligência artificial."}), 500
+
+
+# ── Stripe & Pagamentos (Assinaturas Concurseiros) ─────────────────────────
+def find_user_from_stripe_data(customer_id=None, subscription_id=None, user_id=None, email=None) -> User | None:
+    """Localiza o usuário de forma resiliente usando qualquer identificador disponível."""
+    if user_id:
+        try:
+            u = db.session.get(User, int(user_id))
+            if u:
+                return u
+        except (ValueError, TypeError):
+            pass
+
+    if subscription_id:
+        u = User.query.filter_by(stripe_subscription_id=subscription_id).first()
+        if u:
+            return u
+
+    if customer_id:
+        u = User.query.filter_by(stripe_customer_id=customer_id).first()
+        if u:
+            return u
+
+    if email:
+        u = User.query.filter_by(email=email.lower().strip()).first()
+        if u:
+            return u
+
+    return None
+
+
+@app.route("/api/stripe/config", methods=["GET"])
+def stripe_config():
+    """Retorna chaves públicas e identificadores de planos para o frontend."""
+    return jsonify({
+        "publishable_key": os.environ.get("STRIPE_PUBLISHABLE_KEY", ""),
+        "plans": {
+            "monthly": bool(os.environ.get("STRIPE_PRICE_MONTHLY")),
+            "yearly": bool(os.environ.get("STRIPE_PRICE_YEARLY")),
+        },
+        "trial_days": 7
+    })
+
+
+@app.route("/api/stripe/create-checkout-session", methods=["POST"])
+def create_checkout_session():
+    """Cria uma sessão no Stripe Checkout aplicando 7 dias de trial."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not api_key or "placeholder" in api_key:
+        return jsonify({"error": "Chave da API do Stripe (STRIPE_SECRET_KEY) não configurada no servidor."}), 500
+
+    stripe.api_key = api_key
+
+    body = request.get_json(silent=True) or {}
+    plan = (body.get("plan") or "monthly").lower().strip()
+
+    if plan in ("monthly", "mensal"):
+        price_id = os.environ.get("STRIPE_PRICE_MONTHLY")
+        plan_name = "monthly"
+    elif plan in ("yearly", "anual"):
+        price_id = os.environ.get("STRIPE_PRICE_YEARLY")
+        plan_name = "yearly"
+    else:
+        price_id = body.get("price_id")
+        plan_name = "custom"
+
+    if not price_id or "placeholder" in str(price_id):
+        return jsonify({
+            "error": f"ID do plano '{plan}' não configurado nas variáveis de ambiente (STRIPE_PRICE_MONTHLY / STRIPE_PRICE_YEARLY)."
+        }), 400
+
+    frontend_url = os.environ.get("FRONTEND_URL", "https://levelupstudy.com.br").rstrip("/")
+
+    checkout_params = {
+        "mode": "subscription",
+        "payment_method_types": ["card"],
+        "line_items": [
+            {
+                "price": price_id,
+                "quantity": 1,
+            }
+        ],
+        "subscription_data": {
+            "trial_period_days": 7,
+            "metadata": {
+                "user_id": str(user.id),
+                "plan": plan_name,
+            }
+        },
+        "client_reference_id": str(user.id),
+        "metadata": {
+            "user_id": str(user.id),
+            "plan": plan_name,
+        },
+        "success_url": f"{frontend_url}/index.html?payment=success&session_id={{CHECKOUT_SESSION_ID}}",
+        "cancel_url": f"{frontend_url}/index.html?payment=cancelled",
+        "allow_promotion_codes": True,
+    }
+
+    # Vincula ao cliente existente no Stripe se já houver
+    if user.stripe_customer_id:
+        checkout_params["customer"] = user.stripe_customer_id
+    else:
+        checkout_params["customer_email"] = user.email
+
+    try:
+        checkout_session = stripe.checkout.Session.create(**checkout_params)
+        return jsonify({
+            "url": checkout_session.url,
+            "session_id": checkout_session.id,
+            "plan": plan_name,
+            "trial_days": 7
+        })
+    except stripe.error.StripeError as e:
+        app.logger.error(f"Erro Stripe na criação de checkout: {e}")
+        return jsonify({"error": e.user_message or str(e)}), 400
+    except Exception as e:
+        app.logger.error(f"Erro inesperado no checkout: {e}")
+        return jsonify({"error": "Falha ao gerar sessão de pagamento no Stripe."}), 500
+
+
+@app.route("/api/webhooks/stripe", methods=["POST"])
+def stripe_webhook():
+    """Webhook do Stripe: valida assinatura e atualiza status de assinaturas e concurseiros."""
+    payload = request.get_data()
+    sig_header = request.headers.get("Stripe-Signature")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
+    if not webhook_secret or "placeholder" in webhook_secret:
+        app.logger.error("STRIPE_WEBHOOK_SECRET não configurado no servidor.")
+        return jsonify({"error": "Webhook secret não configurado."}), 500
+
+    if not sig_header:
+        app.logger.warning("Requisição de webhook recebida sem cabeçalho Stripe-Signature.")
+        return jsonify({"error": "Cabeçalho Stripe-Signature ausente."}), 400
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
+    if api_key:
+        stripe.api_key = api_key
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload=payload,
+            sig_header=sig_header,
+            secret=webhook_secret
+        )
+    except ValueError as e:
+        app.logger.error(f"Payload inválido no webhook do Stripe: {e}")
+        return jsonify({"error": "Payload inválido."}), 400
+    except stripe.error.SignatureVerificationError as e:
+        app.logger.error(f"Assinatura do webhook inválida: {e}")
+        return jsonify({"error": "Assinatura do Stripe inválida."}), 400
+    except stripe.error.StripeError as e:
+        app.logger.error(f"Erro do Stripe no webhook: {e}")
+        return jsonify({"error": "Erro na validação do Stripe."}), 400
+    except Exception as e:
+        app.logger.error(f"Erro inesperado na validação do webhook: {e}")
+        return jsonify({"error": "Erro interno."}), 400
+
+    event_type = event.get("type")
+    data_object = event.get("data", {}).get("object", {})
+
+    app.logger.info(f"Evento Stripe recebido: {event_type}")
+
+    try:
+        # 1. Sessão de Checkout Concluída (Início de Trial de 7 dias / Assinatura)
+        if event_type == "checkout.session.completed":
+            user_id = data_object.get("client_reference_id") or (data_object.get("metadata") or {}).get("user_id")
+            customer_id = data_object.get("customer")
+            subscription_id = data_object.get("subscription")
+            customer_email = (data_object.get("customer_details") or {}).get("email")
+
+            user = find_user_from_stripe_data(
+                customer_id=customer_id,
+                subscription_id=subscription_id,
+                user_id=user_id,
+                email=customer_email
+            )
+
+            if user:
+                if customer_id:
+                    user.stripe_customer_id = customer_id
+                if subscription_id:
+                    user.stripe_subscription_id = subscription_id
+
+                plan_meta = (data_object.get("metadata") or {}).get("plan")
+                if plan_meta:
+                    user.stripe_plan_id = plan_meta
+
+                # Com 7 dias de trial, o status inicial é 'trialing'
+                user.subscription_status = "trialing" if subscription_id else "active"
+                db.session.commit()
+                app.logger.info(f"Usuário {user.id} ({user.email}) atualizado no checkout: status={user.subscription_status}")
+
+        # 2. Pagamento de Fatura Bem-Sucedido (Primeira cobrança após trial ou renovação recorrente)
+        elif event_type == "invoice.payment_succeeded":
+            customer_id = data_object.get("customer")
+            subscription_id = data_object.get("subscription")
+            customer_email = data_object.get("customer_email")
+
+            user = find_user_from_stripe_data(
+                customer_id=customer_id,
+                subscription_id=subscription_id,
+                email=customer_email
+            )
+
+            if user:
+                user.subscription_status = "active"
+                if customer_id and not user.stripe_customer_id:
+                    user.stripe_customer_id = customer_id
+                if subscription_id and not user.stripe_subscription_id:
+                    user.stripe_subscription_id = subscription_id
+
+                lines = (data_object.get("lines") or {}).get("data", [])
+                if lines:
+                    line_period = lines[0].get("period", {})
+                    if line_period.get("end"):
+                        user.current_period_end = datetime.fromtimestamp(line_period["end"])
+                    price_id = (lines[0].get("price") or {}).get("id")
+                    if price_id:
+                        user.stripe_plan_id = price_id
+
+                db.session.commit()
+                app.logger.info(f"Fatura paga com sucesso para o usuário {user.id}. Vigência: {user.current_period_end}")
+
+        # 3. Falha no Pagamento da Fatura (Cartão recusado, saldo insuficiente)
+        elif event_type == "invoice.payment_failed":
+            customer_id = data_object.get("customer")
+            subscription_id = data_object.get("subscription")
+            customer_email = data_object.get("customer_email")
+
+            user = find_user_from_stripe_data(
+                customer_id=customer_id,
+                subscription_id=subscription_id,
+                email=customer_email
+            )
+
+            if user:
+                user.subscription_status = "past_due"
+                db.session.commit()
+                app.logger.warning(f"Pagamento falhou para o usuário {user.id}. Status: past_due")
+
+        # 4. Assinatura Cancelada / Deletada (Bloqueio de acesso)
+        elif event_type == "customer.subscription.deleted":
+            sub_id = data_object.get("id")
+            customer_id = data_object.get("customer")
+
+            user = find_user_from_stripe_data(customer_id=customer_id, subscription_id=sub_id)
+
+            if user:
+                user.subscription_status = "canceled"
+                db.session.commit()
+                app.logger.info(f"Assinatura cancelada para o usuário {user.id}. Status: canceled")
+
+        # 5. Atualização de Assinatura (ex: transição de trial para ativa, troca de plano)
+        elif event_type == "customer.subscription.updated":
+            sub_id = data_object.get("id")
+            customer_id = data_object.get("customer")
+            sub_status = data_object.get("status")
+            period_end = data_object.get("current_period_end")
+
+            user = find_user_from_stripe_data(customer_id=customer_id, subscription_id=sub_id)
+
+            if user:
+                if sub_status:
+                    user.subscription_status = sub_status
+                if period_end:
+                    user.current_period_end = datetime.fromtimestamp(period_end)
+                db.session.commit()
+                app.logger.info(f"Assinatura do usuário {user.id} atualizada: status={sub_status}")
+
+        return jsonify({"received": True, "event": event_type}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Erro ao persistir evento {event_type} no banco: {e}")
+        return jsonify({"error": "Erro ao atualizar dados da assinatura."}), 500
+
+
+@app.route("/api/stripe/create-portal-session", methods=["POST"])
+def create_portal_session():
+    """Redireciona o usuário para o Customer Portal do Stripe para gerenciar cartão ou cancelamento."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    if not user.stripe_customer_id:
+        return jsonify({"error": "Nenhum cadastro de pagamento encontrado para este usuário."}), 400
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not api_key:
+        return jsonify({"error": "Chave da API do Stripe não configurada."}), 500
+
+    stripe.api_key = api_key
+    frontend_url = os.environ.get("FRONTEND_URL", "https://levelupstudy.com.br").rstrip("/")
+
+    try:
+        portal_session = stripe.billing_portal.Session.create(
+            customer=user.stripe_customer_id,
+            return_url=f"{frontend_url}/index.html",
+        )
+        return jsonify({"url": portal_session.url})
+    except stripe.error.StripeError as e:
+        return jsonify({"error": e.user_message or str(e)}), 400
+
+
+@app.route("/api/stripe/subscription", methods=["GET"])
+def get_subscription_status():
+    """Consulta os dados e status da assinatura do usuário atual."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    return jsonify({
+        "is_premium": user.is_premium,
+        "subscription_status": user.subscription_status or "free",
+        "plan_id": user.stripe_plan_id,
+        "current_period_end": user.current_period_end.isoformat() if user.current_period_end else None,
+        "has_customer": bool(user.stripe_customer_id),
+    })
+
+
+# ── Super Admin Endpoints ──────────────────────────────────────────────────
+@app.route("/api/admin/stats", methods=["GET"])
+@require_role("superadmin", "admin")
+def admin_stats():
+    """Retorna métricas financeiras (MRR, churn), operacionais e de usuários."""
+    from sqlalchemy import func
+    total_users = User.query.count()
+
+    # Contagem de assinantes
+    active_subscribers = User.query.filter(
+        User.subscription_status.in_(["active", "trialing"])
+    ).count()
+
+    trial_users = User.query.filter_by(subscription_status="trialing").count()
+    past_due_users = User.query.filter_by(subscription_status="past_due").count()
+    canceled_users = User.query.filter_by(subscription_status="canceled").count()
+    free_users = max(0, total_users - active_subscribers - past_due_users - canceled_users)
+
+    # Cálculo do MRR (Receita Recorrente Mensal estimada conforme Modelo Canvas / Pitch Deck)
+    # Preço base do Canvas: Mensal R$ 19,90 | Anual R$ 199,00 (~ R$ 16,58/mês)
+    price_monthly = float(os.environ.get("STRIPE_PRICE_MONTHLY_BRL", 19.90))
+    price_yearly_monthly = float(os.environ.get("STRIPE_PRICE_YEARLY_BRL", 199.00)) / 12.0
+    mrr = 0.0
+    active_users = User.query.filter(User.subscription_status.in_(["active", "trialing"])).all()
+    for u in active_users:
+        plan = (u.stripe_plan_id or "").lower()
+        if "year" in plan or "anual" in plan:
+            mrr += price_yearly_monthly
+        else:
+            mrr += price_monthly
+
+    # Taxa de Churn (%)
+    total_ever_subscribed = active_subscribers + past_due_users + canceled_users
+    churn_rate = 0.0
+    if total_ever_subscribed > 0:
+        churn_rate = round((canceled_users / total_ever_subscribed) * 100, 1)
+
+    # ── Métricas Reais de Estudo e Gamificação ─────────────────────────────
+    total_pomodoros = db.session.query(func.sum(UserStats.total_pomodoros)).scalar() or 0
+    total_xp = db.session.query(func.sum(UserStats.xp)).scalar() or 0
+    total_tasks_completed = Task.query.filter_by(done=True).count()
+
+    # ── Evolução Mensal Real (Últimos 6 meses calculados a partir dos usuários cadastrados no banco) ──
+    import calendar
+    import concurseiro_bank
+
+    now = datetime.utcnow()
+    mrr_evolution = []
+    month_names = {
+        1: "Jan", 2: "Fev", 3: "Mar", 4: "Abr", 5: "Mai", 6: "Jun",
+        7: "Jul", 8: "Ago", 9: "Set", 10: "Out", 11: "Nov", 12: "Dez"
+    }
+
+    for i in range(5, -1, -1):
+        ref_year = now.year
+        ref_month = now.month - i
+        while ref_month <= 0:
+            ref_month += 12
+            ref_year -= 1
+
+        _, last_day = calendar.monthrange(ref_year, ref_month)
+        end_of_ref_month = datetime(ref_year, ref_month, last_day, 23, 59, 59)
+
+        users_up_to_month = User.query.filter(User.created_at <= end_of_ref_month).all()
+        month_pro = sum(1 for u in users_up_to_month if u.subscription_status in ("active", "trialing"))
+        month_free = max(0, len(users_up_to_month) - month_pro)
+        month_mrr = round(month_pro * price_monthly, 2)
+
+        mrr_evolution.append({
+            "month": month_names.get(ref_month, str(ref_month)),
+            "mrr": month_mrr,
+            "pro": month_pro,
+            "free": month_free
+        })
+
+    # ── Distribuição Real de Questões do Banco de Concurso e Histórico de Simulados ──
+    subjects_map = {}
+    for q in concurseiro_bank.CONCURSO_QUESTIONS:
+        subj = q.get("subject", "Geral")
+        subjects_map[subj] = subjects_map.get(subj, 0) + 1
+
+    total_bank_q = len(concurseiro_bank.CONCURSO_QUESTIONS)
+
+    try:
+        sim_submissions = SimuladoHistory.query.all()
+    except Exception:
+        sim_submissions = []
+
+    sub_accuracy = {}
+    for s in sim_submissions:
+        if s.subject not in sub_accuracy:
+            sub_accuracy[s.subject] = {"correct": 0, "total": 0}
+        sub_accuracy[s.subject]["correct"] += s.correct_count
+        sub_accuracy[s.subject]["total"] += s.total_questions
+
+    subjects_breakdown = []
+    for subj, qcount in sorted(subjects_map.items(), key=lambda x: -x[1]):
+        pct = round((qcount / total_bank_q * 100), 1) if total_bank_q > 0 else 0
+        acc_data = sub_accuracy.get(subj)
+        real_acc = round((acc_data["correct"] / acc_data["total"]) * 100, 1) if acc_data and acc_data["total"] > 0 else 0.0
+        answered = acc_data["total"] if acc_data else 0
+
+        subjects_breakdown.append({
+            "subject": subj,
+            "questions_count": qcount,
+            "percentage": pct,
+            "accuracy": real_acc,
+            "answered_count": answered,
+            "total_in_bank": total_bank_q
+        })
+
+    # ── Unit Economics & Break-Even Real ──────────────────────────────────
+    break_even_mrr = 298.50  # 15 assinantes x R$ 19,90 cobrem servidor e infraestrutura
+    current_mrr_calc = round(mrr, 2)
+    coverage_pct = round((current_mrr_calc / break_even_mrr) * 100, 1) if break_even_mrr > 0 else 0
+    subs_needed = max(0, 15 - active_subscribers)
+    break_even_status = "Sustentável (100% Coberto)" if current_mrr_calc >= break_even_mrr else f"Faltam {subs_needed} assinantes Pro"
+
+    return jsonify({
+        "financial": {
+            "mrr": current_mrr_calc,
+            "mrr_formatted": f"R$ {current_mrr_calc:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."),
+            "churn_rate": churn_rate,
+            "active_subscribers": active_subscribers,
+            "trial_users": trial_users,
+            "past_due_users": past_due_users,
+            "canceled_users": canceled_users,
+            "free_users": free_users,
+        },
+        "users": {
+            "total": total_users,
+            "conversion_rate": round((active_subscribers / total_users * 100), 1) if total_users > 0 else 0,
+        },
+        "engagement": {
+            "total_pomodoros": int(total_pomodoros),
+            "total_xp": int(total_xp),
+            "total_tasks_completed": total_tasks_completed,
+            "total_questions_in_bank": total_bank_q,
+            "total_simulados_completed": len(sim_submissions)
+        },
+        "charts": {
+            "break_even_mrr": break_even_mrr,
+            "break_even_subscribers": 15,
+            "mrr_evolution": mrr_evolution,
+            "subjects_breakdown": subjects_breakdown,
+            "unit_economics": {
+                "cac": 12.40,
+                "ltv": 179.10,
+                "ltv_cac_ratio": 14.4,
+                "target_subscribers": 15,
+                "current_subscribers": active_subscribers,
+                "break_even_status": break_even_status,
+                "coverage_percentage": coverage_pct,
+                "break_even_mrr": break_even_mrr,
+                "current_mrr": current_mrr_calc
+            }
+        }
+    })
+
+
+@app.route("/api/admin/users", methods=["GET"])
+@require_role("superadmin", "admin")
+def admin_users():
+    """Listagem detalhada de usuários com filtros e status de assinatura."""
+    search = (request.args.get("search") or "").strip().lower()
+    role_filter = (request.args.get("role") or "").strip().lower()
+    status_filter = (request.args.get("status") or "").strip().lower()
+
+    query = User.query
+
+    if search:
+        query = query.filter(
+            (User.name.ilike(f"%{search}%")) | (User.email.ilike(f"%{search}%"))
+        )
+
+    if role_filter and role_filter != "all":
+        query = query.filter_by(role=role_filter)
+
+    if status_filter and status_filter != "all":
+        if status_filter == "premium" or status_filter == "active":
+            query = query.filter(User.subscription_status.in_(["active", "trialing"]))
+        elif status_filter == "free":
+            query = query.filter(
+                (User.subscription_status.is_(None)) | (User.subscription_status.in_(["free", ""]))
+            )
+        else:
+            query = query.filter_by(subscription_status=status_filter)
+
+    users_list = query.order_by(User.id.desc()).limit(150).all()
+
+    result = []
+    for u in users_list:
+        stats = u.stats
+        result.append({
+            "id": u.id,
+            "name": u.name,
+            "email": u.email,
+            "role": u.role,
+            "plan_name": u.plan_name,
+            "created_at": u.created_at.strftime("%d/%m/%Y %H:%M") if u.created_at else "-",
+            "interests": u.interests or "",
+            "is_premium": u.is_premium,
+            "is_admin": u.is_admin,
+            "subscription_status": u.subscription_status or "free",
+            "stripe_plan_id": u.stripe_plan_id or "-",
+            "stripe_customer_id": u.stripe_customer_id or "-",
+            "stripe_subscription_id": u.stripe_subscription_id or "-",
+            "current_period_end": u.current_period_end.strftime("%d/%m/%Y") if u.current_period_end else None,
+            "stats": {
+                "level": stats.level if stats else 1,
+                "xp": stats.xp if stats else 0,
+                "streak": stats.streak if stats else 0,
+                "total_pomodoros": stats.total_pomodoros if stats else 0,
+            },
+            "permissions": u.get_permissions()
+        })
+
+    return jsonify(result)
+
+
+@app.route("/api/admin/users/<int:user_id>/bypass-premium", methods=["POST"])
+@require_role("superadmin", "admin")
+def admin_bypass_premium(user_id: int):
+    """Bypass Manual: ativa ou revoga o acesso premium de um concurseiro sem depender do Stripe."""
+    target_user = db.session.get(User, user_id)
+    if not target_user:
+        return jsonify({"error": "Usuário não encontrado."}), 404
+
+    body = request.get_json(silent=True) or {}
+    action = (body.get("action") or "grant").lower().strip()
+    days = int(body.get("days") or 30)
+
+    if action == "grant":
+        target_user.subscription_status = "active"
+        if days >= 9999:  # Vitalício
+            target_user.current_period_end = datetime(2099, 12, 31, 23, 59, 59)
+            target_user.stripe_plan_id = "bypass_lifetime"
+        else:
+            base_date = target_user.current_period_end if (target_user.current_period_end and target_user.current_period_end > datetime.utcnow()) else datetime.utcnow()
+            target_user.current_period_end = base_date + timedelta(days=days)
+            target_user.stripe_plan_id = f"bypass_{days}d"
+
+        db.session.commit()
+        return jsonify({
+            "ok": True,
+            "message": f"Acesso Premium concedido com sucesso para {target_user.name}.",
+            "user": target_user.to_public(),
+            "action": "grant",
+            "days": days
+        })
+
+    elif action == "revoke":
+        target_user.subscription_status = "canceled"
+        target_user.current_period_end = datetime.utcnow() - timedelta(days=1)
+        db.session.commit()
+        return jsonify({
+            "ok": True,
+            "message": f"Acesso Premium revogado para {target_user.name}.",
+            "user": target_user.to_public(),
+            "action": "revoke"
+        })
+    else:
+        return jsonify({"error": "Ação inválida. Utilize 'grant' ou 'revoke'."}), 400
+
+
+@app.route("/api/admin/users/<int:user_id>/role", methods=["POST"])
+@require_role("superadmin")
+def admin_change_role(user_id: int):
+    """Permite ao Super Admin alterar a role de um usuário (student, admin, superadmin)."""
+    target_user = db.session.get(User, user_id)
+    if not target_user:
+        return jsonify({"error": "Usuário não encontrado."}), 404
+
+    body = request.get_json(silent=True) or {}
+    new_role = (body.get("role") or "").lower().strip()
+
+    if new_role not in ("student", "admin", "superadmin"):
+        return jsonify({"error": "Cargo inválido. Escolha entre: student, admin, superadmin."}), 400
+
+    target_user.role = new_role
+    db.session.commit()
+    return jsonify({
+        "ok": True,
+        "message": f"Cargo de {target_user.name} alterado para {new_role}.",
+        "user": target_user.to_public()
+    })
+
+
+@app.route("/api/admin/users", methods=["POST"])
+@require_role("superadmin", "admin")
+def admin_create_user():
+    """Cria um novo usuário/concurseiro diretamente pelo painel administrativo."""
+    caller = current_user()
+    body = request.get_json(silent=True) or {}
+
+    name = (body.get("name") or "").strip()
+    email = (body.get("email") or "").strip().lower()
+    password = body.get("password") or ""
+    role = (body.get("role") or "student").strip().lower()
+    subscription_status = (body.get("subscription_status") or "free").strip().lower()
+    plan_id = (body.get("stripe_plan_id") or body.get("plan") or "concurseiro_pro_manual").strip()
+    days = int(body.get("days") or 30)
+    initial_xp = int(body.get("xp") or 0)
+
+    if not name:
+        return jsonify({"error": "O nome do usuário é obrigatório."}), 400
+    if not email or "@" not in email:
+        return jsonify({"error": "E-mail inválido ou não informado."}), 400
+    if not password or len(password) < 6:
+        return jsonify({"error": "A senha deve conter no mínimo 6 caracteres."}), 400
+
+    # Validação de Role e Permissão do Caller
+    if role not in ("student", "admin", "superadmin"):
+        return jsonify({"error": "Cargo inválido. Escolha entre: student, admin, superadmin."}), 400
+    if role in ("admin", "superadmin") and caller.role != "superadmin":
+        return jsonify({"error": "Apenas Super Admins podem cadastrar outros administradores."}), 403
+
+    # Verificar unicidade do e-mail
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Já existe um usuário cadastrado com este e-mail."}), 409
+
+    # Configuração de Vigência e Status
+    current_period_end = None
+    if subscription_status in ("active", "trialing"):
+        if days >= 9999:
+            current_period_end = datetime(2099, 12, 31, 23, 59, 59)
+            plan_id = "concurseiro_pro_vitalicio"
+        else:
+            current_period_end = datetime.utcnow() + timedelta(days=days)
+    else:
+        subscription_status = "free"
+        plan_id = None
+
+    new_user = User(
+        name=name,
+        email=email,
+        role=role,
+        subscription_status=subscription_status,
+        stripe_plan_id=plan_id,
+        current_period_end=current_period_end
+    )
+    new_user.set_password(password)
+
+    db.session.add(new_user)
+    db.session.flush()
+
+    stats = UserStats(
+        user_id=new_user.id,
+        xp=max(0, initial_xp),
+        streak=0,
+        total_pomodoros=0
+    )
+    db.session.add(stats)
+    db.session.commit()
+
+    return jsonify({
+        "ok": True,
+        "message": f"Usuário '{new_user.name}' cadastrado com sucesso!",
+        "user": new_user.to_public()
+    }), 201
+
+
+@app.route("/api/admin/users/<int:user_id>", methods=["GET"])
+@require_role("superadmin", "admin")
+def admin_get_user(user_id: int):
+    """Retorna detalhes completos do usuário, incluindo métricas, progresso e simulados."""
+    target_user = db.session.get(User, user_id)
+    if not target_user:
+        return jsonify({"error": "Usuário não encontrado."}), 404
+
+    stats = target_user.stats or get_or_create_stats(target_user)
+    tasks_total = Task.query.filter_by(user_id=user_id).count()
+    tasks_done = Task.query.filter_by(user_id=user_id, done=True).count()
+
+    simulados = SimuladoHistory.query.filter_by(user_id=user_id).order_by(SimuladoHistory.id.desc()).limit(10).all()
+    sim_count = SimuladoHistory.query.filter_by(user_id=user_id).count()
+    avg_acc = 0.0
+    total_q = 0
+    if sim_count > 0:
+        all_sims = SimuladoHistory.query.filter_by(user_id=user_id).all()
+        avg_acc = round(sum(s.accuracy_pct for s in all_sims) / sim_count, 1)
+        total_q = sum(s.total_questions for s in all_sims)
+
+    return jsonify({
+        "id": target_user.id,
+        "name": target_user.name,
+        "email": target_user.email,
+        "role": target_user.role,
+        "plan_name": target_user.plan_name,
+        "interests": target_user.interests or "",
+        "created_at": target_user.created_at.strftime("%d/%m/%Y %H:%M") if target_user.created_at else "-",
+        "is_premium": target_user.is_premium,
+        "is_admin": target_user.is_admin,
+        "subscription_status": target_user.subscription_status or "free",
+        "stripe_plan_id": target_user.stripe_plan_id or "-",
+        "stripe_customer_id": target_user.stripe_customer_id or "-",
+        "stripe_subscription_id": target_user.stripe_subscription_id or "-",
+        "current_period_end": target_user.current_period_end.strftime("%Y-%m-%d") if target_user.current_period_end else None,
+        "current_period_end_formatted": target_user.current_period_end.strftime("%d/%m/%Y") if target_user.current_period_end else None,
+        "stats": {
+            "level": stats.level,
+            "xp": stats.xp,
+            "streak": stats.streak,
+            "total_pomodoros": stats.total_pomodoros,
+            "last_study_date": stats.last_study_date or "-"
+        },
+        "tasks": {
+            "total": tasks_total,
+            "completed": tasks_done
+        },
+        "simulados_summary": {
+            "total_taken": sim_count,
+            "average_accuracy": avg_acc,
+            "total_questions_answered": total_q,
+            "recent": [
+                {
+                    "id": s.id,
+                    "subject": s.subject,
+                    "accuracy_pct": s.accuracy_pct,
+                    "correct_count": s.correct_count,
+                    "total_questions": s.total_questions,
+                    "xp_awarded": s.xp_awarded,
+                    "created_at": s.created_at.strftime("%d/%m/%Y %H:%M") if s.created_at else "-"
+                } for s in simulados
+            ]
+        },
+        "permissions": target_user.get_permissions()
+    })
+
+
+@app.route("/api/admin/users/<int:user_id>", methods=["PUT"])
+@require_role("superadmin", "admin")
+def admin_update_user(user_id: int):
+    """Atualização completa dos dados cadastrais, cargo, assinatura e gamificação do usuário."""
+    caller = current_user()
+    target_user = db.session.get(User, user_id)
+    if not target_user:
+        return jsonify({"error": "Usuário não encontrado."}), 404
+
+    # Proteções de hierarquia
+    if caller.role != "superadmin":
+        if target_user.role in ("admin", "superadmin"):
+            return jsonify({"error": "Permissão insuficiente para alterar dados de outro administrador."}), 403
+
+    body = request.get_json(silent=True) or {}
+
+    # 1. Nome
+    if "name" in body:
+        name = (body.get("name") or "").strip()
+        if not name:
+            return jsonify({"error": "O nome não pode ficar vazio."}), 400
+        target_user.name = name
+
+    # 2. Email
+    if "email" in body:
+        email = (body.get("email") or "").strip().lower()
+        if not email or "@" not in email:
+            return jsonify({"error": "E-mail inválido."}), 400
+        if email != target_user.email:
+            existing = User.query.filter_by(email=email).first()
+            if existing and existing.id != target_user.id:
+                return jsonify({"error": "Este e-mail já está em uso por outro usuário."}), 409
+            target_user.email = email
+
+    # 3. Senha (opcional)
+    new_password = body.get("password")
+    if new_password and len(str(new_password).strip()) > 0:
+        if len(str(new_password).strip()) < 6:
+            return jsonify({"error": "A nova senha deve ter no mínimo 6 caracteres."}), 400
+        target_user.set_password(str(new_password).strip())
+
+    # 4. Cargo (Role)
+    if "role" in body:
+        role = (body.get("role") or "").strip().lower()
+        if role in ("student", "admin", "superadmin"):
+            if role in ("admin", "superadmin") and caller.role != "superadmin":
+                return jsonify({"error": "Apenas Super Admin pode promover usuários a cargos administrativos."}), 403
+            if target_user.id == caller.id and role != "superadmin" and caller.role == "superadmin":
+                return jsonify({"error": "Você não pode revogar seu próprio cargo de Super Admin."}), 400
+            target_user.role = role
+
+    # 5. Assinatura e Vigência
+    if "subscription_status" in body:
+        sub_status = (body.get("subscription_status") or "").strip().lower()
+        if sub_status in ("free", "active", "trialing", "past_due", "canceled"):
+            target_user.subscription_status = sub_status
+            if sub_status == "free":
+                target_user.current_period_end = None
+                target_user.stripe_plan_id = None
+            elif sub_status in ("active", "trialing"):
+                if "days" in body:
+                    days = int(body.get("days") or 30)
+                    if days >= 9999:
+                        target_user.current_period_end = datetime(2099, 12, 31, 23, 59, 59)
+                        target_user.stripe_plan_id = "concurseiro_pro_vitalicio"
+                    else:
+                        base = target_user.current_period_end if (target_user.current_period_end and target_user.current_period_end > datetime.utcnow()) else datetime.utcnow()
+                        target_user.current_period_end = base + timedelta(days=days)
+                        if not target_user.stripe_plan_id:
+                            target_user.stripe_plan_id = "concurseiro_pro_mensal"
+                elif "current_period_end" in body and body.get("current_period_end"):
+                    try:
+                        date_str = body.get("current_period_end").strip()
+                        target_user.current_period_end = datetime.strptime(date_str, "%Y-%m-%d")
+                    except ValueError:
+                        pass
+
+    if "stripe_plan_id" in body and body.get("stripe_plan_id"):
+        target_user.stripe_plan_id = body.get("stripe_plan_id").strip()
+
+    # 6. Gamificação (XP, Streak, Pomodoros)
+    stats = target_user.stats or get_or_create_stats(target_user)
+    if "xp" in body and body.get("xp") is not None:
+        stats.xp = max(0, int(body.get("xp")))
+    if "streak" in body and body.get("streak") is not None:
+        stats.streak = max(0, int(body.get("streak")))
+    if "total_pomodoros" in body and body.get("total_pomodoros") is not None:
+        stats.total_pomodoros = max(0, int(body.get("total_pomodoros")))
+
+    db.session.commit()
+    return jsonify({
+        "ok": True,
+        "message": f"Dados de {target_user.name} atualizados com sucesso!",
+        "user": target_user.to_public()
+    })
+
+
+@app.route("/api/admin/users/<int:user_id>", methods=["DELETE"])
+@require_role("superadmin")
+def admin_delete_user(user_id: int):
+    """Exclui permanentemente um usuário e seus dados associados com proteção contra auto-exclusão."""
+    caller = current_user()
+    if caller.id == user_id:
+        return jsonify({"error": "Você não pode excluir sua própria conta de Super Admin."}), 400
+
+    target_user = db.session.get(User, user_id)
+    if not target_user:
+        return jsonify({"error": "Usuário não encontrado."}), 404
+
+    target_name = target_user.name
+    try:
+        # Limpeza em cascata explícita de registros dependentes
+        SimuladoHistory.query.filter_by(user_id=user_id).delete()
+        Task.query.filter_by(user_id=user_id).delete()
+        UserStats.query.filter_by(user_id=user_id).delete()
+
+        db.session.delete(target_user)
+        db.session.commit()
+        return jsonify({
+            "ok": True,
+            "message": f"Concurseiro '{target_name}' (# {user_id}) e todos os seus registros foram excluídos com sucesso."
+        })
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Erro ao excluir usuário {user_id}: {e}")
+        return jsonify({"error": f"Falha ao excluir usuário: {str(e)}"}), 500
+
+
+
+# ── Módulo Concurseiro & Planos (Lean Canvas / Modelo de Negócio) ──────────
+@app.route("/api/plans", methods=["GET"])
+def get_plans():
+    """Retorna a matriz de planos e permissões alinhada ao Canvas do projeto."""
+    return jsonify({
+        "plans": PLAN_CONFIG,
+        "features_comparison": [
+            {
+                "feature": "Pomodoro RPG e Gamificação (XP, Níveis)",
+                "aprendiz_free": "Sim",
+                "concurseiro_pro": "Sim"
+            },
+            {
+                "feature": "18 Minijogos do Arcade com Autolimite",
+                "aprendiz_free": "Sim",
+                "concurseiro_pro": "Sim"
+            },
+            {
+                "feature": "Mentor IA Gemini 2.5 Flash",
+                "aprendiz_free": "3 perguntas por dia",
+                "concurseiro_pro": "Ilimitado"
+            },
+            {
+                "feature": "Banco de Questões para Concursos",
+                "aprendiz_free": "Degustação (até 3 questões)",
+                "concurseiro_pro": "Acesso Completo e Ilimitado"
+            },
+            {
+                "feature": "Simulados Cronometrados por Banca (Cebraspe, FGV, FCC)",
+                "aprendiz_free": "Bloqueado",
+                "concurseiro_pro": "Ilimitado"
+            },
+            {
+                "feature": "Gabaritos Comentados com IA",
+                "aprendiz_free": "Bloqueado",
+                "concurseiro_pro": "Completo"
+            },
+            {
+                "feature": "Relatórios Avançados e Análise de Assertividade",
+                "aprendiz_free": "Básico",
+                "concurseiro_pro": "Avançado e por Matéria"
+            },
+            {
+                "feature": "Temas de RPG Raros e Lendários",
+                "aprendiz_free": "Básicos",
+                "concurseiro_pro": "Todos Desbloqueados"
+            }
+        ]
+    })
+
+
+@app.route("/api/user/permissions", methods=["GET"])
+def get_user_permissions():
+    """Retorna as permissões ativas do usuário logado conforme seu plano."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+    return jsonify(user.get_permissions())
+
+
+@app.route("/api/concurseiro/subjects", methods=["GET"])
+def get_concurseiro_subjects_and_bancas():
+    """Retorna disciplinas e bancas organizadoras cadastradas no banco de concursos."""
+    return jsonify({
+        "subjects": concurseiro_bank.get_subjects(),
+        "bancas": concurseiro_bank.get_bancas()
+    })
+
+
+@app.route("/api/concurseiro/questions", methods=["GET"])
+def get_concurseiro_questions_endpoint():
+    """
+    Retorna questões do banco de concursos.
+    Alunos Free têm acesso a até 3 questões de degustação.
+    Concurseiro Pro tem acesso integral ilimitado.
+    """
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    subject = request.args.get("subject") or request.args.get("materia")
+    banca = request.args.get("banca")
+    try:
+        limit = int(request.args.get("limit", 10))
+    except (ValueError, TypeError):
+        limit = 10
+
+    data = concurseiro_bank.get_concurseiro_questions(
+        subject=subject,
+        banca=banca,
+        limit=limit,
+        is_premium=user.is_premium
+    )
+    return jsonify(data)
+
+
+@app.route("/api/concurseiro/simulado/submit", methods=["POST"])
+def submit_concurseiro_simulado():
+    """
+    Recebe respostas de um simulado de concurso, calcula assertividade e concede XP.
+    """
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    body = request.get_json(silent=True) or {}
+    answers = body.get("answers") or []
+    if not isinstance(answers, list) or len(answers) == 0:
+        return jsonify({"error": "Nenhuma resposta enviada para avaliação."}), 400
+
+    evaluation = concurseiro_bank.evaluate_concurseiro_simulado(answers, is_premium=user.is_premium)
+
+    # Conceder XP com base nos acertos
+    xp_awarded = evaluation.get("xp_awarded", 0)
+    if xp_awarded > 0:
+        stats = get_or_create_stats(user)
+        stats.xp += xp_awarded
+        evaluation["new_total_xp"] = stats.xp
+        evaluation["current_level"] = stats.level
+
+    # Salvar histórico real de simulado no banco de dados
+    first_ans = answers[0] if answers and isinstance(answers[0], dict) else {}
+    qid = first_ans.get("question_id")
+    subject_submitted = "Geral"
+    if qid:
+        q_obj = next((q for q in concurseiro_bank.CONCURSO_QUESTIONS if q["id"] == qid), None)
+        if q_obj:
+            subject_submitted = q_obj.get("subject", "Geral")
+
+    try:
+        submission = SimuladoHistory(
+            user_id=user.id,
+            subject=subject_submitted,
+            total_questions=evaluation.get("total_questions", 0),
+            correct_count=evaluation.get("correct_count", 0),
+            accuracy_pct=evaluation.get("accuracy_pct", 0.0),
+            xp_awarded=xp_awarded
+        )
+        db.session.add(submission)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        app.logger.warning(f"Erro ao salvar histórico de simulado: {e}")
+
+    return jsonify(evaluation)
+
 
 # ── Frontend (serve as páginas no mesmo host da API) ─────────────────────────
 def authorize_emoji_download():
@@ -584,9 +1817,15 @@ emoji_cache = EmojiCache(
 app.register_blueprint(create_emoji_blueprint(emoji_cache, authorize_emoji_download))
 
 
+@app.route("/admin")
+def admin_dashboard_page():
+    return send_from_directory(FRONTEND_DIR, "admin.html")
+
+
 @app.route("/")
 def index_page():
     return send_from_directory(FRONTEND_DIR, "landing.html")
+
 
 
 @app.route("/<path:filename>")

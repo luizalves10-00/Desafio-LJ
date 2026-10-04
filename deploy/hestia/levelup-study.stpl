@@ -1,34 +1,81 @@
-# LevelUp Study - HestiaCP Nginx proxy template (HTTPS)
+# ==============================================================================
+# LevelUp Study - Template Nginx Proxy SSL HestiaCP (HTTPS)
+# Arquivo: /usr/local/hestia/data/templates/web/nginx/levelup-study.stpl
+# ==============================================================================
 server {
-	listen      %ip%:%proxy_ssl_port% ssl;
+	listen      %ip%:%proxy_ssl_port% ssl http2;
 	server_name %domain_idn% %alias_idn%;
 	error_log   /var/log/%web_system%/domains/%domain%.error.log error;
 
 	ssl_certificate     %ssl_pem%;
 	ssl_certificate_key %ssl_key%;
 
+	# Anti-replay / HSTS
 	if ($anti_replay = 307) { return 307 https://$host$request_uri; }
 	if ($anti_replay = 425) { return 425; }
 
 	include %home%/%user%/conf/web/%domain%/nginx.hsts.conf*;
 
+	# Headers globais de segurança
+	add_header X-Content-Type-Options "nosniff" always;
+	add_header X-Frame-Options "SAMEORIGIN" always;
+	add_header X-XSS-Protection "1; mode=block" always;
+	add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+	# Validação Let's Encrypt (ACME)
 	location ^~ /.well-known/acme-challenge/ {
 		root %docroot%;
+		default_type "text/plain";
+		allow all;
 	}
 
+	# Regra 1: Bloqueia qualquer arquivo ou pasta oculta (.env, .git, etc.)
 	location ~ /\.(?!well-known/) {
 		deny all;
+		access_log off;
+		log_not_found off;
 		return 404;
 	}
 
+	# Regra 2: Bloqueia extensões sensíveis e código-fonte na raiz web
+	location ~* \.(env|env\..*|py|pyc|pyo|db|sqlite|sqlite3|sh|bash|sql|log|yml|yaml|ini|conf|bak)$ {
+		deny all;
+		access_log off;
+		log_not_found off;
+		return 404;
+	}
+
+	# Regra 3: Bloqueia diretórios internos do sistema
+	location ~* /(back_end|\.git|\.venv|venv|migrations|tests)/ {
+		deny all;
+		access_log off;
+		log_not_found off;
+		return 404;
+	}
+
+	# Proxy Reverso para a aplicação Flask via Gunicorn
 	location / {
 		proxy_pass http://127.0.0.1:8017;
 		proxy_http_version 1.1;
+
+		# Headers de encaminhamento seguros
 		proxy_set_header Host $host;
 		proxy_set_header X-Real-IP $remote_addr;
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Proto https;
+		proxy_set_header X-Forwarded-Host $host;
+		proxy_set_header X-Forwarded-Port 443;
+
+		# Timeouts resilientes para IA (Gemini) e tarefas de longa duração
+		proxy_connect_timeout 60s;
+		proxy_send_timeout 90s;
 		proxy_read_timeout 90s;
+
+		# Buffers de Proxy
+		proxy_buffering on;
+		proxy_buffers 8 16k;
+		proxy_buffer_size 16k;
+
 		access_log /var/log/%web_system%/domains/%domain%.log combined;
 		access_log /var/log/%web_system%/domains/%domain%.bytes bytes;
 	}

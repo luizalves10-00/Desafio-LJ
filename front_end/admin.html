@@ -1,0 +1,3442 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>LevelUp Study – Painel Super Admin</title>
+  <link rel="stylesheet" href="emoji-3d.css" />
+  <script src="emoji-catalog.js" defer></script>
+  <script src="emoji-3d.js" defer></script>
+  <style>
+    /* ═══════════════════════════════════════════════════════════════════════════
+       DESIGN SYSTEM & THEME TOKENS (LevelUp Study – Super Admin)
+       ═══════════════════════════════════════════════════════════════════════════ */
+    :root {
+      --bg: #0b0c16;
+      --bg2: #101222;
+      --surface: #15182e;
+      --surface-hover: #1c203d;
+      --surface2: #1b1e38;
+      --border: #262a4d;
+      --border-focus: #7c3aed;
+      --accent: #7c3aed;
+      --accent-hover: #6d28d9;
+      --accent2: #a855f7;
+      --accent-glow: rgba(124, 58, 237, 0.25);
+      --gold: #f59e0b;
+      --gold-bg: rgba(245, 158, 11, 0.12);
+      --green: #10b981;
+      --green-bg: rgba(16, 185, 129, 0.12);
+      --blue: #0ea5e9;
+      --blue-bg: rgba(14, 165, 233, 0.12);
+      --red: #ef4444;
+      --red-bg: rgba(239, 68, 68, 0.12);
+      --text: #f8fafc;
+      --text2: #cbd5e1;
+      --muted: #94a3b8;
+      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --radius: 14px;
+      --shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      --sidebar-w: 260px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-family);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── MOBILE OVERLAY ────────────────────────────────────────────────── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 90;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar-overlay.show {
+      display: block;
+      opacity: 1;
+    }
+
+    /* ── SIDEBAR ───────────────────────────────────────────────────────── */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .brand-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .brand-logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--accent2);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      line-height: 1.2;
+    }
+
+    .brand-logo span {
+      color: var(--gold);
+    }
+
+    .sidebar-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(124, 58, 237, 0.15));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      width: fit-content;
+    }
+
+    .sidebar-close-btn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.75rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 6px;
+    }
+
+    .sidebar-close-btn:hover {
+      color: var(--text);
+    }
+
+    .sidebar-scrollable {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem 1rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .sidebar-scrollable::-webkit-scrollbar {
+      width: 5px;
+    }
+    .sidebar-scrollable::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    /* ── SIDEBAR WIDGETS ──────────────────────────────────────────────── */
+    .sidebar-widget {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .widget-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .widget-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .badge-status-online {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--green);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .infra-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .infra-item {
+      font-size: 0.75rem;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .infra-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+      flex-shrink: 0;
+    }
+
+    /* ── CANVAS BUSINESS MODEL WIDGET ────────────────────────────────── */
+    .canvas-widget {
+      background: linear-gradient(145deg, rgba(27, 30, 56, 0.95), rgba(124, 58, 237, 0.08));
+      border-color: rgba(124, 58, 237, 0.3);
+    }
+
+    .canvas-tag {
+      font-size: 0.62rem;
+      font-weight: 800;
+      color: var(--accent2);
+      background: rgba(124, 58, 237, 0.15);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+    }
+
+    .canvas-kpi-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 0.2rem;
+    }
+
+    .canvas-kpi-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .canvas-lbl {
+      font-size: 0.65rem;
+      color: var(--muted);
+    }
+
+    .canvas-val {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .val-gold {
+      color: var(--gold);
+    }
+
+    .sb-progress-container {
+      margin-top: 0.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .sb-progress-track {
+      height: 6px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .sb-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--green));
+      border-radius: 999px;
+      transition: width 0.6s ease;
+    }
+
+    .sb-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    /* ── SIDEBAR NAVIGATION ───────────────────────────────────────────── */
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .nav-section-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0.6rem 0.5rem 0.3rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.65rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text2);
+      text-decoration: none;
+      background: transparent;
+      border: none;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--surface-hover);
+      color: #fff;
+    }
+
+    .nav-item.active {
+      background: rgba(124, 58, 237, 0.18);
+      color: var(--accent2);
+      border-left: 3px solid var(--accent);
+    }
+
+    .nav-icon {
+      font-size: 1.1rem;
+      width: 22px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    /* ── SIDEBAR FOOTER ───────────────────────────────────────────────── */
+    .sidebar-footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-details {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .user-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-email {
+      font-size: 0.7rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-logout {
+      width: 100%;
+      padding: 0.55rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--red);
+      color: var(--red);
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    /* ── MAIN WRAPPER ─────────────────────────────────────────────────── */
+    .admin-main-wrap {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      width: calc(100% - var(--sidebar-w));
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+
+    /* ── TOPBAR ────────────────────────────────────────────────────────── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      height: 64px;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .hamburger {
+      display: none;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1.25rem;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .hamburger:hover {
+      background: var(--surface-hover);
+      border-color: var(--accent);
+    }
+
+    .topbar-title {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-width: 0;
+    }
+
+    .topbar-title-text {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulseGreen 1.6s infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseGreen {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.5; }
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-shrink: 0;
+    }
+
+    .btn-topbar {
+      background: var(--surface2);
+      color: var(--text2);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-topbar:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    .btn-topbar-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-topbar-primary:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+    }
+
+    /* ── CONTENT CONTAINER ────────────────────────────────────────────── */
+    .admin-container {
+      padding: 1.75rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .section-title-group h1 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .section-title-group p {
+      font-size: 0.875rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    /* ── KPI METRICS GRID ──────────────────────────────────────────────── */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.15rem;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      position: relative;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(124, 58, 237, 0.45);
+    }
+
+    .kpi-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .kpi-icon {
+      font-size: 1.2rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+    }
+
+    .kpi-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+
+    .kpi-footer {
+      font-size: 0.78rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .kpi-highlight-green { color: var(--green); font-weight: 700; }
+    .kpi-highlight-gold  { color: var(--gold);  font-weight: 700; }
+    .kpi-highlight-blue  { color: var(--blue);  font-weight: 700; }
+    .kpi-highlight-red   { color: var(--red);   font-weight: 700; }
+
+    /* ── STYLIZED CHART SECTION ───────────────────────────────────────── */
+    .chart-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .chart-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .chart-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .chart-badge {
+      font-size: 0.65rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent2);
+    }
+
+    .chart-title-group h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .chart-title-group p {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .chart-tab-group {
+      display: inline-flex;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .chart-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.45rem 0.85rem;
+      border-radius: 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .chart-tab:hover {
+      color: var(--text);
+    }
+
+    .chart-tab.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    .chart-body {
+      padding: 1.5rem;
+      position: relative;
+      min-height: 270px;
+    }
+
+    .chart-svg-wrap {
+      width: 100%;
+      height: 240px;
+      position: relative;
+    }
+
+    .chart-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(16, 18, 34, 0.95);
+      border: 1px solid var(--border-focus);
+      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      pointer-events: none;
+      z-index: 30;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      transform: translate(-50%, -100%);
+      white-space: nowrap;
+    }
+
+    .chart-tooltip.visible {
+      opacity: 1;
+    }
+
+    .tt-header {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tt-val {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .tt-sub {
+      font-size: 0.72rem;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* ── SUBJECTS PROGRESS CARDS (TAB 3) ──────────────────────────────── */
+    .subjects-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 0.5rem 0;
+    }
+
+    .subject-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .subject-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .subject-name {
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .subject-stats-tag {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .subject-track {
+      height: 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .subject-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.7s ease;
+    }
+
+    /* ── UNIT ECONOMICS FOOTER ────────────────────────────────────────── */
+    .unit-economics-bar {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .ue-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .ue-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .ue-val {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.25;
+    }
+
+    .ue-sub {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .ue-divider {
+      width: 1px;
+      height: 34px;
+      background: var(--border);
+    }
+
+    .text-green  { color: var(--green) !important; }
+    .text-purple { color: var(--accent2) !important; }
+    .text-blue   { color: var(--blue) !important; }
+    .text-gold   { color: var(--gold) !important; }
+
+    /* ── USERS TABLE SECTION ───────────────────────────────────────────── */
+    .table-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .table-toolbar {
+      padding: 1.15rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-search {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.55rem 0.85rem;
+      width: 100%;
+      max-width: 320px;
+      transition: border-color 0.2s;
+    }
+
+    .toolbar-search:focus-within {
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .toolbar-search input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 0.88rem;
+      width: 100%;
+    }
+
+    .toolbar-filters {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-filters .emoji-select {
+      min-width: 210px;
+    }
+
+    .form-group .emoji-select {
+      width: 100%;
+      display: block;
+    }
+
+    .select-filter {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.95rem;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .table-scroll-hint {
+      display: none;
+      padding: 0.5rem 1rem;
+      background: rgba(124, 58, 237, 0.1);
+      color: var(--accent2);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      min-width: 780px;
+    }
+
+    thead th {
+      background: var(--bg2);
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.9rem 1.15rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s ease;
+    }
+
+    tbody tr:hover {
+      background: var(--surface-hover);
+    }
+
+    tbody td {
+      padding: 0.9rem 1.15rem;
+      font-size: 0.85rem;
+      color: var(--text2);
+      vertical-align: middle;
+    }
+
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar-initials {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: var(--accent2);
+      font-size: 0.82rem;
+      flex-shrink: 0;
+    }
+
+    .user-meta {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.25;
+    }
+
+    .user-name {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .user-email {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    /* ── BADGES ────────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .badge-active {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-trialing {
+      background: var(--blue-bg);
+      color: var(--blue);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+    }
+
+    .badge-past_due {
+      background: var(--gold-bg);
+      color: var(--gold);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-canceled {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-free {
+      background: rgba(148, 163, 184, 0.1);
+      color: var(--muted);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .badge-role-superadmin {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(124, 58, 237, 0.2));
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .badge-role-admin {
+      background: rgba(124, 58, 237, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(124, 58, 237, 0.3);
+    }
+
+    .badge-role-student {
+      background: rgba(148, 163, 184, 0.1);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    /* ── ACTION BUTTONS ────────────────────────────────────────────────── */
+    .action-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .btn-action {
+      background: var(--bg2);
+      color: var(--text2);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: var(--surface2);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn-bypass-active {
+      background: var(--green-bg);
+      color: var(--green);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-bypass-active:hover {
+      background: rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-bypass-revoke {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-bypass-revoke:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-action-view {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border-color: rgba(168, 85, 247, 0.3);
+    }
+
+    .btn-action-view:hover {
+      background: rgba(168, 85, 247, 0.25);
+      border-color: #c084fc;
+      color: #fff;
+    }
+
+    .btn-action-edit {
+      background: rgba(14, 165, 233, 0.12);
+      color: #38bdf8;
+      border-color: rgba(14, 165, 233, 0.3);
+    }
+
+    .btn-action-edit:hover {
+      background: rgba(14, 165, 233, 0.25);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+
+    .btn-action-delete {
+      background: var(--red-bg);
+      color: var(--red);
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-action-delete:hover:not(:disabled) {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    .btn-action-delete:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-create-user {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0.6rem 1.15rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-create-user:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+      filter: brightness(1.1);
+    }
+
+    .toolbar-left-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+
+    /* Cards no modal de detalhes */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .detail-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .detail-card .detail-lbl {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .detail-card .detail-val {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .detail-section-title {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--text2);
+      margin-top: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .sim-history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+
+    .sim-history-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+    }
+
+    /* ── MODALS ────────────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform 0.2s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-card-lg {
+      max-width: 580px;
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 1.15rem 1.35rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-close-modal {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.2rem;
+    }
+
+    .btn-close-modal:hover {
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+    }
+
+    .modal-user-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text2);
+    }
+
+    .form-group select, .form-group input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+
+    .form-group select:focus, .form-group input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-footer {
+      padding: 1.15rem 1.35rem;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .btn-modal-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 0.55rem 0.95rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-modal-cancel:hover {
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    .btn-modal-confirm {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0.55rem 1.15rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.2s ease;
+    }
+
+    .btn-modal-confirm:hover {
+      background: var(--accent-hover);
+    }
+
+    /* ── TOAST NOTIFICATIONS ───────────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem 1.15rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      animation: slideIn 0.3s ease forwards;
+    }
+
+    .toast.toast-success {
+      border-left: 4px solid var(--green);
+    }
+
+    .toast.toast-error {
+      border-left: 4px solid var(--red);
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ── ACCESS DENIED STATE ───────────────────────────────────────────── */
+    .access-denied-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80vh;
+      text-align: center;
+      padding: 2rem;
+      gap: 1rem;
+    }
+
+    .access-denied-screen h2 {
+      font-size: 1.85rem;
+      color: var(--red);
+    }
+
+    .access-denied-screen p {
+      color: var(--muted);
+      max-width: 460px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════════
+       MOBILE & RESPONSIVE BREAKPOINTS (Matching Student Panel & Bulletproof Topbar)
+       ═══════════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .admin-container {
+        padding: 1.25rem 1.5rem;
+        gap: 1.5rem;
+      }
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .unit-economics-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .ue-divider {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      :root {
+        --sidebar-w: 260px;
+      }
+
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 4px 0 25px rgba(0, 0, 0, 0.7);
+      }
+
+      .sidebar-close-btn {
+        display: flex;
+      }
+
+      .admin-main-wrap {
+        margin-left: 0;
+        width: 100%;
+      }
+
+      /* ── TOPBAR RESPONSIVIDADE MOBILE ── */
+      .topbar {
+        height: 56px;
+        padding: 0 0.85rem;
+        gap: 0.5rem;
+      }
+
+      .hamburger {
+        display: flex;
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+      }
+
+      .topbar-left {
+        gap: 0.5rem;
+        min-width: 0;
+      }
+
+      .topbar-title-text {
+        font-size: 0.92rem;
+      }
+
+      .live-pill {
+        padding: 0.2rem 0.4rem;
+      }
+
+      .live-label {
+        display: none; /* Exibe apenas o ponto verde pulsante no mobile para poupar espaço */
+      }
+
+      .topbar-right {
+        gap: 0.45rem;
+      }
+
+      .btn-topbar {
+        padding: 0.4rem 0.6rem;
+        height: 36px;
+        min-width: 36px;
+        justify-content: center;
+      }
+
+      .btn-topbar .btn-label {
+        display: none; /* No mobile esconde o texto longo e preserva o ícone funcional */
+      }
+
+      .btn-topbar .btn-icon {
+        font-size: 1.05rem;
+        line-height: 1;
+      }
+
+      /* ── OUTROS AJUSTES MOBILE ── */
+      .admin-container {
+        padding: 1rem 0.85rem;
+        gap: 1.25rem;
+      }
+
+      .section-title-group h1 {
+        font-size: 1.35rem;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 0.85rem;
+      }
+
+      .chart-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .chart-tab-group {
+        width: 100%;
+      }
+
+      .chart-tab {
+        flex: 1;
+        justify-content: center;
+        padding: 0.45rem 0.5rem;
+        font-size: 0.72rem;
+      }
+
+      .chart-body {
+        padding: 1rem 0.75rem;
+      }
+
+      .unit-economics-bar {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0.85rem;
+        gap: 0.85rem;
+      }
+
+      .table-toolbar {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.85rem;
+      }
+
+      .toolbar-left-group {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-create-user {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .toolbar-search {
+        max-width: 100%;
+      }
+
+      .toolbar-filters {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .toolbar-filters .emoji-select,
+      .toolbar-filters .select-filter {
+        width: 100% !important;
+        min-width: 100% !important;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .table-scroll-hint {
+        display: block;
+      }
+
+      .modal-card {
+        max-width: calc(100vw - 24px);
+        margin: 0 12px;
+      }
+
+      .toast-container {
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+      }
+
+      .toast {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .unit-economics-bar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .topbar {
+        padding: 0 0.5rem;
+        gap: 0.35rem;
+      }
+
+      .topbar-title-text {
+        font-size: 0.82rem;
+      }
+
+      .live-pill {
+        display: none; /* Em telas ultrapequenas oculta a pílula para evitar compressão */
+      }
+
+      .btn-topbar {
+        padding: 0.35rem 0.5rem;
+        min-width: 34px;
+        height: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MOBILE OVERLAY -->
+  <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-group">
+        <a href="/index.html" class="brand-logo">
+          LevelUp <span>Study</span>
+        </a>
+        <span class="sidebar-badge">👑 Super Admin</span>
+      </div>
+      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Fechar menu">&times;</button>
+    </div>
+
+    <div class="sidebar-scrollable">
+      <!-- INFRASTRUCTURE HEALTH WIDGET -->
+      <div class="sidebar-widget">
+        <div class="widget-header">
+          <span class="widget-title">Infraestrutura</span>
+          <span class="badge-status-online">● ONLINE</span>
+        </div>
+        <div class="infra-list">
+          <div class="infra-item"><span class="infra-dot"></span> Gunicorn :8017 (WSGI)</div>
+          <div class="infra-item"><span class="infra-dot"></span> MySQL (Conexão Estável)</div>
+          <div class="infra-item"><span class="infra-dot"></span> Stripe API (Webhooks)</div>
+          <div class="infra-item"><span class="infra-dot"></span> HestiaCP / Nginx Proxy</div>
+        </div>
+      </div>
+
+      <!-- LEAN CANVAS / BREAK-EVEN WIDGET -->
+      <div class="sidebar-widget canvas-widget">
+        <div class="widget-header">
+          <span class="widget-title">Modelo Canvas</span>
+          <span class="canvas-tag">FREEMIUM</span>
+        </div>
+        <div class="canvas-kpi-row">
+          <div class="canvas-kpi-col">
+            <span class="canvas-lbl">MRR Atual</span>
+            <strong class="canvas-val" id="sb-mrr">R$ 0,00</strong>
+          </div>
+          <div class="canvas-kpi-col" style="text-align: right;">
+            <span class="canvas-lbl">Meta Break-Even</span>
+            <strong class="canvas-val val-gold">15 Pro</strong>
+          </div>
+        </div>
+        <div class="sb-progress-container">
+          <div class="sb-progress-track">
+            <div class="sb-progress-fill" id="sb-progress-fill" style="width: 0%"></div>
+          </div>
+          <div class="sb-progress-labels">
+            <span id="sb-progress-pct">0% da meta</span>
+            <span id="sb-pro-count">0 assinantes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NAVIGATION LINKS -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Painel Super Admin</div>
+        <button class="nav-item active" onclick="scrollToSection('section-metrics')">
+          <span class="nav-icon">📊</span> Painel de Métricas
+        </button>
+        <button class="nav-item" onclick="scrollToSection('section-charts')">
+          <span class="nav-icon">📈</span> Gráficos & Break-Even
+        </button>
+        <button class="nav-item" onclick="scrollToSection('section-users')">
+          <span class="nav-icon">👥</span> Gestão de Concurseiros
+        </button>
+
+        <div class="nav-section-label">Gestão de Usuários (CRUD)</div>
+        <button class="nav-item" onclick="openCreateUserModal()">
+          <span class="nav-icon">➕</span> Cadastrar Novo Usuário
+        </button>
+        <button class="nav-item" onclick="scrollToSection('section-users'); setTimeout(() => document.getElementById('search-input').focus(), 300);">
+          <span class="nav-icon">🔍</span> Buscar & Gerenciar
+        </button>
+
+        <div class="nav-section-label">Ações Rápidas</div>
+        <button class="nav-item" onclick="refreshAllData(); showToast('Métricas atualizadas com sucesso!', 'success')">
+          <span class="nav-icon">🔄</span> Sincronizar Dados
+        </button>
+        <a href="/index.html" class="nav-item">
+          <span class="nav-icon">🏠</span> Ir para o App do Aluno
+        </a>
+      </nav>
+    </div>
+
+    <!-- SIDEBAR FOOTER -->
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="sb-avatar">A</div>
+        <div class="user-details">
+          <div class="user-name" id="sb-name">Carregando...</div>
+          <div class="user-email" id="sb-role">Super Admin</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()">↩ Sair da conta</button>
+    </div>
+  </aside>
+
+  <!-- ── MAIN WRAPPER ── -->
+  <div class="admin-main-wrap" id="admin-main-wrap">
+    
+    <!-- STICKY TOPBAR (100% RESPONSIVA MOBILE) -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Abrir Menu">☰</button>
+        <div class="topbar-title">
+          <span class="topbar-title-text">Painel de Operações</span>
+          <span class="live-pill" title="Monitoramento em tempo real">
+            <span class="live-dot"></span>
+            <span class="live-label">Ao Vivo</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="btn-topbar btn-topbar-primary" onclick="refreshAllData()" title="Atualizar Métricas em Tempo Real" aria-label="Atualizar Dados">
+          <span class="btn-icon">🔄</span>
+          <span class="btn-label">Atualizar</span>
+        </button>
+        <a href="/index.html" class="btn-topbar" title="Ir para a Área do Aluno" aria-label="Área do Aluno">
+          <span class="btn-icon">🏠</span>
+          <span class="btn-label">Área do Aluno</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- ACCESS DENIED STATE -->
+    <div class="access-denied-screen" id="access-denied">
+      <h2>⛔ Acesso Restrito</h2>
+      <p>Você não tem privilégios de Super Admin para gerenciar este painel.</p>
+      <a href="/index.html" class="btn-topbar btn-topbar-primary" style="text-decoration:none; margin-top: 1rem;">Voltar ao Dashboard</a>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT -->
+    <main class="admin-container" id="admin-main">
+      
+      <!-- HEADER -->
+      <section class="section-header" id="section-metrics">
+        <div class="section-title-group">
+          <h1>Painel de Controle e Métricas</h1>
+          <p>Visão executiva em tempo real de faturamento, sustentabilidade e retenção dos concurseiros</p>
+        </div>
+      </section>
+
+      <!-- KPI METRICS GRID -->
+      <section class="metrics-grid">
+        <!-- MRR -->
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-title">Receita Mensal (MRR)</span>
+            <div class="kpi-icon">💰</div>
+          </div>
+          <div class="kpi-value" id="kpi-mrr">R$ 0,00</div>
+          <div class="kpi-footer">
+            <span class="kpi-highlight-green" id="kpi-active-subs">0</span> assinaturas ativas recorrentes
+          </div>
+        </article>
+
+        <!-- CHURN RATE -->
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-title">Taxa de Churn</span>
+            <div class="kpi-icon">📊</div>
+          </div>
+          <div class="kpi-value" id="kpi-churn">0.0%</div>
+          <div class="kpi-footer">
+            <span class="kpi-highlight-red" id="kpi-canceled-subs">0</span> canceladas / inadimplentes
+          </div>
+        </article>
+
+        <!-- CONCURSEIROS PRO -->
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-title">Concurseiro Pro (Ativos)</span>
+            <div class="kpi-icon">💎</div>
+          </div>
+          <div class="kpi-value" id="kpi-total-subs">0</div>
+          <div class="kpi-footer">
+            <span class="kpi-highlight-blue" id="kpi-trial-subs">0</span> em período de trial (7 dias)
+          </div>
+        </article>
+
+        <!-- TOTAL DE CONCURSEIROS -->
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-title">Total de Concurseiros</span>
+            <div class="kpi-icon">🧑</div>
+          </div>
+          <div class="kpi-value" id="kpi-total-users">0</div>
+          <div class="kpi-footer">
+            <span class="kpi-highlight-gold" id="kpi-conv-rate">0%</span> taxa de conversão Premium
+          </div>
+        </article>
+
+        <!-- ENGAJAMENTO DE ESTUDOS -->
+        <article class="kpi-card">
+          <div class="kpi-top">
+            <span class="kpi-title">Pomodoros & Foco</span>
+            <div class="kpi-icon">⏱️</div>
+          </div>
+          <div class="kpi-value" id="kpi-pomodoros">0</div>
+          <div class="kpi-footer">
+            <span class="kpi-highlight-green" id="kpi-tasks-done">0</span> missões concluídas no app
+          </div>
+        </article>
+      </section>
+
+      <!-- ── STYLIZED CHART & BUSINESS INTELLIGENCE SECTION ── -->
+      <section class="chart-section" id="section-charts">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <div class="chart-badge">📈 INTELIGÊNCIA DE NEGÓCIO & CANVAS</div>
+            <h2>Sustentabilidade Financeira & Tração dos Concurseiros</h2>
+            <p>Evolução real do faturamento no banco de dados, meta de Break-Even (R$ 298,50) e engajamento por matéria</p>
+          </div>
+
+          <div class="chart-tab-group">
+            <button class="chart-tab active" id="tab-btn-mrr" onclick="switchChartTab('mrr')">
+              <span>💰</span> Faturamento MRR
+            </button>
+            <button class="chart-tab" id="tab-btn-growth" onclick="switchChartTab('growth')">
+              <span>👥</span> Pro vs Free
+            </button>
+            <button class="chart-tab" id="tab-btn-subjects" onclick="switchChartTab('subjects')">
+              <span>📚</span> Disciplinas Mais Estudadas
+            </button>
+          </div>
+        </div>
+
+        <div class="chart-body">
+          <!-- SVG LINE/AREA CHART -->
+          <div class="chart-svg-wrap" id="chart-svg-wrap">
+            <svg id="admin-main-svg" viewBox="0 0 760 250" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="areaGlowGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#a855f7" stop-opacity="0.55" />
+                  <stop offset="60%" stop-color="#7c3aed" stop-opacity="0.18" />
+                  <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.0" />
+                </linearGradient>
+                <linearGradient id="areaGrowthGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.45" />
+                  <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.0" />
+                </linearGradient>
+                <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#7c3aed" />
+                  <stop offset="50%" stop-color="#a855f7" />
+                  <stop offset="100%" stop-color="#38bdf8" />
+                </linearGradient>
+                <filter id="glowEffect" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <!-- SVG Horizontal Grid Lines -->
+              <g id="svg-grid-lines" stroke="#262a4d" stroke-dasharray="4,4" opacity="0.6"></g>
+
+              <!-- Break-Even Target Line -->
+              <g id="svg-breakeven-group"></g>
+
+              <!-- Secondary Area (for comparison) -->
+              <path id="svg-area-secondary" fill="url(#areaGrowthGrad)" d="" style="display:none;" />
+              <path id="svg-line-secondary" fill="none" stroke="#0ea5e9" stroke-width="2.5" stroke-dasharray="5,3" d="" style="display:none;" />
+
+              <!-- Main Area -->
+              <path id="svg-area" fill="url(#areaGlowGrad)" d="" />
+
+              <!-- Main Stroke Line -->
+              <path id="svg-line" fill="none" stroke="url(#lineGrad)" stroke-width="3.5" filter="url(#glowEffect)" d="" />
+
+              <!-- Data Points and Interactive Hover Markers -->
+              <g id="svg-points"></g>
+            </svg>
+
+            <!-- Interactive Tooltip Overlay -->
+            <div class="chart-tooltip" id="chart-tooltip">
+              <div class="tt-header" id="tt-title">Mês</div>
+              <div class="tt-val" id="tt-val">R$ 0,00</div>
+              <div class="tt-sub" id="tt-sub">0 Concurseiros Pro</div>
+            </div>
+          </div>
+
+          <!-- SUBJECTS PROGRESS BARS CONTAINER (TAB 3) -->
+          <div class="subjects-bar-container" id="subjects-container" style="display:none;"></div>
+        </div>
+
+        <!-- UNIT ECONOMICS & BREAK-EVEN FOOTER -->
+        <div class="unit-economics-bar">
+          <div class="ue-item">
+            <span class="ue-label">🎯 Ponto de Equilíbrio</span>
+            <strong class="ue-val val-gold">15 Assinantes</strong>
+            <small class="ue-sub">R$ 298,50 / mês (servidor & APIs)</small>
+          </div>
+          <div class="ue-divider"></div>
+          <div class="ue-item">
+            <span class="ue-label">💎 Sustentabilidade</span>
+            <strong class="ue-val text-green" id="ue-coverage-val">0% Coberto</strong>
+            <small class="ue-sub" id="ue-coverage-sub">Faltam 15 assinantes Pro</small>
+          </div>
+          <div class="ue-divider"></div>
+          <div class="ue-item">
+            <span class="ue-label">💰 LTV Médio</span>
+            <strong class="ue-val text-purple">R$ 179,10</strong>
+            <small class="ue-sub">9 meses de retenção média</small>
+          </div>
+          <div class="ue-divider"></div>
+          <div class="ue-item">
+            <span class="ue-label">⚡ CAC Estimado</span>
+            <strong class="ue-val text-blue">R$ 12,40</strong>
+            <small class="ue-sub">Aquisição orgânica e gamificada</small>
+          </div>
+          <div class="ue-divider"></div>
+          <div class="ue-item">
+            <span class="ue-label">🚀 Relação LTV / CAC</span>
+            <strong class="ue-val text-gold">14.4x</strong>
+            <small class="ue-sub">Alta eficiência de capital</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── USERS TABLE SECTION ── -->
+      <section class="table-section" id="section-users">
+        <div class="table-toolbar">
+          <div class="toolbar-left-group">
+            <button class="btn-create-user" onclick="openCreateUserModal()" title="Cadastrar novo concurseiro ou administrador">
+              <span>➕</span> <span>Novo Usuário</span>
+            </button>
+            <div class="toolbar-search">
+              <span>🔍</span>
+              <input type="text" id="search-input" placeholder="Buscar por nome ou e-mail..." oninput="debounceSearch()" />
+            </div>
+          </div>
+
+          <div class="toolbar-filters">
+            <select class="select-filter" id="filter-status" onchange="loadUsers()">
+              <option value="all">📋 Todos os Status</option>
+              <option value="active">💎 Concurseiro Pro (Ativo)</option>
+              <option value="trialing">⏳ Em Teste (Trial 7d)</option>
+              <option value="past_due">🔴 Inadimplente</option>
+              <option value="canceled">❌ Cancelado</option>
+              <option value="free">🌱 Aprendiz (Gratuito)</option>
+            </select>
+
+            <select class="select-filter" id="filter-role" onchange="loadUsers()">
+              <option value="all">📋 Todos os Cargos</option>
+              <option value="student">🧑 Concurseiro</option>
+              <option value="admin">🛡️ Administrador</option>
+              <option value="superadmin">👑 Super Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-scroll-hint">
+          👉 Deslize para o lado para ver todas as informações e ações
+        </div>
+
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>ID & Usuário</th>
+                <th>Cargo</th>
+                <th>Gamificação</th>
+                <th>Status Stripe</th>
+                <th>Vigência</th>
+                <th>Ações de Acesso</th>
+              </tr>
+            </thead>
+            <tbody id="users-table-body">
+              <tr>
+                <td colspan="6" style="text-align:center; padding: 2rem; color: var(--muted);">Carregando concurseiros...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL: CADASTRAR NOVO USUÁRIO -->
+  <div class="modal-overlay" id="create-user-modal">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <h3><span>➕</span> Cadastrar Novo Concurseiro / Usuário</h3>
+        <button class="btn-close-modal" onclick="closeCreateUserModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="create-name">Nome Completo *</label>
+            <input type="text" id="create-name" placeholder="Ex: Lucas Silva" required />
+          </div>
+          <div class="form-group">
+            <label for="create-email">E-mail de Acesso *</label>
+            <input type="email" id="create-email" placeholder="usuario@email.com" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="create-password">Senha Provisória *</label>
+            <input type="password" id="create-password" placeholder="Mínimo 6 caracteres" required />
+          </div>
+          <div class="form-group">
+            <label for="create-role">Cargo no Sistema</label>
+            <select id="create-role">
+              <option value="student" selected>🧑 Concurseiro (student)</option>
+              <option value="admin">🛡️ Administrador (admin)</option>
+              <option value="superadmin">👑 Super Admin (superadmin)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="create-sub-status">Status da Assinatura</label>
+            <select id="create-sub-status" onchange="toggleCreateSubFields()">
+              <option value="free" selected>🌱 Aprendiz (Gratuito)</option>
+              <option value="active">💎 Concurseiro Pro (Ativo)</option>
+              <option value="trialing">⏳ Trial 7 Dias (Degustação)</option>
+            </select>
+          </div>
+          <div class="form-group" id="create-days-group" style="display:none;">
+            <label for="create-days">Período de Acesso Pro</label>
+            <select id="create-days">
+              <option value="7">⏱️ 7 Dias (Trial)</option>
+              <option value="30" selected>📅 30 Dias (Mensal)</option>
+              <option value="90">📊 90 Dias (Trimestral)</option>
+              <option value="365">🏆 365 Dias (Anual)</option>
+              <option value="9999">💎 Vitalício (Acesso Permanente)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="create-xp">XP Inicial (Gamificação)</label>
+            <input type="number" id="create-xp" value="0" min="0" placeholder="0" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeCreateUserModal()">Cancelar</button>
+        <button class="btn-modal-confirm" id="btn-submit-create" onclick="submitCreateUser()">Salvar Usuário</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR USUÁRIO -->
+  <div class="modal-overlay" id="edit-user-modal">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <h3><span>✏️</span> Editar Dados do Usuário</h3>
+        <button class="btn-close-modal" onclick="closeEditUserModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-user-box">
+          <div class="user-avatar-initials" id="edit-modal-avatar">U</div>
+          <div class="user-meta">
+            <span class="user-name" id="edit-modal-summary-name">Carregando...</span>
+            <span class="user-email" id="edit-modal-summary-meta">ID #--</span>
+          </div>
+        </div>
+
+        <input type="hidden" id="edit-user-id" />
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-name">Nome Completo *</label>
+            <input type="text" id="edit-name" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-email">E-mail *</label>
+            <input type="email" id="edit-email" required />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-password">Redefinir Senha (opcional)</label>
+            <input type="password" id="edit-password" placeholder="Deixe em branco para manter a atual" />
+          </div>
+          <div class="form-group">
+            <label for="edit-role">Cargo</label>
+            <select id="edit-role">
+              <option value="student">🧑 Concurseiro (student)</option>
+              <option value="admin">🛡️ Administrador (admin)</option>
+              <option value="superadmin">👑 Super Admin (superadmin)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-sub-status">Status Stripe / Assinatura</label>
+            <select id="edit-sub-status">
+              <option value="free">🌱 Aprendiz (Gratuito)</option>
+              <option value="active">💎 Concurseiro Pro (Ativo)</option>
+              <option value="trialing">⏳ Em Teste (Trial 7d)</option>
+              <option value="past_due">🔴 Inadimplente</option>
+              <option value="canceled">❌ Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group" id="edit-days-group">
+            <label for="edit-days">Estender Vigência</label>
+            <select id="edit-days">
+              <option value="0" selected>Manter vigência atual</option>
+              <option value="7">+7 Dias (Trial adicional)</option>
+              <option value="30">+30 Dias (1 Mês adicional)</option>
+              <option value="90">+90 Dias (3 Meses adicional)</option>
+              <option value="365">+365 Dias (1 Ano adicional)</option>
+              <option value="9999">Tornar Vitalício (2099)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-xp">XP (Pontos de Experiência)</label>
+            <input type="number" id="edit-xp" min="0" />
+          </div>
+          <div class="form-group">
+            <label for="edit-streak">Ofensiva (Dias Consecutivos)</label>
+            <input type="number" id="edit-streak" min="0" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-pomodoros">Pomodoros Concluídos</label>
+            <input type="number" id="edit-pomodoros" min="0" />
+          </div>
+          <div class="form-group">
+            <label for="edit-plan-id">ID do Plano / Identificador</label>
+            <input type="text" id="edit-plan-id" placeholder="ex: price_123..." />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeEditUserModal()">Cancelar</button>
+        <button class="btn-modal-confirm" id="btn-submit-edit" onclick="submitEditUser()">Salvar Alterações</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETALHES COMPLETOS DO USUÁRIO -->
+  <div class="modal-overlay" id="view-user-modal">
+    <div class="modal-card modal-card-lg">
+      <div class="modal-header">
+        <h3><span>👁️</span> Detalhes & Histórico do Usuário</h3>
+        <button class="btn-close-modal" onclick="closeViewUserModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="view-user-content">
+        <div style="text-align:center; padding: 2rem; color:var(--muted);">Carregando dados...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeViewUserModal()">Fechar</button>
+        <button class="btn-modal-confirm" id="btn-view-to-edit" onclick="switchToEditFromView()">✏️ Editar Este Usuário</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EXCLUIR USUÁRIO -->
+  <div class="modal-overlay" id="delete-user-modal">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header" style="border-bottom-color: rgba(239, 68, 68, 0.3);">
+        <h3 style="color: var(--red);"><span>🗑️</span> Excluir Usuário</h3>
+        <button class="btn-close-modal" onclick="closeDeleteModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 10px; padding: 1rem; display:flex; gap:0.75rem; align-items:flex-start;">
+          <span style="font-size: 1.5rem; line-height: 1;">⚠️</span>
+          <div>
+            <strong style="color: #fca5a5; display:block; margin-bottom: 0.25rem;">Atenção: Ação Irreversível!</strong>
+            <p style="font-size: 0.82rem; color: var(--text2); line-height: 1.4;">
+              Você está prestes a excluir permanentemente <strong id="delete-user-display-name">-</strong> (<span id="delete-user-display-email">-</span>).
+            </p>
+            <p style="font-size: 0.78rem; color: var(--muted); margin-top: 0.5rem;">
+              Todas as tarefas cadastradas, níveis de gamificação e histórico de simulados do usuário serão removidos do banco de dados MySQL.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeDeleteModal()">Cancelar</button>
+        <button class="btn-modal-confirm" id="btn-confirm-delete" onclick="submitDeleteUser()" style="background: var(--red);">
+          Sim, Excluir Definitivamente
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: BYPASS MANUAL DE PREMIUM -->
+  <div class="modal-overlay" id="bypass-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚡ Bypass Manual de Assinatura</h3>
+        <button class="btn-close-modal" onclick="closeBypassModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-user-box">
+          <div class="user-avatar-initials" id="bypass-modal-avatar">U</div>
+          <div class="user-meta">
+            <span class="user-name" id="bypass-modal-name">-</span>
+            <span class="user-email" id="bypass-modal-email">-</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ação a Executar:</label>
+          <select id="bypass-action" onchange="toggleBypassDays()">
+            <option value="grant">✨ Conceder Concurseiro Pro (Acesso Total)</option>
+            <option value="revoke">🔒 Revogar Concurseiro Pro (Bloquear)</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="bypass-days-group">
+          <label>Período de Acesso:</label>
+          <select id="bypass-days">
+            <option value="7">⏱️ 7 Dias (Trial adicional)</option>
+            <option value="30" selected>📅 30 Dias (1 Mês de Cortesia)</option>
+            <option value="90">📊 90 Dias (3 Meses Trimestral)</option>
+            <option value="365">🏆 365 Dias (1 Ano Anual)</option>
+            <option value="9999">💎 Vitalício (Acesso Permanente)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeBypassModal()">Cancelar</button>
+        <button class="btn-modal-confirm" id="btn-confirm-bypass" onclick="submitBypass()">Confirmar Alteração</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ALTERAR CARGO (ROLE) -->
+  <div class="modal-overlay" id="role-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>🛡️ Alterar Cargo do Usuário</h3>
+        <button class="btn-close-modal" onclick="closeRoleModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-user-box">
+          <div class="user-avatar-initials" id="role-modal-avatar">U</div>
+          <div class="user-meta">
+            <span class="user-name" id="role-modal-name">-</span>
+            <span class="user-email" id="role-modal-email">-</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Novo Cargo:</label>
+          <select id="role-select">
+            <option value="student">🧑 Concurseiro (student)</option>
+            <option value="admin">🛡️ Administrador (admin)</option>
+            <option value="superadmin">👑 Super Admin (superadmin)</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal-cancel" onclick="closeRoleModal()">Cancelar</button>
+        <button class="btn-modal-confirm" id="btn-confirm-role" onclick="submitRole()">Salvar Cargo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ── JAVASCRIPT CONTROLLERS ── -->
+  <script>
+    let currentAdminUser = null;
+    let selectedUserId = null;
+    let searchTimeout = null;
+    let currentChartTab = "mrr";
+    let chartCachedData = null;
+
+    // ── INITIALIZATION ───────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", async () => {
+      await verifyAuth();
+      await refreshAllData();
+      setTimeout(initCustomSelects, 80);
+    });
+
+    function initCustomSelects() {
+      if (window.Emoji3D && window.Emoji3D.enhanceSelect) {
+        document.querySelectorAll('select').forEach(sel => {
+          window.Emoji3D.enhanceSelect(sel);
+        });
+      }
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(document.body);
+      }
+    }
+
+    // ── SIDEBAR CONTROLS ─────────────────────────────────────────────────────
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("show");
+    }
+
+    function closeSidebar() {
+      document.getElementById("sidebar").classList.remove("open");
+      document.getElementById("overlay").classList.remove("show");
+    }
+
+    function scrollToSection(sectionId) {
+      closeSidebar();
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    // ── AUTH & ACCESS VERIFICATION ───────────────────────────────────────────
+    async function verifyAuth() {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (!res.ok) {
+          window.location.href = "/login.html?redirect=admin.html";
+          return;
+        }
+        const data = await res.json();
+        currentAdminUser = data.user;
+
+        if (currentAdminUser.role !== "superadmin" && currentAdminUser.role !== "admin") {
+          document.getElementById("admin-main-wrap").style.display = "none";
+          document.getElementById("access-denied").style.display = "flex";
+          return;
+        }
+
+        // Atualiza perfil no sidebar
+        const adminInitial = (currentAdminUser.name || "A").charAt(0).toUpperCase();
+        document.getElementById("sb-name").textContent = currentAdminUser.name;
+        document.getElementById("sb-role").textContent = currentAdminUser.role === "superadmin" ? "Super Admin" : "Administrador";
+        document.getElementById("sb-avatar").textContent = adminInitial;
+
+        if (window.Emoji3D && window.Emoji3D.render) {
+          window.Emoji3D.render(document.getElementById("sidebar"));
+        }
+      } catch (err) {
+        console.error("Erro na verificação de autenticação:", err);
+        window.location.href = "/login.html";
+      }
+    }
+
+    async function refreshAllData() {
+      await Promise.all([loadStats(), loadUsers()]);
+    }
+
+    // ── STATS LOADING & CANVAS KPIS ──────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const res = await fetch("/api/admin/stats");
+        if (!res.ok) throw new Error("Falha ao carregar métricas");
+        const data = await res.json();
+        chartCachedData = data;
+
+        // KPI Financeiro Real
+        document.getElementById("kpi-mrr").textContent = data.financial.mrr_formatted || "R$ 0,00";
+        document.getElementById("kpi-active-subs").textContent = data.financial.active_subscribers;
+        document.getElementById("kpi-churn").textContent = `${data.financial.churn_rate}%`;
+        document.getElementById("kpi-canceled-subs").textContent = data.financial.canceled_users + data.financial.past_due_users;
+        document.getElementById("kpi-total-subs").textContent = data.financial.active_subscribers;
+        document.getElementById("kpi-trial-subs").textContent = data.financial.trial_users;
+
+        // KPI Usuários & Engajamento Real
+        document.getElementById("kpi-total-users").textContent = data.users.total;
+        document.getElementById("kpi-conv-rate").textContent = `${data.users.conversion_rate}%`;
+        document.getElementById("kpi-pomodoros").textContent = data.engagement.total_pomodoros;
+        document.getElementById("kpi-tasks-done").textContent = data.engagement.total_tasks_completed;
+
+        // Sidebar Canvas Widget
+        document.getElementById("sb-mrr").textContent = data.financial.mrr_formatted || "R$ 0,00";
+        document.getElementById("sb-pro-count").textContent = `${data.financial.active_subscribers} assinantes`;
+
+        const targetSubs = (data.charts && data.charts.break_even_subscribers) ? data.charts.break_even_subscribers : 15;
+        const currentSubs = data.financial.active_subscribers || 0;
+        const progressPct = Math.min(100, Math.round((currentSubs / targetSubs) * 100));
+
+        document.getElementById("sb-progress-fill").style.width = `${progressPct}%`;
+        document.getElementById("sb-progress-pct").textContent = `${progressPct}% da meta`;
+
+        // Unit Economics Bar Real
+        if (data.charts && data.charts.unit_economics) {
+          const ue = data.charts.unit_economics;
+          const ueCov = document.getElementById("ue-coverage-val");
+          const ueSub = document.getElementById("ue-coverage-sub");
+          
+          if (ue.current_subscribers >= ue.target_subscribers) {
+            ueCov.textContent = `${ue.coverage_percentage}% Coberto`;
+            ueCov.className = "ue-val text-green";
+            ueSub.textContent = "Infraestrutura 100% paga";
+          } else {
+            ueCov.textContent = `${ue.coverage_percentage}% Coberto`;
+            ueCov.className = "ue-val text-gold";
+            ueSub.textContent = ue.break_even_status;
+          }
+        }
+
+        // Renderiza o gráfico com os dados reais
+        renderChart(currentChartTab);
+
+        if (window.Emoji3D && window.Emoji3D.render) {
+          window.Emoji3D.render(document.querySelector(".metrics-grid"));
+          window.Emoji3D.render(document.querySelector(".chart-section"));
+        }
+      } catch (err) {
+        console.error("Erro ao carregar métricas:", err);
+        showToast("Erro ao carregar métricas financeiras.", "error");
+      }
+    }
+
+    // ── STYLIZED CHART CONTROLLER (100% REAL DATA) ───────────────────────────
+    function switchChartTab(tab) {
+      currentChartTab = tab;
+      document.querySelectorAll(".chart-tab").forEach(btn => btn.classList.remove("active"));
+      const activeBtn = document.getElementById(`tab-btn-${tab}`);
+      if (activeBtn) activeBtn.classList.add("active");
+
+      const svgWrap = document.getElementById("chart-svg-wrap");
+      const subjectsWrap = document.getElementById("subjects-container");
+
+      if (tab === "subjects") {
+        svgWrap.style.display = "none";
+        subjectsWrap.style.display = "flex";
+      } else {
+        svgWrap.style.display = "block";
+        subjectsWrap.style.display = "none";
+      }
+
+      renderChart(tab);
+    }
+
+    function renderChart(tab) {
+      if (!chartCachedData || !chartCachedData.charts) return;
+
+      const chartsData = chartCachedData.charts;
+      const history = chartsData.mrr_evolution || [];
+
+      if (tab === "subjects") {
+        renderSubjectsBreakdown(chartsData.subjects_breakdown);
+        return;
+      }
+
+      const svgW = 760;
+      const svgH = 250;
+      const padL = 70;
+      const padR = 40;
+      const padT = 30;
+      const padB = 40;
+      const usableW = svgW - padL - padR;
+      const usableH = svgH - padT - padB;
+
+      const isMrr = (tab === "mrr");
+      let values = [];
+      let secondaryValues = [];
+
+      if (isMrr) {
+        values = history.map(h => Number(h.mrr) || 0);
+      } else {
+        values = history.map(h => Number(h.pro) || 0);
+        secondaryValues = history.map(h => Number(h.free) || 0);
+      }
+
+      const breakEvenMRR = Number(chartsData.break_even_mrr) || 298.50;
+      const breakEvenSubs = Number(chartsData.break_even_subscribers) || 15;
+      const referenceTarget = isMrr ? breakEvenMRR : breakEvenSubs;
+
+      // Escala segura que garante exibição da linha de meta mesmo se todos os valores forem 0
+      const currentMax = Math.max(...values, ...secondaryValues, 0);
+      const maxVal = Math.max(currentMax, referenceTarget) * 1.25;
+      const stepX = history.length > 1 ? usableW / (history.length - 1) : usableW;
+
+      // Limpa elementos anteriores
+      const gridG = document.getElementById("svg-grid-lines");
+      const beG = document.getElementById("svg-breakeven-group");
+      const ptsG = document.getElementById("svg-points");
+      const secArea = document.getElementById("svg-area-secondary");
+      const secLine = document.getElementById("svg-line-secondary");
+      gridG.innerHTML = "";
+      beG.innerHTML = "";
+      ptsG.innerHTML = "";
+
+      // Linhas de Grade Horizontal
+      const gridSteps = 4;
+      for (let i = 0; i <= gridSteps; i++) {
+        const yVal = padT + (usableH / gridSteps) * i;
+        const lineVal = Math.round(maxVal - (maxVal / gridSteps) * i);
+        const label = isMrr ? `R$ ${lineVal}` : `${lineVal}`;
+
+        gridG.innerHTML += `
+          <line x1="${padL}" y1="${yVal}" x2="${svgW - padR}" y2="${yVal}" />
+          <text x="${padL - 10}" y="${yVal + 4}" fill="#94a3b8" font-size="10" font-weight="600" text-anchor="end">${label}</text>
+        `;
+      }
+
+      // Linha de Ponto de Equilíbrio (Break-Even)
+      const beY = padT + usableH - (referenceTarget / maxVal) * usableH;
+      const beLabel = isMrr
+        ? `🎯 META BREAK-EVEN: R$ ${breakEvenMRR.toFixed(2).replace('.', ',')} (15 PRO)`
+        : `🎯 META BREAK-EVEN: 15 ASSINANTES PRO`;
+
+      beG.innerHTML = `
+        <line x1="${padL}" y1="${beY}" x2="${svgW - padR}" y2="${beY}" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="6,4" />
+        <text x="${svgW - padR}" y="${beY - 6}" fill="#fbbf24" font-size="11" font-weight="800" text-anchor="end">${beLabel}</text>
+      `;
+
+      // Pontos principais
+      const points = values.map((val, idx) => {
+        const x = padL + idx * stepX;
+        const y = padT + usableH - (val / maxVal) * usableH;
+        return {
+          x, y, val,
+          month: history[idx]?.month || `M${idx+1}`,
+          pro: history[idx]?.pro || 0,
+          free: history[idx]?.free || 0,
+          mrr: history[idx]?.mrr || 0
+        };
+      });
+
+      // Se for aba Growth (Pro vs Free), desenha também a curva Free
+      if (!isMrr && secondaryValues.length > 0) {
+        const secPoints = secondaryValues.map((val, idx) => {
+          const x = padL + idx * stepX;
+          const y = padT + usableH - (val / maxVal) * usableH;
+          return { x, y };
+        });
+
+        let secD = `M ${secPoints[0].x} ${secPoints[0].y}`;
+        for (let i = 0; i < secPoints.length - 1; i++) {
+          const p1 = secPoints[i];
+          const p2 = secPoints[i + 1];
+          secD += ` L ${p2.x} ${p2.y}`;
+        }
+        secLine.setAttribute("d", secD);
+        secLine.style.display = "block";
+      } else {
+        secLine.style.display = "none";
+        secArea.style.display = "none";
+      }
+
+      // Construção da Curva Bézier Suave
+      let pathD = `M ${points[0].x} ${points[0].y}`;
+      if (points.length === 1) {
+        pathD += ` L ${points[0].x + usableW} ${points[0].y}`;
+      } else {
+        for (let i = 0; i < points.length - 1; i++) {
+          const p0 = i > 0 ? points[i - 1] : points[i];
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const p3 = i !== points.length - 2 ? points[i + 2] : p2;
+
+          const cp1x = p1.x + (p2.x - p0.x) / 6;
+          const cp1y = p1.y + (p2.y - p0.y) / 6;
+          const cp2x = p2.x - (p3.x - p1.x) / 6;
+          const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+          pathD += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+        }
+      }
+
+      const areaD = `${pathD} L ${points[points.length - 1].x} ${padT + usableH} L ${points[0].x} ${padT + usableH} Z`;
+      document.getElementById("svg-line").setAttribute("d", pathD);
+      document.getElementById("svg-area").setAttribute("d", areaD);
+
+      // Labels no eixo X e Marcadores interativos
+      points.forEach((pt, i) => {
+        const x = pt.x;
+        const y = pt.y;
+
+        ptsG.innerHTML += `
+          <text x="${x}" y="${svgH - 12}" fill="#cbd5e1" font-size="11" font-weight="700" text-anchor="middle">${pt.month}</text>
+        `;
+
+        const isLast = (i === points.length - 1);
+        const tooltipVal = isMrr ? `R$ ${pt.val.toFixed(2).replace('.', ',')}` : `${pt.val} Concurseiros Pro`;
+        const tooltipSub = `${pt.pro} Pro · ${pt.free} Free (Total: ${pt.pro + pt.free})`;
+
+        ptsG.innerHTML += `
+          <circle cx="${x}" cy="${y}" r="${isLast ? 6 : 4.5}" fill="#fff" stroke="${isLast ? '#38bdf8' : '#a855f7'}" stroke-width="${isLast ? 3.5 : 2.5}" />
+          <circle cx="${x}" cy="${y}" r="26" fill="transparent" style="cursor:pointer;" 
+                  onmouseenter="showChartTooltip(event, '${pt.month}', '${tooltipVal}', '${tooltipSub}')"
+                  onmouseleave="hideChartTooltip()"
+                  ontouchstart="showChartTooltip(event, '${pt.month}', '${tooltipVal}', '${tooltipSub}')" />
+        `;
+      });
+    }
+
+    function showChartTooltip(evt, month, val, sub) {
+      const tt = document.getElementById("chart-tooltip");
+      const wrap = document.getElementById("chart-svg-wrap");
+      const rect = wrap.getBoundingClientRect();
+
+      let clientX = evt.clientX;
+      let clientY = evt.clientY;
+      if (evt.touches && evt.touches[0]) {
+        clientX = evt.touches[0].clientX;
+        clientY = evt.touches[0].clientY;
+      }
+
+      const posX = clientX - rect.left;
+      const posY = clientY - rect.top;
+
+      document.getElementById("tt-title").textContent = month;
+      document.getElementById("tt-val").textContent = val;
+      document.getElementById("tt-sub").textContent = sub;
+
+      tt.style.left = `${Math.max(60, Math.min(rect.width - 60, posX))}px`;
+      tt.style.top = `${Math.max(30, posY - 10)}px`;
+      tt.classList.add("visible");
+    }
+
+    function hideChartTooltip() {
+      document.getElementById("chart-tooltip").classList.remove("visible");
+    }
+
+    function renderSubjectsBreakdown(subjects) {
+      const container = document.getElementById("subjects-container");
+      if (!subjects || subjects.length === 0) {
+        container.innerHTML = `<p style="color:var(--muted); text-align:center; padding: 2rem;">Nenhuma questão ou simulado encontrado.</p>`;
+        return;
+      }
+
+      container.innerHTML = subjects.map(item => {
+        const accuracyText = item.answered_count > 0
+          ? `🎯 ${item.accuracy}% de acerto (${item.answered_count} respostas)`
+          : `📚 Sem respostas de alunos ainda`;
+
+        return `
+          <div class="subject-row">
+            <div class="subject-meta">
+              <span class="subject-name">
+                <span>📖</span> <span>${escapeHtml(item.subject)}</span>
+              </span>
+              <span class="subject-stats-tag">
+                <strong>${item.percentage}%</strong> (${item.questions_count} questões no banco) · <span style="color:var(--accent2);">${accuracyText}</span>
+              </span>
+            </div>
+            <div class="subject-track">
+              <div class="subject-fill" style="width: ${item.percentage}%;"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(container);
+      }
+    }
+
+    // ── USERS TABLE & SEARCH CONTROLLERS ───────────────────────────────────────
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(loadUsers, 300);
+    }
+
+    async function loadUsers() {
+      const search = document.getElementById("search-input").value;
+      const status = document.getElementById("filter-status").value;
+      const role = document.getElementById("filter-role").value;
+
+      const url = new URL("/api/admin/users", window.location.origin);
+      if (search) url.searchParams.set("search", search);
+      if (status !== "all") url.searchParams.set("status", status);
+      if (role !== "all") url.searchParams.set("role", role);
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Falha ao carregar lista de usuários");
+        const users = await res.json();
+        renderUsersTable(users);
+      } catch (err) {
+        showToast("Erro ao carregar usuários.", "error");
+      }
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById("users-table-body");
+      if (!users || users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem; color: var(--muted);">Nenhum concurseiro encontrado com os filtros selecionados.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = users.map(u => {
+        const initials = (u.name || "U").split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+
+        let statusBadge = `<span class="badge badge-free">🌱 Gratuito</span>`;
+        if (u.subscription_status === "active") {
+          statusBadge = `<span class="badge badge-active">💎 Ativo</span>`;
+        } else if (u.subscription_status === "trialing") {
+          statusBadge = `<span class="badge badge-trialing">⏳ Trial 7d</span>`;
+        } else if (u.subscription_status === "past_due") {
+          statusBadge = `<span class="badge badge-past_due">🔴 Atrasado</span>`;
+        } else if (u.subscription_status === "canceled") {
+          statusBadge = `<span class="badge badge-canceled">❌ Cancelado</span>`;
+        }
+
+        const planBadge = u.is_premium
+          ? `<span class="badge badge-active">💎 Concurseiro Pro</span> <span class="badge" style="background:rgba(124,58,237,0.2);color:#c084fc;border:1px solid rgba(124,58,237,0.4);font-size:0.68rem;">🤖 IA Ilimitada</span>`
+          : `<span class="badge badge-free">🌱 Aprendiz (Free)</span>`;
+
+        const roleBadge = `<span class="badge badge-role-${u.role}">${u.role === "superadmin" ? "👑 Super Admin" : (u.role === "admin" ? "🛡️ Admin" : "🧑 Concurseiro")}</span>`;
+        const isSelf = currentAdminUser && currentAdminUser.id === u.id;
+
+        return `
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar-initials">${initials}</div>
+                <div class="user-meta">
+                  <span class="user-name">${escapeHtml(u.name)}</span>
+                  <span class="user-email">${escapeHtml(u.email)} · #${u.id}</span>
+                </div>
+              </div>
+            </td>
+            <td>${roleBadge}</td>
+            <td>
+              <div style="font-size:0.85rem; line-height: 1.3;">
+                <strong>Nível ${u.stats.level}</strong> (${u.stats.xp} XP)<br/>
+                <span style="color:var(--muted); font-size:0.75rem;">🔥 ${u.stats.streak}d streak · ⏱️ ${u.stats.total_pomodoros} pomos</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex; flex-direction:column; gap:0.35rem;">
+                <div style="display:flex; gap:0.35rem; align-items:center; flex-wrap:wrap;">
+                  ${statusBadge}
+                  ${planBadge}
+                </div>
+                <span style="font-size:0.7rem; color:var(--muted);">${escapeHtml(u.stripe_plan_id || 'plano_padrao')}</span>
+              </div>
+            </td>
+            <td>
+              <span style="font-size:0.85rem; color:${u.current_period_end ? 'var(--text)' : 'var(--muted)'};">
+                ${u.current_period_end ? `📅 ${u.current_period_end}` : 'Sem vigência'}
+              </span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-action-view" 
+                        title="Ver histórico e simulados" 
+                        onclick="openViewUserModal(${u.id})">
+                  👁️ Ver
+                </button>
+                <button class="btn-action btn-action-edit" 
+                        title="Editar cadastro e gamificação" 
+                        onclick="openEditUserModal(${u.id})">
+                  ✏️ Editar
+                </button>
+                <button class="btn-action ${u.is_premium ? 'btn-bypass-revoke' : 'btn-bypass-active'}" 
+                        title="Bypass manual Premium"
+                        onclick="openBypassModal(${u.id}, '${escapeHtml(u.name)}', '${escapeHtml(u.email)}', ${u.is_premium})">
+                  ⚡ Bypass
+                </button>
+                <button class="btn-action btn-action-delete" 
+                        ${isSelf ? 'disabled title="Você não pode excluir sua própria conta"' : 'title="Excluir usuário"'}
+                        onclick="openDeleteModal(${u.id}, '${escapeHtml(u.name)}', '${escapeHtml(u.email)}')">
+                  🗑️
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(tbody);
+      }
+    }
+
+    // ── CREATE USER CONTROLLERS (C - CRUD) ───────────────────────────────────
+    function openCreateUserModal() {
+      closeSidebar();
+      document.getElementById("create-name").value = "";
+      document.getElementById("create-email").value = "";
+      document.getElementById("create-password").value = "";
+      document.getElementById("create-role").value = "student";
+      document.getElementById("create-sub-status").value = "free";
+      document.getElementById("create-days").value = "30";
+      document.getElementById("create-xp").value = "0";
+      toggleCreateSubFields();
+
+      document.getElementById("create-user-modal").classList.add("active");
+      initCustomSelects();
+    }
+
+    function closeCreateUserModal() {
+      document.getElementById("create-user-modal").classList.remove("active");
+    }
+
+    function toggleCreateSubFields() {
+      const status = document.getElementById("create-sub-status").value;
+      const daysGroup = document.getElementById("create-days-group");
+      daysGroup.style.display = (status === "active" || status === "trialing") ? "flex" : "none";
+    }
+
+    async function submitCreateUser() {
+      const name = document.getElementById("create-name").value.trim();
+      const email = document.getElementById("create-email").value.trim();
+      const password = document.getElementById("create-password").value;
+      const role = document.getElementById("create-role").value;
+      const subscription_status = document.getElementById("create-sub-status").value;
+      const days = parseInt(document.getElementById("create-days").value, 10);
+      const xp = parseInt(document.getElementById("create-xp").value, 10) || 0;
+
+      if (!name) return showToast("Por favor, preencha o nome do usuário.", "error");
+      if (!email || !email.includes("@")) return showToast("E-mail inválido.", "error");
+      if (!password || password.length < 6) return showToast("A senha deve conter ao menos 6 caracteres.", "error");
+
+      const btn = document.getElementById("btn-submit-create");
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
+      try {
+        const res = await fetch("/api/admin/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, role, subscription_status, days, xp })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao cadastrar usuário");
+
+        showToast(data.message, "success");
+        closeCreateUserModal();
+        await refreshAllData();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Salvar Usuário";
+      }
+    }
+
+    // ── VIEW USER DETAILS CONTROLLERS (R - CRUD) ─────────────────────────────
+    async function openViewUserModal(userId) {
+      selectedUserId = userId;
+      const content = document.getElementById("view-user-content");
+      content.innerHTML = `<div style="text-align:center; padding: 2.5rem; color: var(--muted);"><span>⏳</span> Carregando informações completas...</div>`;
+      document.getElementById("view-user-modal").classList.add("active");
+
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`);
+        if (!res.ok) throw new Error("Erro ao buscar detalhes do usuário");
+        const u = await res.json();
+
+        const initials = (u.name || "U").split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase();
+        const roleLabel = u.role === "superadmin" ? "👑 Super Admin" : (u.role === "admin" ? "🛡️ Administrador" : "🧑 Concurseiro");
+        const subLabel = u.is_premium ? "💎 Concurseiro Pro (Ativo)" : "🌱 Aprendiz (Gratuito)";
+
+        let simsHtml = `<p style="font-size:0.78rem; color:var(--muted);">Nenhum simulado realizado ainda.</p>`;
+        if (u.simulados_summary && u.simulados_summary.recent && u.simulados_summary.recent.length > 0) {
+          simsHtml = `
+            <div class="sim-history-list">
+              ${u.simulados_summary.recent.map(s => `
+                <div class="sim-history-item">
+                  <div>
+                    <strong>📖 ${escapeHtml(s.subject)}</strong> · <span style="color:var(--muted);">${s.created_at}</span>
+                  </div>
+                  <div>
+                    <span style="color:${s.accuracy_pct >= 70 ? 'var(--green)' : 'var(--gold)'}; font-weight:700;">
+                      ${s.correct_count}/${s.total_questions} acertos (${s.accuracy_pct}%)
+                    </span>
+                    <span style="color:var(--accent2); margin-left: 0.4rem;">+${s.xp_awarded} XP</span>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }
+
+        content.innerHTML = `
+          <div class="modal-user-box">
+            <div class="user-avatar-initials">${initials}</div>
+            <div class="user-meta" style="flex:1;">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:0.5rem;">
+                <div>
+                  <h4 style="font-size: 1.05rem; font-weight: 800; color: var(--text);">${escapeHtml(u.name)}</h4>
+                  <span style="font-size: 0.8rem; color: var(--muted);">${escapeHtml(u.email)} · ID #${u.id}</span>
+                </div>
+                <div style="display:flex; gap:0.35rem; flex-wrap:wrap;">
+                  <span class="badge badge-role-${u.role}">${roleLabel}</span>
+                  <span class="badge ${u.is_premium ? 'badge-active' : 'badge-free'}">${subLabel}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-section-title">📊 Gamificação & Atividades</div>
+          <div class="detail-grid">
+            <div class="detail-card">
+              <span class="detail-lbl">Nível RPG</span>
+              <span class="detail-val" style="color:var(--accent2);">Nível ${u.stats.level}</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">XP Acumulado</span>
+              <span class="detail-val" style="color:var(--gold);">${u.stats.xp} XP</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Ofensiva (Streak)</span>
+              <span class="detail-val" style="color:#f97316;">🔥 ${u.stats.streak} dias</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Pomodoros</span>
+              <span class="detail-val" style="color:var(--blue);">⏱️ ${u.stats.total_pomodoros}</span>
+            </div>
+          </div>
+
+          <div class="detail-section-title">🎯 Desempenho em Simulados</div>
+          <div class="detail-grid">
+            <div class="detail-card">
+              <span class="detail-lbl">Simulados Feitos</span>
+              <span class="detail-val">${u.simulados_summary.total_taken}</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Taxa de Acerto</span>
+              <span class="detail-val" style="color:var(--green);">${u.simulados_summary.average_accuracy}%</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Questões Resolvidas</span>
+              <span class="detail-val">${u.simulados_summary.total_questions_answered}</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Missões / Tarefas</span>
+              <span class="detail-val">${u.tasks.completed}/${u.tasks.total}</span>
+            </div>
+          </div>
+
+          <div class="detail-section-title">📜 Histórico Recente de Simulados</div>
+          ${simsHtml}
+
+          <div class="detail-section-title">💳 Integração Financeira & Stripe</div>
+          <div class="detail-grid">
+            <div class="detail-card">
+              <span class="detail-lbl">Stripe Customer ID</span>
+              <span style="font-size:0.75rem; color:var(--text2); word-break:break-all;">${u.stripe_customer_id}</span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Vigência Pro Até</span>
+              <span style="font-size:0.85rem; font-weight:700; color:${u.current_period_end_formatted ? 'var(--green)' : 'var(--muted)'};">
+                ${u.current_period_end_formatted ? `📅 ${u.current_period_end_formatted}` : 'Sem vigência'}
+              </span>
+            </div>
+            <div class="detail-card">
+              <span class="detail-lbl">Data de Cadastro</span>
+              <span style="font-size:0.8rem; color:var(--text2);">${u.created_at}</span>
+            </div>
+          </div>
+        `;
+
+        if (window.Emoji3D && window.Emoji3D.render) {
+          window.Emoji3D.render(content);
+        }
+      } catch (err) {
+        content.innerHTML = `<div style="color:var(--red); padding:1rem; text-align:center;">Erro ao carregar detalhes: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function closeViewUserModal() {
+      document.getElementById("view-user-modal").classList.remove("active");
+    }
+
+    function switchToEditFromView() {
+      if (selectedUserId) {
+        const uid = selectedUserId;
+        closeViewUserModal();
+        openEditUserModal(uid);
+      }
+    }
+
+    // ── EDIT USER CONTROLLERS (U - CRUD) ─────────────────────────────────────
+    async function openEditUserModal(userId) {
+      selectedUserId = userId;
+      document.getElementById("edit-user-id").value = userId;
+      document.getElementById("edit-modal-summary-name").textContent = "Carregando...";
+      document.getElementById("edit-modal-summary-meta").textContent = `ID #${userId}`;
+      document.getElementById("edit-user-modal").classList.add("active");
+
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`);
+        if (!res.ok) throw new Error("Erro ao carregar dados do usuário");
+        const u = await res.json();
+
+        document.getElementById("edit-modal-avatar").textContent = (u.name || "U").charAt(0).toUpperCase();
+        document.getElementById("edit-modal-summary-name").textContent = u.name;
+        document.getElementById("edit-modal-summary-meta").textContent = `${u.email} · ID #${u.id}`;
+
+        document.getElementById("edit-name").value = u.name;
+        document.getElementById("edit-email").value = u.email;
+        document.getElementById("edit-password").value = "";
+        document.getElementById("edit-role").value = u.role;
+        document.getElementById("edit-sub-status").value = u.subscription_status || "free";
+        document.getElementById("edit-days").value = "0";
+        document.getElementById("edit-plan-id").value = (u.stripe_plan_id && u.stripe_plan_id !== "-") ? u.stripe_plan_id : "";
+        document.getElementById("edit-xp").value = u.stats.xp;
+        document.getElementById("edit-streak").value = u.stats.streak;
+        document.getElementById("edit-pomodoros").value = u.stats.total_pomodoros;
+
+        initCustomSelects();
+      } catch (err) {
+        showToast(err.message, "error");
+        closeEditUserModal();
+      }
+    }
+
+    function closeEditUserModal() {
+      document.getElementById("edit-user-modal").classList.remove("active");
+      selectedUserId = null;
+    }
+
+    async function submitEditUser() {
+      if (!selectedUserId) return;
+      const name = document.getElementById("edit-name").value.trim();
+      const email = document.getElementById("edit-email").value.trim();
+      const password = document.getElementById("edit-password").value;
+      const role = document.getElementById("edit-role").value;
+      const subscription_status = document.getElementById("edit-sub-status").value;
+      const days = parseInt(document.getElementById("edit-days").value, 10);
+      const stripe_plan_id = document.getElementById("edit-plan-id").value.trim();
+      const xp = parseInt(document.getElementById("edit-xp").value, 10);
+      const streak = parseInt(document.getElementById("edit-streak").value, 10);
+      const total_pomodoros = parseInt(document.getElementById("edit-pomodoros").value, 10);
+
+      if (!name) return showToast("O nome não pode ficar vazio.", "error");
+      if (!email || !email.includes("@")) return showToast("E-mail inválido.", "error");
+
+      const payload = { name, email, role, subscription_status, xp, streak, total_pomodoros };
+      if (password && password.trim().length > 0) {
+        if (password.trim().length < 6) return showToast("A nova senha deve ter no mínimo 6 caracteres.", "error");
+        payload.password = password.trim();
+      }
+      if (days > 0) {
+        payload.days = days;
+      }
+      if (stripe_plan_id) {
+        payload.stripe_plan_id = stripe_plan_id;
+      }
+
+      const btn = document.getElementById("btn-submit-edit");
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao atualizar dados");
+
+        showToast(data.message, "success");
+        closeEditUserModal();
+        await refreshAllData();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Salvar Alterações";
+      }
+    }
+
+    // ── DELETE USER CONTROLLERS (D - CRUD) ───────────────────────────────────
+    function openDeleteModal(userId, name, email) {
+      selectedUserId = userId;
+      document.getElementById("delete-user-display-name").textContent = name;
+      document.getElementById("delete-user-display-email").textContent = email;
+      document.getElementById("delete-user-modal").classList.add("active");
+    }
+
+    function closeDeleteModal() {
+      document.getElementById("delete-user-modal").classList.remove("active");
+      selectedUserId = null;
+    }
+
+    async function submitDeleteUser() {
+      if (!selectedUserId) return;
+      const btn = document.getElementById("btn-confirm-delete");
+      btn.disabled = true;
+      btn.textContent = "Excluindo...";
+
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}`, {
+          method: "DELETE"
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao excluir usuário");
+
+        showToast(data.message, "success");
+        closeDeleteModal();
+        await refreshAllData();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Sim, Excluir Definitivamente";
+      }
+    }
+
+    // ── BYPASS MODAL CONTROLS ────────────────────────────────────────────────
+    function openBypassModal(userId, name, email, isPremium) {
+      selectedUserId = userId;
+      document.getElementById("bypass-modal-name").textContent = name;
+      document.getElementById("bypass-modal-email").textContent = email;
+      document.getElementById("bypass-modal-avatar").textContent = name.charAt(0).toUpperCase();
+
+      const actionSelect = document.getElementById("bypass-action");
+      actionSelect.value = isPremium ? "revoke" : "grant";
+      actionSelect.dispatchEvent(new Event("change"));
+      toggleBypassDays();
+
+      document.getElementById("bypass-modal").classList.add("active");
+      initCustomSelects();
+    }
+
+    function closeBypassModal() {
+      document.getElementById("bypass-modal").classList.remove("active");
+      selectedUserId = null;
+    }
+
+    function toggleBypassDays() {
+      const action = document.getElementById("bypass-action").value;
+      const daysGroup = document.getElementById("bypass-days-group");
+      daysGroup.style.display = action === "grant" ? "flex" : "none";
+
+      const btnConfirm = document.getElementById("btn-confirm-bypass");
+      if (action === "grant") {
+        btnConfirm.textContent = "Conceder Concurseiro Pro";
+        btnConfirm.style.background = "var(--accent)";
+      } else {
+        btnConfirm.textContent = "Revogar Concurseiro Pro";
+        btnConfirm.style.background = "var(--red)";
+      }
+    }
+
+    async function submitBypass() {
+      if (!selectedUserId) return;
+      const action = document.getElementById("bypass-action").value;
+      const days = parseInt(document.getElementById("bypass-days").value, 10);
+      const btn = document.getElementById("btn-confirm-bypass");
+
+      btn.disabled = true;
+      btn.textContent = "Processando...";
+
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}/bypass-premium`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action, days })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao processar");
+
+        showToast(data.message, "success");
+        closeBypassModal();
+        await refreshAllData();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        toggleBypassDays();
+      }
+    }
+
+    // ── ROLE MODAL CONTROLS ──────────────────────────────────────────────────
+    function openRoleModal(userId, name, email, role) {
+      selectedUserId = userId;
+      document.getElementById("role-modal-name").textContent = name;
+      document.getElementById("role-modal-email").textContent = email;
+      document.getElementById("role-modal-avatar").textContent = name.charAt(0).toUpperCase();
+
+      const roleSelect = document.getElementById("role-select");
+      roleSelect.value = role;
+      roleSelect.dispatchEvent(new Event("change"));
+
+      document.getElementById("role-modal").classList.add("active");
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(document.getElementById("role-modal"));
+      }
+    }
+
+    function closeRoleModal() {
+      document.getElementById("role-modal").classList.remove("active");
+      selectedUserId = null;
+    }
+
+    async function submitRole() {
+      if (!selectedUserId) return;
+      const role = document.getElementById("role-select").value;
+      const btn = document.getElementById("btn-confirm-role");
+
+      btn.disabled = true;
+      btn.textContent = "Salvando...";
+
+      try {
+        const res = await fetch(`/api/admin/users/${selectedUserId}/role`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ role })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao alterar cargo");
+
+        showToast(data.message, "success");
+        closeRoleModal();
+        await refreshAllData();
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Salvar Cargo";
+      }
+    }
+
+    // ── LOGOUT & HELPERS ─────────────────────────────────────────────────────
+    async function handleLogout() {
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+        window.location.href = "/login.html";
+      } catch (e) {
+        window.location.href = "/login.html";
+      }
+    }
+
+    function showToast(msg, type = "success") {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : '⚠️'}</span> <span>${escapeHtml(msg)}</span>`;
+      container.appendChild(toast);
+      if (window.Emoji3D && window.Emoji3D.render) {
+        window.Emoji3D.render(toast);
+      }
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

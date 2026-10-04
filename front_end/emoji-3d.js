@@ -120,7 +120,8 @@
   // Options nativas não aceitam PNGs. Mantém o select como fonte do valor
   // e oferece a mesma escolha através de uma lista acessível com imagens.
   function enhanceSelect(select) {
-    if (![...select.options].some(o => [...segmenter.segment(o.text)].some(p => catalog[normalize(p.segment)]))) return;
+    if (![...select.options].some(o => [...segmenter.segment(o.text)].some(p => catalog[normalize(p.segment)] || isEmoji(p.segment)))) return;
+    if (select.parentElement?.classList.contains('emoji-select')) return;
     const wrapper = document.createElement('div');
     wrapper.className = 'emoji-select';
     select.before(wrapper);
@@ -230,7 +231,7 @@
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     canvasImage('❤'); canvasImage('🔒');
   }
-  window.Emoji3D = { create, render, drawText };
+  window.Emoji3D = { create, render, drawText, enhanceSelect };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();

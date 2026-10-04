@@ -1,6 +1,7 @@
 [Unit]
-Description=LevelUp Study (Gunicorn)
-After=network.target
+Description=LevelUp Study Production Service (Gunicorn + Flask)
+After=network.target mysql.service mariadb.service
+Wants=mysql.service mariadb.service
 
 [Service]
 Type=simple
@@ -8,11 +9,30 @@ User=USUARIO_HESTIA
 Group=USUARIO_HESTIA
 WorkingDirectory=/home/USUARIO_HESTIA/apps/levelup-study/current/back_end
 EnvironmentFile=/home/USUARIO_HESTIA/apps/levelup-study/shared/.env
-ExecStart=/home/USUARIO_HESTIA/apps/levelup-study/current/.venv/bin/gunicorn --workers 2 --threads 2 --timeout 90 --bind 127.0.0.1:8017 --access-logfile - --error-logfile - backend:app
+
+# Gunicorn com múltiplos workers e threads para alta concorrência
+ExecStart=/home/USUARIO_HESTIA/apps/levelup-study/current/.venv/bin/gunicorn \
+    --workers 3 \
+    --threads 2 \
+    --worker-class gthread \
+    --worker-connections 1000 \
+    --timeout 90 \
+    --keep-alive 5 \
+    --bind 127.0.0.1:8017 \
+    --access-logfile - \
+    --error-logfile - \
+    backend:app
+
+# Políticas de Reinício Automático e Resiliência
 Restart=always
 RestartSec=5
+
+# Hardening e Segurança Linux
 PrivateTmp=true
+ProtectSystem=full
 NoNewPrivileges=true
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
