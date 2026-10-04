@@ -1863,6 +1863,9 @@
         </button>
 
         <div class="nav-section-label">Ações Rápidas</div>
+        <button class="nav-item" onclick="triggerStripeSync()">
+          <span class="nav-icon">⚡</span> Sincronizar Planos Stripe
+        </button>
         <button class="nav-item" onclick="refreshAllData(); showToast('Métricas atualizadas com sucesso!', 'success')">
           <span class="nav-icon">🔄</span> Sincronizar Dados
         </button>
@@ -3400,6 +3403,21 @@
       } finally {
         btn.disabled = false;
         btn.textContent = "Salvar Cargo";
+      }
+    }
+
+    // ── STRIPE SYNC CONTROLLER ──────────────────────────────────────────────
+    async function triggerStripeSync() {
+      closeSidebar();
+      showToast("Sincronizando planos do LevelUp Study com o Stripe...", "success");
+      try {
+        const res = await fetch("/api/admin/stripe/sync-plans", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro na sincronização");
+        showToast(`Stripe sincronizado! Produto: ${data.data.product_name} (${data.data.product_id})`, "success");
+        await refreshAllData();
+      } catch (err) {
+        showToast(err.message, "error");
       }
     }
 

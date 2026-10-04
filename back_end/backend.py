@@ -1092,6 +1092,21 @@ def get_subscription_status():
         "current_period_end": user.current_period_end.isoformat() if user.current_period_end else None,
         "has_customer": bool(user.stripe_customer_id),
     })
+@app.route("/api/admin/stripe/sync-plans", methods=["POST"])
+@require_role("superadmin")
+def admin_sync_stripe_plans():
+    """Sincroniza automaticamente os planos do LevelUp Study com a conta do Stripe."""
+    try:
+        from sync_stripe_plans import sync_plans_with_stripe
+        sync_result = sync_plans_with_stripe()
+        return jsonify({
+            "ok": True,
+            "message": "Planos sincronizados com sucesso no Stripe!",
+            "data": sync_result
+        })
+    except Exception as e:
+        app.logger.error(f"Erro ao sincronizar planos com o Stripe: {e}")
+        return jsonify({"error": f"Falha na sincronização com o Stripe: {str(e)}"}), 500
 
 
 # ── Super Admin Endpoints ──────────────────────────────────────────────────
