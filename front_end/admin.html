@@ -2,8 +2,8 @@
 <html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>LevelUp Study – Painel Super Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>LevelUp Study – Painel do Super Admin</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
   <script src="js/emoji-3d.js" defer></script>
   <style>
     /* ═══════════════════════════════════════════════════════════════════════════
-       DESIGN SYSTEM & THEME TOKENS (LevelUp Study – Super Admin Pro)
+       DESIGN SYSTEM & THEME TOKENS
        ═══════════════════════════════════════════════════════════════════════════ */
     :root {
       --bg: #090711;
@@ -39,7 +39,7 @@
       --muted: #94a3b8;
       --font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       --font-display: 'Bricolage Grotesque', sans-serif;
-      --radius: 14px;
+      --radius: 12px;
       --radius-sm: 8px;
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
       --sidebar-w: 260px;
@@ -51,19 +51,14 @@
       padding: 0;
       -webkit-tap-highlight-color: transparent;
       scrollbar-width: thin;
-      scrollbar-color: rgba(139, 92, 246, 0.45) rgba(10, 8, 20, 0.4);
+      scrollbar-color: rgba(139, 92, 246, 0.4) rgba(10, 8, 20, 0.4);
     }
 
-    ::-webkit-scrollbar { width: 7px; height: 7px; }
-    ::-webkit-scrollbar-track { background: rgba(10, 8, 20, 0.4); border-radius: 99px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(10, 8, 20, 0.4); }
     ::-webkit-scrollbar-thumb {
       background: linear-gradient(180deg, rgba(139, 92, 246, 0.45), rgba(124, 58, 237, 0.65));
       border-radius: 99px;
-      border: 1px solid rgba(196, 181, 253, 0.15);
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(180deg, rgba(168, 85, 247, 0.8), rgba(139, 92, 246, 0.95));
-      box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
     }
 
     body {
@@ -77,16 +72,16 @@
       overflow-x: hidden;
     }
 
-    /* ── SIDEBAR OVERLAY ────────────────────────────────────────────────── */
+    /* ── OVERLAY (MOBILE) ───────────────────────────────────────────────── */
     .sidebar-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.75);
       backdrop-filter: blur(4px);
-      z-index: 90;
+      z-index: 150;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.25s ease;
     }
     .sidebar-overlay.show {
       display: block;
@@ -102,11 +97,11 @@
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 100;
+      z-index: 200;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .sidebar-header {
@@ -115,6 +110,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-shrink: 0;
     }
 
     .brand-group {
@@ -126,23 +122,22 @@
 
     .brand-logo {
       font-family: var(--font-display);
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
       color: #fff;
-      text-decoration: none;
       letter-spacing: -0.02em;
     }
     .brand-logo span { color: var(--accent2); }
 
     .sidebar-badge {
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(245, 158, 11, 0.25));
       border: 1px solid rgba(245, 158, 11, 0.4);
       color: var(--gold);
-      padding: 0.15rem 0.5rem;
+      padding: 0.15rem 0.45rem;
       border-radius: 999px;
     }
 
@@ -154,68 +149,13 @@
       font-size: 1.5rem;
       cursor: pointer;
       line-height: 1;
+      padding: 0.25rem;
     }
 
-    .sidebar-scrollable {
+    .sidebar-nav {
       flex: 1;
       overflow-y: auto;
       padding: 1rem 0.85rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.15rem;
-    }
-
-    /* Widgets na Sidebar */
-    .sidebar-widget {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.85rem;
-    }
-
-    .widget-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-    }
-
-    .widget-title {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .badge-status-online {
-      font-size: 0.65rem;
-      font-weight: 800;
-      color: var(--green);
-    }
-
-    .infra-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      font-size: 0.74rem;
-      color: var(--text2);
-    }
-    .infra-item {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-    .infra-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-    }
-
-    /* Navegação da Sidebar */
-    .sidebar-nav {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
@@ -235,7 +175,7 @@
       align-items: center;
       gap: 0.75rem;
       padding: 0.65rem 0.85rem;
-      border-radius: 9px;
+      border-radius: 8px;
       color: var(--text2);
       font-size: 0.84rem;
       font-weight: 600;
@@ -287,17 +227,6 @@
       color: var(--accent2);
     }
 
-    .badge-nav-pro {
-      margin-left: auto;
-      font-size: 0.62rem;
-      font-weight: 800;
-      padding: 0.15rem 0.45rem;
-      border-radius: 99px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      letter-spacing: 0.04em;
-    }
-
     .sidebar-footer {
       padding: 1rem 1.15rem;
       border-top: 1px solid var(--border);
@@ -305,6 +234,7 @@
       flex-direction: column;
       gap: 0.75rem;
       background: rgba(10, 8, 20, 0.4);
+      flex-shrink: 0;
     }
 
     .user-info {
@@ -324,6 +254,7 @@
       font-weight: 800;
       font-size: 0.9rem;
       color: #fff;
+      flex-shrink: 0;
     }
 
     .user-details {
@@ -376,28 +307,29 @@
       display: flex;
       flex-direction: column;
       background: var(--bg);
+      min-width: 0;
     }
 
-    /* ── STICKY TOPBAR ──────────────────────────────────────────────────── */
+    /* ── TOPBAR ─────────────────────────────────────────────────────────── */
     .topbar {
       position: sticky;
       top: 0;
       z-index: 80;
-      background: rgba(9, 7, 17, 0.85);
+      background: rgba(9, 7, 17, 0.88);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      height: 64px;
-      padding: 0 2rem;
+      height: 60px;
+      padding: 0 1.75rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 0.85rem;
     }
 
     .topbar-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.85rem;
       min-width: 0;
     }
 
@@ -407,19 +339,14 @@
       border: 1px solid var(--border);
       color: var(--text);
       border-radius: 8px;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      flex-shrink: 0;
     }
-
-    .topbar-title {
-      display: flex;
-      align-items: center;
-      gap: 0.65rem;
-      min-width: 0;
-    }
+    .hamburger svg { width: 18px; height: 18px; }
 
     .topbar-title-text {
       font-size: 1.05rem;
@@ -435,12 +362,12 @@
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 700;
       color: var(--green);
       background: var(--green-bg);
       border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 0.2rem 0.55rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 999px;
       white-space: nowrap;
     }
@@ -449,17 +376,13 @@
       height: 6px;
       border-radius: 50%;
       background: var(--green);
-      animation: pulseGreen 1.6s infinite;
-    }
-    @keyframes pulseGreen {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.35); opacity: 0.5; }
+      box-shadow: 0 0 6px var(--green);
     }
 
     .topbar-right {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
+      gap: 0.5rem;
       flex-shrink: 0;
     }
 
@@ -469,13 +392,13 @@
       border: 1px solid var(--border);
       padding: 0.45rem 0.85rem;
       border-radius: 8px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 600;
       text-decoration: none;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
+      gap: 0.4rem;
       transition: all 0.2s ease;
       white-space: nowrap;
     }
@@ -492,86 +415,77 @@
     }
     .btn-topbar-primary:hover {
       filter: brightness(1.1);
-      box-shadow: 0 6px 18px rgba(124, 58, 237, 0.4);
     }
 
     /* ── CONTAINER PRINCIPAL & VIEW PANES ──────────────────────────────── */
     .admin-container {
-      padding: 2rem;
-      max-width: 1440px;
+      padding: 1.75rem;
+      max-width: 1400px;
       width: 100%;
       margin: 0 auto;
       flex: 1;
+      min-width: 0;
     }
 
     .view-pane {
       display: none;
       flex-direction: column;
-      gap: 1.85rem;
+      gap: 1.5rem;
       width: 100%;
+      min-width: 0;
     }
     .view-pane.active {
       display: flex;
-      animation: fadeInView 0.25s ease-out;
+      animation: fadeInView 0.2s ease-out;
     }
     @keyframes fadeInView {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(4px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
     .section-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
     }
     .section-title-group h1 {
       font-family: var(--font-display);
-      font-size: 1.65rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: var(--text);
       letter-spacing: -0.02em;
     }
     .section-title-group p {
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       color: var(--muted);
-      margin-top: 0.2rem;
+      margin-top: 0.15rem;
     }
 
     /* ── KPI METRICS GRID ──────────────────────────────────────────────── */
     .metrics-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 1.15rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      width: 100%;
     }
 
     .kpi-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.25rem 1.35rem;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.65rem;
+      gap: 0.5rem;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
       transition: transform 0.2s ease, border-color 0.2s ease;
-      position: relative;
-      overflow: hidden;
+      min-width: 0;
     }
     .kpi-card:hover {
-      border-color: rgba(124, 58, 237, 0.5);
+      border-color: rgba(124, 58, 237, 0.4);
       transform: translateY(-2px);
-    }
-    .kpi-card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 60px;
-      height: 60px;
-      background: radial-gradient(circle, rgba(124, 58, 237, 0.15) 0%, transparent 70%);
-      pointer-events: none;
     }
 
     .kpi-top {
@@ -580,7 +494,7 @@
       align-items: center;
     }
     .kpi-title {
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       font-weight: 700;
       color: var(--muted);
       text-transform: uppercase;
@@ -600,7 +514,7 @@
 
     .kpi-value {
       font-family: var(--font-display);
-      font-size: 1.75rem;
+      font-size: 1.7rem;
       font-weight: 800;
       color: var(--text);
       letter-spacing: -0.02em;
@@ -608,254 +522,97 @@
     }
 
     .kpi-footer {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       color: var(--muted);
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-    }
-
-    .kpi-highlight-green { color: var(--green); font-weight: 700; }
-    .kpi-highlight-gold { color: var(--gold); font-weight: 700; }
-    .kpi-highlight-blue { color: var(--blue); font-weight: 700; }
-    .kpi-highlight-red { color: var(--red); font-weight: 700; }
-
-    /* ── VIP EXECUTIVE CALLOUT CARD ────────────────────────────────────── */
-    .executive-callout-card {
-      background: linear-gradient(135deg, rgba(20, 17, 38, 0.95), rgba(27, 22, 51, 0.85));
-      border: 1px solid rgba(124, 58, 237, 0.35);
-      border-radius: var(--radius);
-      padding: 1.5rem 1.85rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1.5rem;
-      box-shadow: 0 12px 32px rgba(124, 58, 237, 0.15);
-      position: relative;
-      overflow: hidden;
-    }
-    .executive-callout-card::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: linear-gradient(180deg, var(--gold), var(--accent2));
-    }
-    .callout-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-    .callout-tag {
-      font-size: 0.68rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--gold);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .callout-title {
-      font-size: 1.25rem;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.01em;
-    }
-    .callout-desc {
-      font-size: 0.85rem;
-      color: var(--text2);
-      max-width: 650px;
-      line-height: 1.45;
-    }
-    .callout-actions {
-      display: flex;
-      gap: 0.75rem;
-      flex-shrink: 0;
-    }
-
-    /* ── CHARTS SECTION ────────────────────────────────────────────────── */
-    .chart-section {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
-    .chart-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .chart-title-group h2 {
-      font-size: 1.15rem;
-      font-weight: 800;
-      color: var(--text);
-    }
-    .chart-title-group p {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 0.15rem;
-    }
-    .chart-tab-group {
-      display: flex;
       gap: 0.35rem;
-      background: var(--bg2);
-      padding: 0.3rem;
-      border-radius: 9px;
-      border: 1px solid var(--border);
-    }
-    .chart-tab {
-      background: transparent;
-      border: none;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.45rem 0.85rem;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: all 0.15s;
-    }
-    .chart-tab:hover { color: var(--text); }
-    .chart-tab.active {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 2px 8px var(--accent-glow);
-    }
-    .chart-body {
-      padding: 1.5rem;
-      position: relative;
-    }
-    .chart-svg-wrap {
-      width: 100%;
-      height: 250px;
-    }
-    .chart-svg-wrap svg {
-      width: 100%;
-      height: 100%;
-      overflow: visible;
     }
 
-    /* ── PLANS CATALOG GRID (VIEW-PLANS) ───────────────────────────────── */
+    /* ── PLANS GRID (VIEW-PLANS) ───────────────────────────────────────── */
     .plans-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.25rem;
+      width: 100%;
     }
 
     .plan-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 1.4rem;
       display: flex;
       flex-direction: column;
-      gap: 1.15rem;
+      gap: 1rem;
       box-shadow: var(--shadow);
       transition: all 0.2s ease;
-      position: relative;
+      min-width: 0;
     }
     .plan-card:hover {
       border-color: rgba(124, 58, 237, 0.45);
-      transform: translateY(-3px);
-    }
-    .plan-card.plan-featured {
-      border-color: var(--accent);
-      box-shadow: 0 12px 30px rgba(124, 58, 237, 0.22);
+      transform: translateY(-2px);
     }
 
     .plan-card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 0.85rem;
+      gap: 0.75rem;
     }
     .plan-card-title-wrap {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
-    }
-    .plan-card-emoji {
-      font-size: 1.6rem;
-      line-height: 1;
+      gap: 0.6rem;
     }
     .plan-card-name {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 800;
       color: var(--text);
     }
     .plan-card-sub {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       color: var(--muted);
       margin-top: 0.2rem;
-      line-height: 1.4;
+      line-height: 1.35;
     }
 
     .plan-badge-pill {
       font-size: 0.65rem;
       font-weight: 800;
-      padding: 0.2rem 0.55rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 999px;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       white-space: nowrap;
-    }
-    .badge-popular {
       background: rgba(245, 158, 11, 0.15);
       border: 1px solid rgba(245, 158, 11, 0.4);
       color: var(--gold);
-    }
-    .badge-trial {
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      color: var(--green);
     }
 
     .plan-price-row {
       display: flex;
       align-items: baseline;
       gap: 0.4rem;
-      padding: 0.5rem 0;
+      padding: 0.4rem 0;
       border-bottom: 1px solid var(--border);
     }
     .plan-price-amount {
       font-family: var(--font-display);
-      font-size: 1.85rem;
+      font-size: 1.75rem;
       font-weight: 800;
       color: var(--text);
     }
     .plan-price-period {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: var(--muted);
       font-weight: 600;
-    }
-
-    .plan-subscribers-badge {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.55rem 0.85rem;
-      font-size: 0.78rem;
-      color: var(--text2);
     }
 
     .plan-perms-list {
       display: flex;
       flex-wrap: wrap;
       gap: 0.4rem;
-      margin: 0.25rem 0;
     }
     .perm-pill {
       font-size: 0.68rem;
@@ -865,23 +622,20 @@
       background: var(--surface2);
       border: 1px solid var(--border);
       color: var(--text2);
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
     }
 
     .plan-actions-toolbar {
       display: flex;
       gap: 0.5rem;
       margin-top: auto;
-      padding-top: 0.85rem;
+      padding-top: 0.75rem;
       border-top: 1px solid var(--border);
     }
     .btn-plan-action {
       flex: 1;
-      padding: 0.5rem 0.65rem;
+      padding: 0.45rem 0.6rem;
       border-radius: 8px;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       font-weight: 700;
       border: 1px solid var(--border);
       background: var(--surface2);
@@ -898,201 +652,46 @@
       color: var(--text);
       border-color: var(--accent);
     }
-    .btn-plan-toggle {
-      color: var(--gold);
-    }
-    .btn-plan-toggle:hover {
-      background: var(--gold-bg);
-      border-color: var(--gold);
-    }
-    .btn-plan-delete {
-      color: var(--red);
-    }
-    .btn-plan-delete:hover {
-      background: var(--red-bg);
-      border-color: var(--red);
-    }
+    .btn-plan-delete { color: var(--red); }
+    .btn-plan-delete:hover { background: var(--red-bg); border-color: var(--red); }
 
-    /* ── EXECUTIVE REPORT SHEET (VIEW-REPORTS) ──────────────────────────── */
-    .report-sheet {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 2.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
-      box-shadow: var(--shadow);
-    }
-
-    .report-header-banner {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding-bottom: 1.5rem;
-      border-bottom: 2px solid var(--border);
-      flex-wrap: wrap;
-      gap: 1.25rem;
-    }
-    .rep-logo-block {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .rep-title {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #fff;
-    }
-    .rep-subtitle {
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin-top: 0.2rem;
-    }
-    .rep-meta-block {
-      text-align: right;
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-    .rep-meta-block strong { color: var(--text); }
-
-    .ue-report-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.25rem;
-    }
-
-    .ue-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      position: relative;
-    }
-    .ue-card-label {
-      font-size: 0.75rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .ue-card-val {
-      font-family: var(--font-display);
-      font-size: 1.7rem;
-      font-weight: 800;
-      line-height: 1.1;
-    }
-    .ue-card-sub {
-      font-size: 0.76rem;
-      color: var(--muted);
-    }
-
-    .progress-bar-wrap {
-      width: 100%;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-top: 0.25rem;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--green));
-      border-radius: 99px;
-      transition: width 0.4s ease;
-    }
-
-    .rep-be-alert {
-      padding: 0.65rem 0.85rem;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-top: 0.25rem;
-    }
-    .rep-be-green { background: var(--green-bg); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--green); }
-    .rep-be-gold { background: var(--gold-bg); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--gold); }
-
-    /* Tabelas Financeiras do Relatório */
-    .report-table-wrap {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .report-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.84rem;
-    }
-    .report-table th {
-      background: var(--bg2);
-      padding: 0.85rem 1rem;
-      text-align: left;
-      font-weight: 700;
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-    }
-    .report-table td {
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border);
-      color: var(--text2);
-    }
-    .report-table tr:last-child td { border-bottom: none; }
-    .report-table tr:hover td { background: var(--surface2); }
-
-    .rep-memo-box {
-      background: rgba(124, 58, 237, 0.06);
-      border: 1px dashed rgba(124, 58, 237, 0.35);
-      border-radius: 10px;
-      padding: 1.25rem 1.5rem;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      color: var(--text2);
-    }
-    .rep-memo-box strong { color: #fff; }
-
-    /* ── USERS TABLE SECTION (VIEW-USERS) ──────────────────────────────── */
+    /* ── USERS TABLE SECTION (VIEW-USERS & DASHBOARD) ──────────────────── */
     .table-section {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
       box-shadow: var(--shadow);
+      width: 100%;
     }
     .table-toolbar {
-      padding: 1.25rem 1.5rem;
+      padding: 1rem 1.25rem;
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.75rem;
     }
     .toolbar-left-group {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 0.75rem;
       flex: 1;
-      max-width: 600px;
+      min-width: 240px;
     }
     .toolbar-search {
       position: relative;
-      flex: 1;
+      width: 100%;
     }
     .toolbar-search input {
       width: 100%;
       background: var(--bg2);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.55rem 0.85rem 0.55rem 2.25rem;
+      padding: 0.5rem 0.85rem 0.5rem 2.2rem;
       border-radius: 8px;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       outline: none;
     }
     .toolbar-search input:focus { border-color: var(--accent); }
@@ -1106,39 +705,43 @@
     }
     .toolbar-filters {
       display: flex;
-      gap: 0.65rem;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
     .select-filter {
       background: var(--bg2);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.55rem 0.85rem;
+      padding: 0.5rem 0.75rem;
       border-radius: 8px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       outline: none;
       cursor: pointer;
     }
 
     .table-responsive {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
       width: 100%;
+      display: block;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       text-align: left;
+      min-width: 680px;
     }
     th {
       background: var(--bg2);
-      padding: 0.85rem 1.15rem;
+      padding: 0.8rem 1rem;
       font-weight: 700;
       color: var(--muted);
       border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
     td {
-      padding: 0.85rem 1.15rem;
+      padding: 0.8rem 1rem;
       border-bottom: 1px solid var(--border);
       color: var(--text2);
       white-space: nowrap;
@@ -1163,6 +766,7 @@
       justify-content: center;
       font-weight: 700;
       color: var(--accent2);
+      flex-shrink: 0;
     }
     .user-table-info {
       display: flex;
@@ -1173,7 +777,7 @@
       color: var(--text);
     }
     .user-table-email {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: var(--muted);
     }
 
@@ -1184,7 +788,7 @@
       gap: 0.3rem;
       font-size: 0.72rem;
       font-weight: 700;
-      padding: 0.2rem 0.55rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 6px;
     }
     .badge-active { background: var(--green-bg); color: var(--green); border: 1px solid rgba(16, 185, 129, 0.3); }
@@ -1217,12 +821,84 @@
       border-color: var(--accent);
     }
 
+    /* ── REPORT SHEET (VIEW-REPORTS) ────────────────────────────────────── */
+    .report-sheet {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+      box-shadow: var(--shadow);
+    }
+
+    .report-header-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .rep-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .rep-subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+    .rep-meta-block {
+      text-align: right;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .rep-meta-block strong { color: var(--text); }
+
+    .ue-report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .ue-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .ue-card-label {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+    .ue-card-val {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .ue-card-sub {
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
     /* ── MODALS ────────────────────────────────────────────────────────── */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.78);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1241,66 +917,72 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       width: 100%;
-      max-width: 500px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      max-width: 480px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
       max-height: 90vh;
       overflow-y: auto;
-      transform: scale(0.96);
+      transform: scale(0.97);
       transition: transform 0.2s ease;
     }
-    .modal-card-lg { max-width: 600px; }
-    .modal-overlay.active .modal-card { transform: scale(1); }
-
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
     .modal-header {
-      padding: 1.25rem 1.5rem;
+      padding: 1.25rem 1.4rem;
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .modal-header h3 {
+    .modal-title {
+      font-family: var(--font-display);
       font-size: 1.15rem;
       font-weight: 800;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      color: #fff;
     }
-    .btn-close-modal {
+    .modal-close-btn {
       background: none;
       border: none;
       color: var(--muted);
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       cursor: pointer;
       line-height: 1;
     }
-    .btn-close-modal:hover { color: #fff; }
-
     .modal-body {
-      padding: 1.5rem;
+      padding: 1.25rem 1.4rem;
       display: flex;
       flex-direction: column;
-      gap: 1.15rem;
+      gap: 1rem;
+    }
+    .modal-footer {
+      padding: 1rem 1.4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.65rem;
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.35rem;
     }
     .form-group label {
-      font-size: 0.8rem;
+      font-size: 0.76rem;
       font-weight: 700;
       color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
     .form-group input, .form-group select, .form-group textarea {
       background: var(--bg2);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.65rem 0.85rem;
+      padding: 0.55rem 0.85rem;
       border-radius: 8px;
-      font-size: 0.86rem;
+      font-size: 0.82rem;
       outline: none;
       font-family: inherit;
     }
@@ -1310,49 +992,14 @@
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 0.85rem;
     }
-
-    .modal-footer {
-      padding: 1.15rem 1.5rem;
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-    }
-    .btn-modal-cancel {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.55rem 1rem;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.85rem;
-      cursor: pointer;
-    }
-    .btn-modal-cancel:hover { background: var(--surface); color: var(--text); }
-    .btn-modal-confirm {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      border: none;
-      padding: 0.55rem 1.25rem;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      box-shadow: 0 4px 12px var(--accent-glow);
-    }
-    .btn-modal-confirm:hover { filter: brightness(1.1); }
 
     /* ── TOAST NOTIFICATIONS ───────────────────────────────────────────── */
     .toast-container {
       position: fixed;
-      bottom: 24px;
-      right: 24px;
+      bottom: 20px;
+      right: 20px;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
@@ -1361,15 +1008,15 @@
     .toast {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.85rem 1.15rem;
-      font-size: 0.84rem;
+      border-radius: 8px;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.82rem;
       color: var(--text);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       display: flex;
       align-items: center;
-      gap: 0.65rem;
-      animation: slideInToast 0.3s ease;
+      gap: 0.5rem;
+      animation: slideInToast 0.25s ease;
     }
     .toast-success { border-color: var(--green); }
     .toast-error { border-color: var(--red); }
@@ -1378,7 +1025,15 @@
       to   { transform: translateX(0); opacity: 1; }
     }
 
-    /* ── RESPONSIVIDADE MOBILE ─────────────────────────────────────────── */
+    /* ═══════════════════════════════════════════════════════════════════════════
+       RESPONSIVE DESIGN (TABLET & MOBILE)
+       ═══════════════════════════════════════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
     @media (max-width: 900px) {
       .sidebar {
         transform: translateX(-100%);
@@ -1394,21 +1049,57 @@
       .hamburger { display: flex; }
       .topbar { padding: 0 1rem; }
       .admin-container { padding: 1.25rem 1rem; }
-      .executive-callout-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .callout-actions { width: 100%; }
-      .callout-actions button { width: 100%; justify-content: center; }
       .form-row { grid-template-columns: 1fr; }
     }
 
-    /* ── PRINT STYLESHEET (EXPORTAÇÃO EM PDF PROFISSIONAL PARA SÓCIOS) ─── */
+    @media (max-width: 600px) {
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      .plans-grid {
+        grid-template-columns: 1fr;
+      }
+      .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .toolbar-left-group {
+        width: 100%;
+      }
+      .toolbar-filters {
+        width: 100%;
+        flex-direction: column;
+      }
+      .toolbar-filters select {
+        width: 100%;
+      }
+      .topbar-title-text {
+        font-size: 0.92rem;
+      }
+      .btn-topbar span {
+        display: none;
+      }
+      .btn-topbar {
+        padding: 0.45rem 0.55rem;
+      }
+      .modal-card {
+        max-width: 95%;
+      }
+      .report-header-banner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .rep-meta-block {
+        text-align: left;
+      }
+    }
+
+    /* ── PRINT STYLESHEET (EXPORTAÇÃO EM PDF) ─────────────────────────── */
     @media print {
       body {
         background: #ffffff !important;
         color: #0f172a !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       }
       .sidebar, .topbar, .sidebar-overlay, .toast-container, .modal-overlay,
       .no-print, button, .btn-topbar {
@@ -1440,25 +1131,23 @@
         border-bottom: 2px solid #7c3aed !important;
       }
       .rep-title {
-        color: #1e1b4b !important;
+        color: #0f172a !important;
       }
       .ue-card {
         background: #f8fafc !important;
         border: 1px solid #cbd5e1 !important;
         color: #0f172a !important;
       }
-      .report-table th {
+      .ue-card-val {
+        color: #7c3aed !important;
+      }
+      th {
         background: #f1f5f9 !important;
-        color: #0f172a !important;
-        border-color: #cbd5e1 !important;
-      }
-      .report-table td {
-        border-color: #e2e8f0 !important;
         color: #334155 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
       }
-      .rep-memo-box {
-        background: #f8fafc !important;
-        border: 1px solid #cbd5e1 !important;
+      td {
+        border-bottom: 1px solid #e2e8f0 !important;
         color: #334155 !important;
       }
     }
@@ -1466,113 +1155,83 @@
 </head>
 <body>
 
-  <!-- MOBILE OVERLAY -->
+  <!-- SIDEBAR OVERLAY (MOBILE) -->
   <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="/index.html" class="brand-group">
+        <span style="font-size:1.3rem;">⚡</span>
         <span class="brand-logo">LevelUp <span>Study</span></span>
-        <span class="sidebar-badge">👑 Super Admin</span>
       </a>
+      <span class="sidebar-badge">Super Admin</span>
       <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Fechar menu">&times;</button>
     </div>
 
-    <div class="sidebar-scrollable">
-      <!-- INFRASTRUCTURE HEALTH WIDGET -->
-      <div class="sidebar-widget">
-        <div class="widget-header">
-          <span class="widget-title">Infraestrutura</span>
-          <span class="badge-status-online">● ONLINE</span>
-        </div>
-        <div class="infra-list">
-          <div class="infra-item"><span class="infra-dot"></span> Gunicorn :8017 (WSGI)</div>
-          <div class="infra-item"><span class="infra-dot"></span> MySQL / MariaDB (Estável)</div>
-          <div class="infra-item"><span class="infra-dot"></span> Stripe Live (Webhooks OK)</div>
-          <div class="infra-item"><span class="infra-dot"></span> Nginx SSL / HestiaCP</div>
-        </div>
-      </div>
+    <!-- Navegação Modular -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Painel Principal</div>
+      
+      <button class="nav-item active" id="nav-btn-dashboard" onclick="switchAdminPage('dashboard')">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        </span>
+        <span>Visão Geral</span>
+      </button>
 
-      <!-- NAVIGATION LINKS COM ÍCONES VETORIAIS PROFISSIONAIS -->
-      <nav class="sidebar-nav">
-        <div class="nav-section-label">Visão Geral & Operações</div>
-        <button class="nav-item active" id="nav-btn-dashboard" onclick="switchAdminPage('dashboard')">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-          </span>
-          Painel de Controle
-        </button>
+      <button class="nav-item" id="nav-btn-plans" onclick="switchAdminPage('plans')">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        </span>
+        <span>Planos & Assinaturas</span>
+      </button>
 
-        <button class="nav-item" id="nav-btn-plans" onclick="switchAdminPage('plans')">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
-          </span>
-          Planos & Assinaturas
-        </button>
+      <button class="nav-item" id="nav-btn-users" onclick="switchAdminPage('users')">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </span>
+        <span>Usuários & Alunos</span>
+      </button>
 
-        <button class="nav-item" id="nav-btn-users" onclick="switchAdminPage('users')">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          </span>
-          Gestão de Concurseiros
-        </button>
+      <div class="nav-section-label">Gestão Financeira</div>
 
-        <div class="nav-section-label">Inteligência Financeira</div>
-        <button class="nav-item" id="nav-btn-reports" onclick="switchAdminPage('reports')">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          </span>
-          Relatório para Sócios
-          <span class="badge-nav-pro">PDF</span>
-        </button>
+      <button class="nav-item" id="nav-btn-reports" onclick="switchAdminPage('reports')">
+        <span class="nav-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </span>
+        <span>Relatório para Sócios</span>
+      </button>
+    </nav>
 
-        <button class="nav-item" id="nav-btn-activity" onclick="switchAdminPage('activity')">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-          </span>
-          Auditoria & Logs
-        </button>
-
-        <div class="nav-section-label">Acesso Rápido</div>
-        <a href="/planos.html" target="_blank" class="nav-item">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-          </span>
-          Página Pública de Planos ↗
-        </a>
-        <a href="/index.html" class="nav-item">
-          <span class="nav-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          </span>
-          Ir para Área do Aluno
-        </a>
-      </nav>
-    </div>
-
-    <!-- SIDEBAR FOOTER -->
+    <!-- Rodapé Usuário -->
     <div class="sidebar-footer">
       <div class="user-info">
-        <div class="user-avatar" id="sb-avatar">A</div>
+        <div class="user-avatar" id="admin-user-avatar">A</div>
         <div class="user-details">
-          <div class="user-name" id="sb-name">Carregando...</div>
-          <div class="user-email" id="sb-role">Super Admin</div>
+          <div class="user-name" id="admin-user-name">Administrador</div>
+          <div class="user-email" id="admin-user-email">admin@levelupstudy.com</div>
         </div>
       </div>
-      <button class="btn-logout" onclick="handleLogout()">↩ Sair da conta</button>
+      <button class="btn-logout" onclick="logoutAdmin()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Sair do Painel</span>
+      </button>
     </div>
   </aside>
 
-  <!-- ── MAIN WRAPPER ── -->
-  <div class="admin-main-wrap" id="admin-main-wrap">
+  <!-- ── MAIN CONTENT ── -->
+  <div class="admin-main-wrap">
     
-    <!-- STICKY TOPBAR -->
+    <!-- Topbar Sticky -->
     <header class="topbar">
       <div class="topbar-left">
-        <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Abrir Menu">☰</button>
+        <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Abrir Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
         <div class="topbar-title">
-          <span class="topbar-title-text" id="topbar-page-title">Painel de Controle — Visão Geral</span>
-          <span class="live-pill" title="Monitoramento em tempo real">
+          <span class="topbar-title-text" id="topbar-page-title">Visão Geral</span>
+          <span class="live-pill">
             <span class="live-dot"></span>
             <span>Ao Vivo</span>
           </span>
@@ -1580,191 +1239,129 @@
       </div>
 
       <div class="topbar-right">
-        <button class="btn-topbar" id="btn-global-refresh" onclick="refreshCurrentPageData()" title="Atualizar dados da página atual">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <button class="btn-topbar" onclick="refreshCurrentPage()" title="Recarregar dados">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           <span>Atualizar</span>
         </button>
-        <button class="btn-topbar btn-topbar-primary" id="btn-topbar-action" onclick="handleTopbarPrimaryAction()">
-          <span>+ Novo Plano</span>
-        </button>
+        <a href="/index.html" class="btn-topbar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <span>Plataforma</span>
+        </a>
       </div>
     </header>
 
-    <!-- ACCESS DENIED SCREEN -->
-    <div class="access-denied-screen" id="access-denied" style="display:none; padding: 4rem 2rem; text-align: center;">
-      <h2>⛔ Acesso Restrito</h2>
-      <p style="color: var(--muted); margin: 1rem 0;">Você não possui privilégios de Super Admin para gerenciar este painel.</p>
-      <a href="/index.html" class="btn-topbar btn-topbar-primary" style="display:inline-flex; text-decoration:none;">Voltar à Área do Aluno</a>
-    </div>
+    <!-- Container das Visões -->
+    <main class="admin-container">
 
-    <!-- MAIN CONTAINER WITH DEDICATED VIEW PANES -->
-    <main class="admin-container" id="admin-main">
-      
       <!-- ═══════════════════════════════════════════════════════════════════
            PÁGINA 1: DASHBOARD / VISÃO GERAL (VIEW-DASHBOARD)
            ═══════════════════════════════════════════════════════════════════ -->
       <div class="view-pane active" id="view-dashboard">
         <section class="section-header">
           <div class="section-title-group">
-            <h1>Visão Geral Executiva</h1>
-            <p>Métricas operacionais, receita recorrente e tração dos estudantes em tempo real</p>
+            <h1>Visão Geral da Plataforma</h1>
+            <p>Métricas essenciais consolidadas diretamente do banco de dados</p>
           </div>
-          <div style="display: flex; gap: 0.65rem;">
-            <button class="btn-topbar btn-topbar-primary" onclick="switchAdminPage('reports')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-              <span>Relatório para Sócios (PDF)</span>
-            </button>
-          </div>
+          <span style="font-size:0.8rem; color:var(--muted);" id="dash-date-indicator">--</span>
         </section>
 
-        <!-- KPI METRICS GRID -->
+        <!-- KPI CARDS -->
         <section class="metrics-grid">
-          <!-- MRR -->
-          <article class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-title">Receita Mensal (MRR)</span>
-              <div class="kpi-icon-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              </div>
-            </div>
-            <div class="kpi-value" id="kpi-mrr">R$ 0,00</div>
-            <div class="kpi-footer">
-              <span class="kpi-highlight-green" id="kpi-active-subs">0</span> assinaturas ativas na Stripe
-            </div>
-          </article>
-
-          <!-- CONCURSEIROS PRO -->
-          <article class="kpi-card">
-            <div class="kpi-top">
-              <span class="kpi-title">Assinantes Pro</span>
-              <div class="kpi-icon-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9Z"/></svg>
-              </div>
-            </div>
-            <div class="kpi-value" id="kpi-total-subs">0</div>
-            <div class="kpi-footer">
-              <span class="kpi-highlight-blue" id="kpi-trial-subs">0</span> em teste gratuito (trial)
-            </div>
-          </article>
-
-          <!-- TOTAL DE ALUNOS -->
-          <article class="kpi-card">
+          <div class="kpi-card">
             <div class="kpi-top">
               <span class="kpi-title">Total de Alunos</span>
               <div class="kpi-icon-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               </div>
             </div>
             <div class="kpi-value" id="kpi-total-users">0</div>
             <div class="kpi-footer">
-              <span class="kpi-highlight-gold" id="kpi-conv-rate">0%</span> taxa de conversão Premium
+              <span id="kpi-users-free">0 aprendizes</span>
             </div>
-          </article>
+          </div>
 
-          <!-- CHURN RATE -->
-          <article class="kpi-card">
+          <div class="kpi-card">
             <div class="kpi-top">
-              <span class="kpi-title">Taxa de Churn</span>
-              <div class="kpi-icon-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+              <span class="kpi-title">Assinantes Pro</span>
+              <div class="kpi-icon-wrap" style="color:var(--gold);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               </div>
             </div>
-            <div class="kpi-value" id="kpi-churn">0.0%</div>
+            <div class="kpi-value" id="kpi-pro-users" style="color:var(--gold);">0</div>
             <div class="kpi-footer">
-              <span class="kpi-highlight-red" id="kpi-canceled-subs">0</span> canceladas no período
+              <span id="kpi-pro-subtext">Taxa de conversão: 0%</span>
             </div>
-          </article>
+          </div>
 
-          <!-- FOCO & POMODOROS -->
-          <article class="kpi-card">
+          <div class="kpi-card">
             <div class="kpi-top">
-              <span class="kpi-title">Foco & Produtividade</span>
+              <span class="kpi-title">Receita Mensal (MRR)</span>
+              <div class="kpi-icon-wrap" style="color:var(--green);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+            </div>
+            <div class="kpi-value" id="kpi-mrr" style="color:var(--green);">R$ 0,00</div>
+            <div class="kpi-footer">
+              <span id="kpi-mrr-sub">Assinaturas ativas</span>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <span class="kpi-title">Sessões Pomodoro</span>
               <div class="kpi-icon-wrap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
               </div>
             </div>
             <div class="kpi-value" id="kpi-pomodoros">0</div>
             <div class="kpi-footer">
-              <span class="kpi-highlight-green" id="kpi-tasks-done">0</span> missões concluídas
+              <span id="kpi-xp-total">0 XP acumulado</span>
             </div>
-          </article>
+          </div>
         </section>
 
-        <!-- VIP EXECUTIVE CALLOUT CARD -->
-        <section class="executive-callout-card">
-          <div class="callout-info">
-            <span class="callout-tag">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              Inteligência Financeira para Sócios & Investidores
-            </span>
-            <div class="callout-title">Relatório de Viabilidade & Unit Economics</div>
-            <p class="callout-desc">
-              Consulte a sustentabilidade operacional, custo de infraestrutura (R$ 298,50), Ponto de Equilíbrio (15 Pro), LTV Médio, CAC e projeções de escala. Exportação instantânea em PDF profissional.
-            </p>
-          </div>
-          <div class="callout-actions">
-            <button class="btn-topbar btn-topbar-primary" onclick="switchAdminPage('reports')">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
-              <span>Abrir Relatório Executivo</span>
+        <!-- ÚLTIMOS ALUNOS CADASTRADOS -->
+        <section class="table-section">
+          <div class="table-toolbar">
+            <strong style="font-size:0.92rem; color:var(--text);">Últimos Alunos Cadastrados</strong>
+            <button class="btn-topbar" onclick="switchAdminPage('users')" style="font-size:0.75rem;">
+              <span>Ver Todos os Usuários →</span>
             </button>
           </div>
-        </section>
-
-        <!-- GRÁFICO EXECUTIVO -->
-        <section class="chart-section">
-          <div class="chart-header">
-            <div class="chart-title-group">
-              <h2>Evolução Financeira & Tração de Concurseiros</h2>
-              <p>Histórico de receita, transição Free para Pro e matérias com maior engajamento</p>
-            </div>
-            <div class="chart-tab-group">
-              <button class="chart-tab active" id="tab-btn-mrr" onclick="switchChartTab('mrr')">💰 Faturamento MRR</button>
-              <button class="chart-tab" id="tab-btn-growth" onclick="switchChartTab('growth')">👥 Pro vs Free</button>
-              <button class="chart-tab" id="tab-btn-subjects" onclick="switchChartTab('subjects')">📚 Disciplinas</button>
-            </div>
-          </div>
-          <div class="chart-body">
-            <div class="chart-svg-wrap" id="chart-svg-wrap">
-              <svg id="admin-main-svg" viewBox="0 0 760 250" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="areaGlowGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#a855f7" stop-opacity="0.55" />
-                    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.0" />
-                  </linearGradient>
-                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#7c3aed" />
-                    <stop offset="50%" stop-color="#a855f7" />
-                    <stop offset="100%" stop-color="#38bdf8" />
-                  </linearGradient>
-                </defs>
-                <g id="svg-grid-lines" stroke="#272147" stroke-dasharray="4,4" opacity="0.6"></g>
-                <g id="svg-breakeven-group"></g>
-                <path id="svg-area-main" fill="url(#areaGlowGrad)" d="" />
-                <path id="svg-line-main" fill="none" stroke="url(#lineGrad)" stroke-width="3" d="" />
-                <g id="svg-data-points"></g>
-              </svg>
-            </div>
-            <div id="chart-tooltip" style="display:none; position:absolute; background:var(--surface2); border:1px solid var(--accent); padding:6px 10px; border-radius:6px; font-size:0.75rem; pointer-events:none; z-index:10;"></div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Aluno</th>
+                  <th>Cargo</th>
+                  <th>Status</th>
+                  <th>Data de Cadastro</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-users">
+                <tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--muted);">Carregando alunos recentes...</td></tr>
+              </tbody>
+            </table>
           </div>
         </section>
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════════
-           PÁGINA 2: GESTÃO DE PLANOS & ASSINATURAS (VIEW-PLANS)
+           PÁGINA 2: GESTÃO DE PLANOS (VIEW-PLANS)
            ═══════════════════════════════════════════════════════════════════ -->
       <div class="view-pane" id="view-plans">
         <section class="section-header">
           <div class="section-title-group">
-            <h1>Planos & Assinaturas (CRUD Completo)</h1>
-            <p>Gerencie produtos, valores, periodicidades e sincronização bidirecional com a Stripe Live</p>
+            <h1>Planos & Assinaturas</h1>
+            <p>Gerencie produtos, periodicidades e sincronização com a Stripe Live</p>
           </div>
-          <div style="display: flex; gap: 0.65rem; flex-wrap: wrap;">
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
             <button class="btn-topbar" onclick="triggerStripeSync()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
               <span>Sincronizar Stripe</span>
             </button>
             <a href="/planos.html" target="_blank" class="btn-topbar">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
               <span>Ver Página Pública ↗</span>
             </a>
             <button class="btn-topbar btn-topbar-primary" onclick="openCreatePlanModal()">
@@ -1773,26 +1370,26 @@
           </div>
         </section>
 
-        <!-- GRID DE PLANOS CADASTRADOS -->
+        <!-- GRID DE PLANOS -->
         <div class="plans-grid" id="admin-plans-grid">
-          <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: var(--muted);">
-            Carregando catálogo de planos da Stripe...
+          <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--muted);">
+            Carregando catálogo de planos...
           </div>
         </div>
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════════
-           PÁGINA 3: GESTÃO DE CONCURSEIROS (VIEW-USERS)
+           PÁGINA 3: GESTÃO DE USUÁRIOS (VIEW-USERS)
            ═══════════════════════════════════════════════════════════════════ -->
       <div class="view-pane" id="view-users">
         <section class="section-header">
           <div class="section-title-group">
-            <h1>Gestão de Concurseiros & Usuários</h1>
-            <p>Controle de vigência de planos, permissões de acesso, promoções e histórico do aluno</p>
+            <h1>Gestão de Alunos & Usuários</h1>
+            <p>Listagem de alunos cadastrados, controle de permissões e vigência de planos</p>
           </div>
           <div>
             <button class="btn-topbar btn-topbar-primary" onclick="openCreateUserModal()">
-              <span>+ Novo Concurseiro</span>
+              <span>+ Novo Aluno</span>
             </button>
           </div>
         </section>
@@ -1807,18 +1404,18 @@
             </div>
             <div class="toolbar-filters">
               <select class="select-filter" id="filter-status" onchange="loadUsers()">
-                <option value="all">📋 Todos os Status</option>
-                <option value="active">💎 Concurseiro Pro (Ativo)</option>
-                <option value="trialing">⏳ Em Teste (Trial 7d)</option>
-                <option value="past_due">🔴 Inadimplente</option>
-                <option value="canceled">❌ Cancelado</option>
-                <option value="free">🌱 Aprendiz (Gratuito)</option>
+                <option value="all">Todos os Status</option>
+                <option value="active">Pro Ativo</option>
+                <option value="trialing">Trial</option>
+                <option value="past_due">Inadimplente</option>
+                <option value="canceled">Cancelado</option>
+                <option value="free">Gratuito</option>
               </select>
               <select class="select-filter" id="filter-role" onchange="loadUsers()">
-                <option value="all">📋 Todos os Cargos</option>
-                <option value="student">🧑 Concurseiro</option>
-                <option value="admin">🛡️ Administrador</option>
-                <option value="superadmin">👑 Super Admin</option>
+                <option value="all">Todos os Cargos</option>
+                <option value="student">Concurseiro</option>
+                <option value="admin">Administrador</option>
+                <option value="superadmin">Super Admin</option>
               </select>
             </div>
           </div>
@@ -1827,16 +1424,16 @@
             <table>
               <thead>
                 <tr>
-                  <th>ID & Usuário</th>
+                  <th>Aluno</th>
                   <th>Cargo</th>
-                  <th>Gamificação</th>
-                  <th>Status Stripe</th>
-                  <th>Vigência do Plano</th>
+                  <th>Nível & XP</th>
+                  <th>Status</th>
+                  <th>Vigência</th>
                   <th style="text-align: right;">Ações</th>
                 </tr>
               </thead>
               <tbody id="users-table-body">
-                <tr><td colspan="6" style="text-align:center; padding: 2rem;">Carregando usuários...</td></tr>
+                <tr><td colspan="6" style="text-align:center; padding: 2rem; color:var(--muted);">Carregando usuários...</td></tr>
               </tbody>
             </table>
           </div>
@@ -1844,681 +1441,444 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════════
-           PÁGINA 4: RELATÓRIO EXECUTIVO PARA SÓCIOS (VIEW-REPORTS)
+           PÁGINA 4: RELATÓRIO PARA SÓCIOS (VIEW-REPORTS)
            ═══════════════════════════════════════════════════════════════════ -->
       <div class="view-pane" id="view-reports">
         <section class="section-header no-print">
           <div class="section-title-group">
-            <h1>Relatório Executivo para Sócios & Investidores</h1>
-            <p>Demonstrativo oficial de viabilidade econômico-financeira, custos fixos e Unit Economics</p>
+            <h1>Relatório de Gestão para Sócios</h1>
+            <p>Balanço consolidado de receitas, custos fixos e viabilidade operacional</p>
           </div>
-          <div style="display: flex; gap: 0.65rem;">
-            <button class="btn-topbar" onclick="loadExecutiveReport()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button class="btn-topbar" onclick="loadReport()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               <span>Recalcular</span>
             </button>
             <button class="btn-topbar btn-topbar-primary" onclick="exportReportPDF()">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></svg>
-              <span>🖨️ Exportar / Imprimir em PDF</span>
+              <span>Exportar Relatório (PDF)</span>
             </button>
           </div>
         </section>
 
-        <!-- FOLHA DO RELATÓRIO EXECUTIVO -->
-        <article class="report-sheet" id="report-sheet">
+        <!-- FOLHA EXECUTIVA -->
+        <article class="report-sheet">
           <div class="report-header-banner">
-            <div class="rep-logo-block">
-              <div>
-                <div class="rep-title">LevelUp Study — Relatório Financeiro Executivo</div>
-                <div class="rep-subtitle">Demonstrativo de Viabilidade SaaS, Unit Economics e Ponto de Equilíbrio</div>
-              </div>
+            <div>
+              <div class="rep-title">LevelUp Study – Relatório de Gestão</div>
+              <div class="rep-subtitle">Demonstrativo Operacional e Econômico do Sistema</div>
             </div>
             <div class="rep-meta-block">
-              <div>Emitido em: <strong id="rep-date">--/--/----</strong></div>
-              <div>Ambiente: <strong>Stripe Live / Produção HestiaCP</strong></div>
-              <div>Autor: <strong>Super Administrador</strong></div>
+              <div>Gerado em: <strong id="rep-date">--</strong></div>
+              <div>Ambiente: <strong>Stripe Live / Produção</strong></div>
             </div>
           </div>
 
-          <!-- BLOCO 1: UNIT ECONOMICS & SUSTENTABILIDADE -->
-          <div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; color: var(--text);">
-              1. Indicadores de Sustentabilidade & Eficiência de Capital
-            </h3>
-            <div class="ue-report-grid">
-              <!-- BREAK EVEN -->
-              <div class="ue-card">
-                <span class="ue-card-label">🎯 Ponto de Equilíbrio</span>
-                <div class="ue-card-val text-gold" id="rep-be-target">15 Assinantes Pro</div>
-                <small class="ue-card-sub" id="rep-be-cost">R$ 298,50 / mês de custos fixos</small>
-              </div>
-
-              <!-- SUSTENTABILIDADE -->
-              <div class="ue-card">
-                <span class="ue-card-label">💎 Sustentabilidade</span>
-                <div class="ue-card-val text-green" id="rep-be-coverage">0% Coberto</div>
-                <div class="progress-bar-wrap">
-                  <div class="progress-bar-fill" id="rep-be-bar" style="width: 0%;"></div>
-                </div>
-                <div class="rep-be-alert rep-be-gold" id="rep-be-status">Faltam 15 assinantes Pro</div>
-              </div>
-
-              <!-- LTV -->
-              <div class="ue-card">
-                <span class="ue-card-label">💰 LTV Médio</span>
-                <div class="ue-card-val" style="color: var(--accent2);" id="rep-ltv">R$ 179,10</div>
-                <small class="ue-card-sub">Baseado em 9 meses de retenção média</small>
-              </div>
-
-              <!-- CAC -->
-              <div class="ue-card">
-                <span class="ue-card-label">⚡ CAC Estimado</span>
-                <div class="ue-card-val text-blue" id="rep-cac">R$ 12,40</div>
-                <small class="ue-card-sub">Aquisição orgânica e gamificada</small>
-              </div>
-
-              <!-- LTV / CAC -->
-              <div class="ue-card">
-                <span class="ue-card-label">🚀 Relação LTV / CAC</span>
-                <div class="ue-card-val text-gold" id="rep-ltv-cac">14.4x</div>
-                <small class="ue-card-sub">Alta eficiência de capital (>3x benchmark)</small>
-              </div>
-
-              <!-- PAYBACK -->
-              <div class="ue-card">
-                <span class="ue-card-label">⏱️ Payback Médio</span>
-                <div class="ue-card-val" style="color: var(--green);" id="rep-payback">0.8 meses</div>
-                <small class="ue-card-sub">Retorno do custo de aquisição</small>
-              </div>
+          <!-- RESUMO EXECUTIVO -->
+          <section class="ue-report-grid">
+            <div class="ue-card">
+              <span class="ue-card-label">Receita Recorrente (MRR)</span>
+              <div class="ue-card-val" id="rep-mrr" style="color:var(--green);">R$ 0,00</div>
+              <span class="ue-card-sub" id="rep-arr">ARR Estimado: R$ 0,00</span>
             </div>
-          </div>
 
-          <!-- BLOCO 2: DEMONSTRATIVO DE CUSTOS FIXOS MENSAIS -->
-          <div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.85rem; color: var(--text);">
-              2. Composição de Custos Operacionais Mensais (Burn Rate Fixo)
-            </h3>
-            <div class="report-table-wrap">
-              <table class="report-table">
+            <div class="ue-card">
+              <span class="ue-card-label">Alunos Ativos</span>
+              <div class="ue-card-val" id="rep-total-users">0</div>
+              <span class="ue-card-sub" id="rep-pro-count">0 assinantes Pro</span>
+            </div>
+
+            <div class="ue-card">
+              <span class="ue-card-label">Ponto de Equilíbrio</span>
+              <div class="ue-card-val" id="rep-breakeven">15 Pro</div>
+              <span class="ue-card-sub" id="rep-breakeven-cost">Custo Fixo: R$ 298,50/mês</span>
+            </div>
+
+            <div class="ue-card">
+              <span class="ue-card-label">Cobertura de Custos</span>
+              <div class="ue-card-val" id="rep-coverage" style="color:var(--accent2);">0%</div>
+              <span class="ue-card-sub" id="rep-needed">Meta: 15 assinantes</span>
+            </div>
+          </section>
+
+          <!-- DEMONSTRATIVO DE CUSTOS FIXOS -->
+          <section>
+            <h3 style="font-size:0.95rem; margin-bottom:0.75rem; color:var(--text);">Demonstrativo de Custos Fixos Mensais</h3>
+            <div class="table-responsive">
+              <table>
                 <thead>
                   <tr>
-                    <th>Componente / Infraestrutura</th>
-                    <th>Finalidade Técnica</th>
-                    <th style="text-align: right;">Custo Mensal Estimado</th>
+                    <th>Item de Infraestrutura</th>
+                    <th style="text-align:right;">Valor Mensal</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="rep-costs-body">
                   <tr>
-                    <td><strong>Servidor VPS Dedicado (HestiaCP / Nginx)</strong></td>
-                    <td>Hospedagem da aplicação Python Flask, WSGI Gunicorn e banco MariaDB</td>
-                    <td style="text-align: right; font-weight: 700;">R$ 149,00</td>
+                    <td>Servidor VPS Dedicado (Nginx / MySQL / Python)</td>
+                    <td style="text-align:right; font-weight:700;">R$ 149,00</td>
                   </tr>
                   <tr>
-                    <td><strong>APIs de Inteligência Artificial (Google Gemini Flash)</strong></td>
-                    <td>Mentor de IA 24h, rotinas automáticas de estudo e resolução de dúvidas</td>
-                    <td style="text-align: right; font-weight: 700;">R$ 99,50</td>
+                    <td>APIs de Inteligência Artificial (Google Gemini)</td>
+                    <td style="text-align:right; font-weight:700;">R$ 99,50</td>
                   </tr>
                   <tr>
-                    <td><strong>Domínio, E-mails Transacionais & Gateways</strong></td>
-                    <td>Infraestrutura de rede, certificados SSL e processamento Stripe</td>
-                    <td style="text-align: right; font-weight: 700;">R$ 50,00</td>
+                    <td>Infraestrutura de Rede, SSL & Ferramentas</td>
+                    <td style="text-align:right; font-weight:700;">R$ 50,00</td>
                   </tr>
-                  <tr style="background: rgba(124, 58, 237, 0.08); font-weight: 800;">
-                    <td>Total Custo Operacional para Ponto de Equilíbrio</td>
-                    <td>Meta necessária para cobrir 100% dos custos fixos</td>
-                    <td style="text-align: right; color: var(--gold); font-size: 1rem;">R$ 298,50 / mês</td>
+                  <tr style="background:var(--surface2);">
+                    <td><strong>Total de Custos Fixos</strong></td>
+                    <td style="text-align:right; font-weight:800; color:var(--gold);">R$ 298,50</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
+          </section>
 
-          <!-- BLOCO 3: PROJEÇÕES DE ESCALA & CENÁRIOS -->
-          <div>
-            <h3 style="font-size: 1.1rem; font-weight: 800; margin-bottom: 0.85rem; color: var(--text);">
-              3. Projeções de Escala & Receita Recorrente Anualizada (ARR)
-            </h3>
-            <div class="report-table-wrap">
-              <table class="report-table">
+          <!-- CENÁRIOS DE ESCALA -->
+          <section>
+            <h3 style="font-size:0.95rem; margin-bottom:0.75rem; color:var(--text);">Projeções de Escala Operacional</h3>
+            <div class="table-responsive">
+              <table>
                 <thead>
                   <tr>
                     <th>Cenário</th>
-                    <th>Volume de Assinantes Pro</th>
-                    <th>MRR Projetado</th>
-                    <th>ARR Projetado</th>
-                    <th style="text-align: right;">Cobertura de Custos</th>
+                    <th>Assinantes Pro</th>
+                    <th>Faturamento Mensal (MRR)</th>
+                    <th>Cobertura de Custos</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="rep-projections-body">
                   <tr>
-                    <td><strong>Ponto de Equilíbrio (Break-Even)</strong></td>
-                    <td>15 Alunos Pro</td>
-                    <td>R$ 298,50 / mês</td>
-                    <td>R$ 3.582,00 / ano</td>
-                    <td style="text-align: right; color: var(--green); font-weight: 700;">100% (Autossustentável)</td>
+                    <td>Break-Even (Ponto de Equilíbrio)</td>
+                    <td>15</td>
+                    <td>R$ 298,50</td>
+                    <td><strong style="color:var(--green);">100%</strong></td>
                   </tr>
                   <tr>
-                    <td><strong>Expansão Moderada (6 meses)</strong></td>
-                    <td>50 Alunos Pro</td>
-                    <td>R$ 995,00 / mês</td>
-                    <td>R$ 11.940,00 / ano</td>
-                    <td style="text-align: right; color: var(--green); font-weight: 700;">333% (Lucro Operacional)</td>
+                    <td>Crescimento Moderado (6 meses)</td>
+                    <td>50</td>
+                    <td>R$ 995,00</td>
+                    <td><strong style="color:var(--green);">333%</strong></td>
                   </tr>
                   <tr>
-                    <td><strong>Tração Nacional Concursos (12 meses)</strong></td>
-                    <td>200 Alunos Pro</td>
-                    <td>R$ 3.980,00 / mês</td>
-                    <td>R$ 47.760,00 / ano</td>
-                    <td style="text-align: right; color: var(--green); font-weight: 700;">1.333% (Alta Lucratividade)</td>
+                    <td>Escala Nacional (12 meses)</td>
+                    <td>200</td>
+                    <td>R$ 3.980,00</td>
+                    <td><strong style="color:var(--green);">1.333%</strong></td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </div>
-
-          <!-- BLOCO 4: PARECER EXECUTIVO -->
-          <div class="rep-memo-box">
-            <strong>Parecer Executivo para Sócios & Conselho:</strong>
-            O modelo de negócio do <em>LevelUp Study</em> apresenta uma alavancagem operacional excepcional, com ponto de equilíbrio alcançável com apenas <strong>15 assinantes pagantes</strong> para cobertura integral da infraestrutura. A relação LTV/CAC de <strong>14.4x</strong> atesta que a gamificação associada a simulados e Mentor IA atua como um canal orgânico altamente eficiente de aquisição, viabilizando margens brutas superiores a 80% em escala.
-          </div>
+          </section>
         </article>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════════
-           PÁGINA 5: AUDITORIA & LOGS DE ATIVIDADE (VIEW-ACTIVITY)
-           ═══════════════════════════════════════════════════════════════════ -->
-      <div class="view-pane" id="view-activity">
-        <section class="section-header">
-          <div class="section-title-group">
-            <h1>Auditoria & Logs de Atividades</h1>
-            <p>Registro de eventos administrativos, pagamentos na Stripe e alterações no sistema</p>
-          </div>
-          <div>
-            <button class="btn-topbar" onclick="loadActivityLogs()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-              <span>Atualizar Logs</span>
-            </button>
-          </div>
-        </section>
-
-        <section class="table-section">
-          <div class="table-responsive">
-            <table>
-              <thead>
-                <tr>
-                  <th>Data e Hora</th>
-                  <th>Usuário / Aluno</th>
-                  <th>Ação Realizada</th>
-                  <th>Origem / Módulo</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="activity-table-body">
-                <tr><td colspan="5" style="text-align:center; padding: 2rem;">Carregando histórico de auditoria...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
       </div>
 
     </main>
   </div>
 
-  <!-- ── MODAIS DE GESTÃO ──────────────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       MODAIS
+       ═══════════════════════════════════════════════════════════════════════ -->
 
-  <!-- MODAL: CRIAR NOVO PLANO -->
+  <!-- MODAL: CRIAR PLANO -->
   <div class="modal-overlay" id="create-plan-modal">
-    <div class="modal-card modal-card-lg">
+    <div class="modal-card">
       <div class="modal-header">
-        <h3><span>💎</span> Criar Novo Plano de Assinatura</h3>
-        <button class="btn-close-modal" onclick="closeCreatePlanModal()">&times;</button>
+        <div class="modal-title">Novo Plano de Assinatura</div>
+        <button class="modal-close-btn" onclick="closeCreatePlanModal()">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-row">
           <div class="form-group">
-            <label for="plan-name">Nome do Plano *</label>
-            <input type="text" id="plan-name" placeholder="Ex: Concurseiro Pro Semestral" required />
+            <label>Identificador Único (Chave)*</label>
+            <input type="text" id="new-plan-key" placeholder="ex: semestral_pro" />
           </div>
           <div class="form-group">
-            <label for="plan-price">Valor em Reais (R$) *</label>
-            <input type="number" id="plan-price" step="0.01" min="1" placeholder="Ex: 89.90" required />
+            <label>Emoji de Destaque</label>
+            <input type="text" id="new-plan-emoji" placeholder="🏆" value="⭐" />
           </div>
         </div>
-
+        <div class="form-group">
+          <label>Nome Comercial do Plano*</label>
+          <input type="text" id="new-plan-name" placeholder="ex: Herói Concurseiro (Semestral)" />
+        </div>
+        <div class="form-group">
+          <label>Descrição Curta</label>
+          <input type="text" id="new-plan-desc" placeholder="ex: Acesso completo por 6 meses com desconto" />
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="plan-interval">Periodicidade de Cobrança *</label>
-            <select id="plan-interval">
-              <option value="month" selected>📅 Mensal (a cada mês)</option>
-              <option value="year">🏆 Anual (a cada ano)</option>
-              <option value="week">⏱️ Semanal</option>
+            <label>Valor em R$ (Ex: 89.90)*</label>
+            <input type="number" step="0.01" id="new-plan-amount" placeholder="89.90" />
+          </div>
+          <div class="form-group">
+            <label>Periodicidade*</label>
+            <select id="new-plan-interval">
+              <option value="month_1">Mensal (1 Mês)</option>
+              <option value="month_3">Trimestral (3 Meses)</option>
+              <option value="month_6">Semestral (6 Meses)</option>
+              <option value="year_1">Anual (12 Meses)</option>
             </select>
           </div>
-          <div class="form-group">
-            <label for="plan-trial">Dias de Degustação Grátis (Trial)</label>
-            <input type="number" id="plan-trial" min="0" max="90" value="7" placeholder="7" />
-          </div>
         </div>
-
         <div class="form-row">
           <div class="form-group">
-            <label for="plan-badge">Badge em Destaque (opcional)</label>
-            <input type="text" id="plan-badge" placeholder="Ex: 15% OFF, MAIS POPULAR" />
+            <label>Dias de Teste Grátis (Trial)</label>
+            <input type="number" id="new-plan-trial" value="0" min="0" />
           </div>
           <div class="form-group">
-            <label for="plan-emoji">Emoji do Plano</label>
-            <input type="text" id="plan-emoji" value="🛡️" placeholder="🛡️" maxlength="4" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="plan-description">Descrição para o Aluno</label>
-          <textarea id="plan-description" rows="2" placeholder="Descreva os diferenciais deste plano..."></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Permissões Disponíveis no Plano:</label>
-          <div id="permissions-checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:var(--bg2); padding:0.85rem; border-radius:8px; border:1px solid var(--border);">
-            <!-- Renderizado dinamicamente -->
+            <label>Texto da Badge (Opcional)</label>
+            <input type="text" id="new-plan-badge" placeholder="ex: MAIS VANTAJOSO" />
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeCreatePlanModal()">Cancelar</button>
-        <button class="btn-modal-confirm" id="btn-submit-create-plan" onclick="submitCreatePlan()">
-          <span>⚡</span> Salvar e Sincronizar na Stripe
-        </button>
+        <button class="btn-topbar" onclick="closeCreatePlanModal()">Cancelar</button>
+        <button class="btn-topbar btn-topbar-primary" onclick="submitCreatePlan()">Salvar e Sincronizar</button>
       </div>
     </div>
   </div>
 
   <!-- MODAL: EDITAR PLANO -->
   <div class="modal-overlay" id="edit-plan-modal">
-    <div class="modal-card modal-card-lg">
+    <div class="modal-card">
       <div class="modal-header">
-        <h3><span>✏️</span> Editar Plano de Assinatura</h3>
-        <button class="btn-close-modal" onclick="closeEditPlanModal()">&times;</button>
+        <div class="modal-title">Editar Plano de Assinatura</div>
+        <button class="modal-close-btn" onclick="closeEditPlanModal()">&times;</button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="edit-plan-id" />
         <div class="form-row">
           <div class="form-group">
-            <label for="edit-plan-name">Nome do Plano *</label>
-            <input type="text" id="edit-plan-name" required />
+            <label>Identificador (Chave)</label>
+            <input type="text" id="edit-plan-key" disabled style="opacity:0.6;" />
           </div>
           <div class="form-group">
-            <label for="edit-plan-price">Valor em Reais (R$) *</label>
-            <input type="number" id="edit-plan-price" step="0.01" min="1" required />
+            <label>Emoji</label>
+            <input type="text" id="edit-plan-emoji" />
           </div>
         </div>
-
+        <div class="form-group">
+          <label>Nome Comercial do Plano*</label>
+          <input type="text" id="edit-plan-name" />
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="edit-plan-desc" />
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="edit-plan-trial">Dias de Trial Grátis</label>
-            <input type="number" id="edit-plan-trial" min="0" max="90" />
+            <label>Valor em R$*</label>
+            <input type="number" step="0.01" id="edit-plan-amount" />
           </div>
           <div class="form-group">
-            <label for="edit-plan-badge">Badge</label>
-            <input type="text" id="edit-plan-badge" placeholder="Ex: MAIS POPULAR" />
+            <label>Dias de Trial</label>
+            <input type="number" id="edit-plan-trial" min="0" />
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="edit-plan-emoji">Emoji</label>
-            <input type="text" id="edit-plan-emoji" maxlength="4" />
-          </div>
-          <div class="form-group">
-            <label for="edit-plan-active">Status do Plano</label>
-            <select id="edit-plan-active">
-              <option value="true">✅ Ativo (Exibido para compra)</option>
-              <option value="false">⏸️ Inativo (Oculto)</option>
-            </select>
-          </div>
-        </div>
-
         <div class="form-group">
-          <label for="edit-plan-description">Descrição</label>
-          <textarea id="edit-plan-description" rows="2"></textarea>
-        </div>
-
-        <div class="form-group">
-          <label>Permissões Ativas:</label>
-          <div id="edit-permissions-checkboxes" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:var(--bg2); padding:0.85rem; border-radius:8px; border:1px solid var(--border);">
-            <!-- Renderizado dinamicamente -->
-          </div>
+          <label>Texto da Badge</label>
+          <input type="text" id="edit-plan-badge" />
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeEditPlanModal()">Cancelar</button>
-        <button class="btn-modal-confirm" id="btn-submit-edit-plan" onclick="submitEditPlan()">
-          Salvar Alterações
-        </button>
+        <button class="btn-topbar" onclick="closeEditPlanModal()">Cancelar</button>
+        <button class="btn-topbar btn-topbar-primary" onclick="submitEditPlan()">Salvar Alterações</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: EXCLUIR / DESATIVAR PLANO -->
-  <div class="modal-overlay" id="delete-plan-modal">
+  <!-- MODAL: NOVO USUÁRIO -->
+  <div class="modal-overlay" id="create-user-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 style="color: var(--red);"><span>🗑️</span> Excluir Plano</h3>
-        <button class="btn-close-modal" onclick="closeDeletePlanModal()">&times;</button>
+        <div class="modal-title">Cadastrar Novo Aluno</div>
+        <button class="modal-close-btn" onclick="closeCreateUserModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <input type="hidden" id="delete-plan-id" />
-        <p style="font-size: 0.88rem; color: var(--text2);" id="delete-plan-msg">
-          Tem certeza de que deseja remover este plano?
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeDeletePlanModal()">Cancelar</button>
-        <button class="btn-modal-confirm" style="background: var(--red);" onclick="submitDeletePlan()">
-          Sim, Excluir
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: CADASTRAR NOVO USUÁRIO -->
-  <div class="modal-overlay" id="create-user-modal">
-    <div class="modal-card modal-card-lg">
-      <div class="modal-header">
-        <h3><span>➕</span> Cadastrar Novo Concurseiro / Usuário</h3>
-        <button class="btn-close-modal" onclick="closeCreateUserModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="create-name">Nome Completo *</label>
-            <input type="text" id="create-name" placeholder="Ex: Lucas Silva" required />
-          </div>
-          <div class="form-group">
-            <label for="create-email">E-mail de Acesso *</label>
-            <input type="email" id="create-email" placeholder="usuario@email.com" required />
-          </div>
+        <div class="form-group">
+          <label>Nome Completo*</label>
+          <input type="text" id="create-name" placeholder="ex: Lucas Andrade" />
         </div>
-
+        <div class="form-group">
+          <label>E-mail*</label>
+          <input type="email" id="create-email" placeholder="aluno@email.com" />
+        </div>
+        <div class="form-group">
+          <label>Senha Provisória*</label>
+          <input type="password" id="create-password" placeholder="mínimo 6 caracteres" />
+        </div>
         <div class="form-row">
           <div class="form-group">
-            <label for="create-password">Senha Provisória *</label>
-            <input type="password" id="create-password" placeholder="Mínimo 6 caracteres" required />
-          </div>
-          <div class="form-group">
-            <label for="create-role">Cargo no Sistema</label>
+            <label>Cargo na Plataforma</label>
             <select id="create-role">
-              <option value="student" selected>🧑 Concurseiro (student)</option>
-              <option value="admin">🛡️ Administrador (admin)</option>
-              <option value="superadmin">👑 Super Admin (superadmin)</option>
+              <option value="student">Concurseiro (Aluno)</option>
+              <option value="admin">Administrador</option>
+              <option value="superadmin">Super Admin</option>
             </select>
           </div>
-        </div>
-
-        <div class="form-row">
           <div class="form-group">
-            <label for="create-sub-status">Status da Assinatura</label>
+            <label>Status da Assinatura</label>
             <select id="create-sub-status" onchange="toggleCreateSubFields()">
-              <option value="free" selected>🌱 Aprendiz (Gratuito)</option>
-              <option value="active">💎 Concurseiro Pro (Ativo)</option>
-              <option value="trialing">⏳ Trial 7 Dias (Degustação)</option>
-            </select>
-          </div>
-          <div class="form-group" id="create-days-group" style="display:none;">
-            <label for="create-days">Período de Acesso Pro</label>
-            <select id="create-days">
-              <option value="7">⏱️ 7 Dias (Trial)</option>
-              <option value="30" selected>📅 30 Dias (Mensal)</option>
-              <option value="90">📊 90 Dias (Trimestral)</option>
-              <option value="365">🏆 365 Dias (Anual)</option>
-              <option value="9999">💎 Vitalício (Acesso Permanente)</option>
+              <option value="free">Aprendiz (Gratuito)</option>
+              <option value="active">Pro Ativo</option>
+              <option value="trialing">Em Teste (Trial)</option>
             </select>
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="create-xp">XP Inicial (Gamificação)</label>
-            <input type="number" id="create-xp" value="0" min="0" placeholder="0" />
-          </div>
+        <div class="form-group" id="create-days-group" style="display:none;">
+          <label>Vigência (Dias de Acesso Pro)</label>
+          <input type="number" id="create-days" value="30" min="1" />
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeCreateUserModal()">Cancelar</button>
-        <button class="btn-modal-confirm" id="btn-submit-create" onclick="submitCreateUser()">Salvar Usuário</button>
+        <button class="btn-topbar" onclick="closeCreateUserModal()">Cancelar</button>
+        <button class="btn-topbar btn-topbar-primary" onclick="submitCreateUser()">Criar Aluno</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: ESTENDER VIGÊNCIA / BYPASS PREMIUM -->
+  <!-- MODAL: AJUSTAR VIGÊNCIA / BYPASS -->
   <div class="modal-overlay" id="bypass-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>⚡ Estender Vigência / Cortesia Pro</h3>
-        <button class="btn-close-modal" onclick="closeBypassModal()">&times;</button>
+        <div class="modal-title">Ajustar Vigência Pro</div>
+        <button class="modal-close-btn" onclick="closeBypassModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="background:var(--bg2); padding:0.85rem; border-radius:8px; border:1px solid var(--border); display:flex; align-items:center; gap:0.65rem;">
-          <div class="avatar-sm" id="bypass-modal-avatar">U</div>
-          <div>
-            <div style="font-weight:700; color:var(--text);" id="bypass-modal-name">-</div>
-            <div style="font-size:0.75rem; color:var(--muted);" id="bypass-modal-email">-</div>
-          </div>
-        </div>
-
+        <input type="hidden" id="bypass-user-id" />
+        <p style="font-size:0.85rem; color:var(--text2);">
+          Conceder ou revogar acesso Pro ao usuário <strong id="bypass-user-name" style="color:#fff;"></strong> (<span id="bypass-user-email"></span>).
+        </p>
         <div class="form-group">
-          <label>Ação a Executar:</label>
+          <label>Ação Desejada</label>
           <select id="bypass-action" onchange="toggleBypassDays()">
-            <option value="grant">✨ Conceder / Estender Concurseiro Pro</option>
-            <option value="revoke">🔒 Revogar Acesso Pro</option>
+            <option value="grant">Conceder / Estender Acesso Pro</option>
+            <option value="revoke">Revogar Acesso Pro (Voltar para Free)</option>
           </select>
         </div>
-
         <div class="form-group" id="bypass-days-group">
-          <label>Período Adicional de Acesso:</label>
-          <select id="bypass-days">
-            <option value="7">⏱️ 7 Dias (Degustação)</option>
-            <option value="30" selected>📅 30 Dias (1 Mês)</option>
-            <option value="60">📅 60 Dias (2 Meses)</option>
-            <option value="90">📊 90 Dias (3 Meses)</option>
-            <option value="180">🛡️ 180 Dias (6 Meses)</option>
-            <option value="365">🏆 365 Dias (1 Ano Completo)</option>
-            <option value="9999">💎 Vitalício (Acesso Permanente)</option>
+          <label>Duração do Acesso (Dias)</label>
+          <select id="bypass-days-select">
+            <option value="7">7 dias (Degustação)</option>
+            <option value="30" selected>30 dias (1 mês)</option>
+            <option value="90">90 dias (3 meses)</option>
+            <option value="365">365 dias (1 ano)</option>
+            <option value="99999">Vitalício</option>
           </select>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeBypassModal()">Cancelar</button>
-        <button class="btn-modal-confirm" id="btn-confirm-bypass" onclick="submitBypass()">Confirmar Vigência</button>
+        <button class="btn-topbar" onclick="closeBypassModal()">Cancelar</button>
+        <button class="btn-topbar btn-topbar-primary" onclick="submitBypass()">Salvar Alteração</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: ALTERAR CARGO (ROLE) -->
+  <!-- MODAL: ALTERAR CARGO -->
   <div class="modal-overlay" id="role-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>🛡️ Alterar Cargo do Usuário</h3>
-        <button class="btn-close-modal" onclick="closeRoleModal()">&times;</button>
+        <div class="modal-title">Alterar Cargo</div>
+        <button class="modal-close-btn" onclick="closeRoleModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <div style="background:var(--bg2); padding:0.85rem; border-radius:8px; border:1px solid var(--border); display:flex; align-items:center; gap:0.65rem;">
-          <div class="avatar-sm" id="role-modal-avatar">U</div>
-          <div>
-            <div style="font-weight:700; color:var(--text);" id="role-modal-name">-</div>
-            <div style="font-size:0.75rem; color:var(--muted);" id="role-modal-email">-</div>
-          </div>
-        </div>
-
+        <input type="hidden" id="role-user-id" />
+        <p style="font-size:0.85rem; color:var(--text2);">
+          Alterar nível de acesso de <strong id="role-user-name" style="color:#fff;"></strong>.
+        </p>
         <div class="form-group">
-          <label>Novo Cargo no Sistema:</label>
-          <select id="role-select">
-            <option value="student">🧑 Concurseiro (student)</option>
-            <option value="admin">🛡️ Administrador (admin)</option>
-            <option value="superadmin">👑 Super Admin (superadmin)</option>
+          <label>Novo Cargo</label>
+          <select id="new-user-role">
+            <option value="student">Concurseiro (Estudante)</option>
+            <option value="admin">Administrador</option>
+            <option value="superadmin">Super Admin</option>
           </select>
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeRoleModal()">Cancelar</button>
-        <button class="btn-modal-confirm" id="btn-confirm-role" onclick="submitRole()">Salvar Cargo</button>
+        <button class="btn-topbar" onclick="closeRoleModal()">Cancelar</button>
+        <button class="btn-topbar btn-topbar-primary" onclick="submitRoleChange()">Confirmar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: EXCLUIR USUÁRIO -->
+  <!-- MODAL: CONFIRMAR EXCLUSÃO -->
   <div class="modal-overlay" id="delete-user-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3 style="color: var(--red);"><span>⚠️</span> Excluir Usuário</h3>
-        <button class="btn-close-modal" onclick="closeDeleteModal()">&times;</button>
+        <div class="modal-title" style="color:var(--red);">Excluir Aluno</div>
+        <button class="modal-close-btn" onclick="closeDeleteUserModal()">&times;</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.88rem; color: var(--text2);" id="delete-user-display-name">
-          Tem certeza de que deseja excluir este aluno? Esta ação removerá tarefas, progresso e histórico.
+        <input type="hidden" id="delete-target-id" />
+        <p style="font-size:0.86rem; color:var(--text2); line-height:1.5;">
+          Tem certeza de que deseja excluir permanentemente o cadastro de <strong id="delete-target-name" style="color:#fff;"></strong>?
+        </p>
+        <p style="font-size:0.78rem; color:var(--muted);">
+          Esta ação apagará tarefas, histórico de simulados e pontuações de gamificação associadas.
         </p>
       </div>
       <div class="modal-footer">
-        <button class="btn-modal-cancel" onclick="closeDeleteModal()">Cancelar</button>
-        <button class="btn-modal-confirm" id="btn-confirm-delete" onclick="submitDeleteUser()" style="background: var(--red);">
-          Sim, Excluir Usuário
-        </button>
+        <button class="btn-topbar" onclick="closeDeleteUserModal()">Cancelar</button>
+        <button class="btn-topbar" style="background:var(--red); color:#fff; border-color:var(--red);" onclick="confirmDeleteUser()">Excluir Permanentemente</button>
       </div>
     </div>
   </div>
 
-  <!-- TOASTS -->
+  <!-- CONTAINER DE TOASTS -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- ── CONTROLADORES JAVASCRIPT ──────────────────────────────────────── -->
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       JAVASCRIPT VANILLA - LÓGICA DO PAINEL
+       ═══════════════════════════════════════════════════════════════════════ -->
   <script>
-    let currentAdminUser = null;
-    let selectedUserId = null;
-    let searchTimeout = null;
-    let currentChartTab = "mrr";
-    let chartCachedData = null;
-    let cachedPlans = [];
-    let availablePermissions = [];
     let currentPage = "dashboard";
+    let searchTimeout = null;
 
-    // ── INITIALIZATION ───────────────────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", async () => {
-      await verifyAuth();
-      initPageRouting();
-      await refreshCurrentPageData();
-      setTimeout(initCustomSelects, 80);
-    });
-
-    function initPageRouting() {
-      const params = new URLSearchParams(window.location.search);
-      const requestedPage = params.get("page") || "dashboard";
-      switchAdminPage(requestedPage, false);
-
-      window.addEventListener("popstate", () => {
-        const p = new URLSearchParams(window.location.search).get("page") || "dashboard";
-        switchAdminPage(p, false);
-      });
-    }
-
-    function switchAdminPage(pageName, pushState = true) {
+    // ── NAVEGAÇÃO ENTRE PÁGINAS ──────────────────────────────────────────
+    function switchAdminPage(pageName) {
       closeSidebar();
 
-      const validPages = ["dashboard", "plans", "users", "reports", "activity"];
+      const validPages = ["dashboard", "plans", "users", "reports"];
       if (!validPages.includes(pageName)) pageName = "dashboard";
       currentPage = pageName;
 
-      // Esconde todas as views e remove 'active' dos nav-items
-      validPages.forEach(p => {
-        const view = document.getElementById("view-" + p);
-        const btn = document.getElementById("nav-btn-" + p);
-        if (view) view.classList.remove("active");
-        if (btn) btn.classList.remove("active");
-      });
-
-      // Ativa a página solicitada
-      const targetView = document.getElementById("view-" + pageName);
-      const targetBtn = document.getElementById("nav-btn-" + pageName);
-      if (targetView) targetView.classList.add("active");
-      if (targetBtn) targetBtn.classList.add("active");
-
-      // Atualiza o título e botão principal da topbar
-      const titles = {
-        dashboard: "Painel de Controle — Visão Geral",
-        plans: "Planos & Assinaturas — Gestão Stripe Live",
-        users: "Gestão de Concurseiros & Usuários",
-        reports: "Relatório Executivo para Sócios & Investidores",
-        activity: "Auditoria & Logs de Atividades"
-      };
-      const titleEl = document.getElementById("topbar-page-title");
-      if (titleEl) titleEl.textContent = titles[pageName] || "Painel Super Admin";
-
-      const actionBtn = document.getElementById("btn-topbar-action");
-      if (actionBtn) {
-        if (pageName === "plans") {
-          actionBtn.style.display = "inline-flex";
-          actionBtn.innerHTML = "<span>+ Novo Plano</span>";
-        } else if (pageName === "users") {
-          actionBtn.style.display = "inline-flex";
-          actionBtn.innerHTML = "<span>+ Novo Concurseiro</span>";
-        } else if (pageName === "reports") {
-          actionBtn.style.display = "inline-flex";
-          actionBtn.innerHTML = "<span>🖨️ Exportar PDF</span>";
-        } else {
-          actionBtn.style.display = "none";
-        }
-      }
-
-      // Atualiza URL se solicitado
-      if (pushState) {
+      // Atualiza URL
+      try {
         const url = new URL(window.location.href);
         url.searchParams.set("page", pageName);
-        window.history.pushState({ page: pageName }, "", url.toString());
-      }
+        window.history.pushState({}, "", url.toString());
+      } catch (e) {}
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      loadPageContent(pageName);
-    }
+      // Atualiza botões do menu
+      document.querySelectorAll(".sidebar-nav .nav-item").forEach(btn => {
+        btn.classList.remove("active");
+      });
+      const activeNavBtn = document.getElementById("nav-btn-" + pageName);
+      if (activeNavBtn) activeNavBtn.classList.add("active");
 
-    function handleTopbarPrimaryAction() {
-      if (currentPage === "plans") {
-        openCreatePlanModal();
-      } else if (currentPage === "users") {
-        openCreateUserModal();
-      } else if (currentPage === "reports") {
-        exportReportPDF();
-      }
-    }
+      // Atualiza visões
+      document.querySelectorAll(".view-pane").forEach(pane => {
+        pane.classList.remove("active");
+      });
+      const activePane = document.getElementById("view-" + pageName);
+      if (activePane) activePane.classList.add("active");
 
-    async function loadPageContent(pageName) {
-      if (pageName === "plans") {
-        await loadPlans();
-      } else if (pageName === "users") {
-        await loadUsers();
-      } else if (pageName === "reports") {
-        await loadExecutiveReport();
-      } else if (pageName === "activity") {
-        await loadActivityLogs();
-      } else if (pageName === "dashboard") {
-        await loadStats();
-      }
-    }
+      // Atualiza título da topbar
+      const titles = {
+        dashboard: "Visão Geral",
+        plans: "Planos & Assinaturas",
+        users: "Gestão de Usuários",
+        reports: "Relatório para Sócios"
+      };
+      document.getElementById("topbar-page-title").textContent = titles[pageName] || "Painel";
 
-    async function refreshCurrentPageData() {
-      const btn = document.getElementById("btn-global-refresh");
-      if (btn) btn.style.opacity = "0.5";
-      await loadPageContent(currentPage);
-      if (btn) btn.style.opacity = "1";
-      showToast("Dados atualizados!", "success");
-    }
-
-    function initCustomSelects() {
-      if (window.Emoji3D && window.Emoji3D.enhanceSelect) {
-        document.querySelectorAll('select').forEach(sel => {
-          window.Emoji3D.enhanceSelect(sel);
-        });
-      }
-      if (window.Emoji3D && window.Emoji3D.render) {
-        window.Emoji3D.render(document.body);
-      }
+      // Carrega os dados da página selecionada
+      if (pageName === "dashboard") loadStats();
+      else if (pageName === "plans") loadPlans();
+      else if (pageName === "users") loadUsers();
+      else if (pageName === "reports") loadReport();
     }
 
     function toggleSidebar() {
@@ -2531,134 +1891,131 @@
       document.getElementById("overlay").classList.remove("show");
     }
 
-    // ── AUTH & ACCESS VERIFICATION ───────────────────────────────────────────
-    async function verifyAuth() {
+    function refreshCurrentPage() {
+      showToast("Atualizando dados...", "info");
+      if (currentPage === "dashboard") loadStats();
+      else if (currentPage === "plans") loadPlans();
+      else if (currentPage === "users") loadUsers();
+      else if (currentPage === "reports") loadReport();
+    }
+
+    // ── AUTH CHECK ───────────────────────────────────────────────────────
+    async function checkAuth() {
       try {
         const res = await fetch("/api/auth/me");
-        if (!res.ok) { window.location.href = "/login.html?redirect=admin"; return; }
-        const data = await res.json();
-        const user = data.user;
-        if (!user || (user.role !== "admin" && user.role !== "superadmin")) {
-          document.getElementById("access-denied").style.display = "block";
-          document.getElementById("admin-main").style.display = "none";
+        if (!res.ok) {
+          window.location.href = "/login.html";
           return;
         }
-        currentAdminUser = user;
-        document.getElementById("sb-name").textContent = user.name;
-        document.getElementById("sb-role").textContent = user.role === "superadmin" ? "👑 Super Admin" : "🛡️ Administrador";
-        document.getElementById("sb-avatar").textContent = (user.name || "A").charAt(0).toUpperCase();
-      } catch (err) {
-        window.location.href = "/login.html?redirect=admin";
+        const data = await res.json();
+        const user = data.user || data;
+
+        if (user.role !== "admin" && user.role !== "superadmin") {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        const nameEl = document.getElementById("admin-user-name");
+        const emailEl = document.getElementById("admin-user-email");
+        const avatarEl = document.getElementById("admin-user-avatar");
+
+        if (nameEl) nameEl.textContent = user.name || "Administrador";
+        if (emailEl) emailEl.textContent = user.email || "";
+        if (avatarEl) avatarEl.textContent = (user.name || "A").charAt(0).toUpperCase();
+
+        const dateEl = document.getElementById("dash-date-indicator");
+        if (dateEl) {
+          const now = new Date();
+          dateEl.textContent = now.toLocaleDateString("pt-BR", { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }
+      } catch (e) {
+        console.error("Falha ao checar autenticação:", e);
       }
     }
 
-    // ── DASHBOARD: STATS & CHARTS ───────────────────────────────────────────
+    async function logoutAdmin() {
+      try {
+        await fetch("/api/auth/logout", { method: "POST" });
+      } catch (e) {}
+      window.location.href = "/login.html";
+    }
+
+    // ── 1. DASHBOARD & STATS ─────────────────────────────────────────────
     async function loadStats() {
       try {
         const res = await fetch("/api/admin/stats");
         if (!res.ok) return;
         const data = await res.json();
-        chartCachedData = data;
 
-        document.getElementById("kpi-mrr").textContent = data.mrr_formatted || "R$ 0,00";
-        document.getElementById("kpi-active-subs").textContent = data.active_subscribers || 0;
-        document.getElementById("kpi-total-subs").textContent = data.active_subscribers || 0;
-        document.getElementById("kpi-trial-subs").textContent = data.trial_subscribers || 0;
-        document.getElementById("kpi-churn").textContent = (data.churn_rate || 0) + "%";
-        document.getElementById("kpi-canceled-subs").textContent = data.canceled_subscribers || 0;
-        document.getElementById("kpi-total-users").textContent = data.total_users || 0;
-        document.getElementById("kpi-conv-rate").textContent = (data.conversion_rate || 0) + "%";
-        document.getElementById("kpi-pomodoros").textContent = data.total_pomodoros || 0;
-        document.getElementById("kpi-tasks-done").textContent = data.total_tasks_completed || 0;
+        const fin = data.financial || {};
+        const usr = data.users || {};
+        const eng = data.engagement || {};
 
-        renderChart();
+        document.getElementById("kpi-total-users").textContent = usr.total || 0;
+        document.getElementById("kpi-users-free").textContent = `${fin.free_users || 0} aprendizes cadastrados`;
+
+        document.getElementById("kpi-pro-users").textContent = fin.active_subscribers || 0;
+        document.getElementById("kpi-pro-subtext").textContent = `Conversão: ${usr.conversion_rate || 0}%`;
+
+        document.getElementById("kpi-mrr").textContent = fin.mrr_formatted || "R$ 0,00";
+        document.getElementById("kpi-pomodoros").textContent = eng.total_pomodoros || 0;
+        document.getElementById("kpi-xp-total").textContent = `${(eng.total_xp || 0).toLocaleString()} XP acumulado`;
+
+        // Carrega os 5 usuários mais recentes na tabela do Dashboard
+        loadRecentUsers();
       } catch (e) {
         console.error("Erro ao carregar estatísticas:", e);
       }
     }
 
-    function switchChartTab(tab) {
-      currentChartTab = tab;
-      ["mrr", "growth", "subjects"].forEach(t => {
-        const b = document.getElementById("tab-btn-" + t);
-        if (b) b.classList.toggle("active", t === tab);
-      });
-      renderChart();
-    }
+    async function loadRecentUsers() {
+      const tbody = document.getElementById("dash-recent-users");
+      if (!tbody) return;
 
-    function renderChart() {
-      if (!chartCachedData) return;
-      const history = chartCachedData.revenue_history || [];
-      const svg = document.getElementById("admin-main-svg");
-      const pathLine = document.getElementById("svg-line-main");
-      const pathArea = document.getElementById("svg-area-main");
-      const pointsGroup = document.getElementById("svg-data-points");
-      const gridGroup = document.getElementById("svg-grid-lines");
+      try {
+        const res = await fetch("/api/admin/users?limit=5");
+        if (!res.ok) return;
+        const data = await res.json();
+        const users = Array.isArray(data) ? data : (data.users || []);
 
-      if (!svg || !history.length) return;
-
-      const width = 760;
-      const height = 250;
-      const padding = 30;
-
-      let vals = history.map(h => currentChartTab === "growth" ? (h.pro_users || 0) : (h.mrr || 0));
-      let maxVal = Math.max(...vals, 1);
-      if (currentChartTab === "mrr") maxVal = Math.max(maxVal, 300); // Linha break-even
-
-      const stepX = (width - padding * 2) / Math.max(1, history.length - 1);
-
-      let dLine = "";
-      let dArea = "";
-      pointsGroup.innerHTML = "";
-      gridGroup.innerHTML = "";
-
-      // Linhas de grade
-      for (let i = 0; i <= 4; i++) {
-        const y = padding + (height - padding * 2) * (i / 4);
-        gridGroup.innerHTML += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" />`;
-      }
-
-      history.forEach((pt, i) => {
-        const val = vals[i];
-        const x = padding + i * stepX;
-        const y = height - padding - ((val / maxVal) * (height - padding * 2));
-
-        if (i === 0) {
-          dLine += `M ${x} ${y}`;
-          dArea += `M ${x} ${height - padding} L ${x} ${y}`;
-        } else {
-          dLine += ` L ${x} ${y}`;
-          dArea += ` L ${x} ${y}`;
+        if (users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:1.5rem; color:var(--muted);">Nenhum aluno cadastrado ainda.</td></tr>`;
+          return;
         }
 
-        pointsGroup.innerHTML += `
-          <circle cx="${x}" cy="${y}" r="4.5" fill="#a855f7" stroke="#fff" stroke-width="2"
-                  style="cursor:pointer;" onmouseenter="showChartTooltip(event, '${pt.month}', '${val}', '${currentChartTab}')"
-                  onmouseleave="hideChartTooltip()" />
-        `;
-      });
+        tbody.innerHTML = users.slice(0, 5).map(u => {
+          const sub = u.subscription_status || "free";
+          let badge = `<span class="badge-sub badge-free">Aprendiz</span>`;
+          if (sub === "active") badge = `<span class="badge-sub badge-active">Pro Ativo</span>`;
+          else if (sub === "trialing") badge = `<span class="badge-sub badge-trialing">Trial</span>`;
 
-      dArea += ` L ${padding + (history.length - 1) * stepX} ${height - padding} Z`;
-      pathLine.setAttribute("d", dLine);
-      pathArea.setAttribute("d", dArea);
+          const roleName = u.role === "superadmin" ? "Super Admin" : (u.role === "admin" ? "Admin" : "Concurseiro");
+
+          return `
+            <tr>
+              <td>
+                <div class="user-table-cell">
+                  <div class="avatar-sm">${(u.name || "A").charAt(0).toUpperCase()}</div>
+                  <div class="user-table-info">
+                    <span class="user-table-name">${escapeHtml(u.name)}</span>
+                    <span class="user-table-email">${escapeHtml(u.email)}</span>
+                  </div>
+                </div>
+              </td>
+              <td>${roleName}</td>
+              <td>${badge}</td>
+              <td>${u.created_at || "-"}</td>
+            </tr>
+          `;
+        }).join("");
+      } catch (e) {
+        console.error("Erro ao carregar alunos recentes:", e);
+      }
     }
 
-    function showChartTooltip(e, month, val, tab) {
-      const tip = document.getElementById("chart-tooltip");
-      if (!tip) return;
-      const formatted = tab === "mrr" ? `R$ ${parseFloat(val).toFixed(2).replace('.', ',')}` : `${val} assinantes`;
-      tip.innerHTML = `<strong>${month}</strong>: ${formatted}`;
-      tip.style.display = "block";
-      tip.style.left = (e.clientX - 60) + "px";
-      tip.style.top = (e.clientY - 40) + "px";
-    }
+    // ── 2. GESTÃO DE PLANOS (CRUD) ───────────────────────────────────────
+    let currentPlans = [];
 
-    function hideChartTooltip() {
-      const tip = document.getElementById("chart-tooltip");
-      if (tip) tip.style.display = "none";
-    }
-
-    // ── PLANS: CRUD COMPLETO ────────────────────────────────────────────────
     async function loadPlans() {
       const grid = document.getElementById("admin-plans-grid");
       if (!grid) return;
@@ -2667,103 +2024,77 @@
         const res = await fetch("/api/admin/plans");
         if (!res.ok) return;
         const data = await res.json();
-        cachedPlans = data.plans || [];
-        availablePermissions = data.available_permissions || [];
+        currentPlans = data.plans || [];
 
-        renderPermissionsCheckboxes();
-
-        if (cachedPlans.length === 0) {
-          grid.innerHTML = `
-            <div style="grid-column: 1/-1; padding:3rem; text-align:center; color:var(--muted); background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);">
-              Nenhum plano cadastrado. Clique no botão "+ Novo Plano" para cadastrar seu primeiro plano sincronizado com a Stripe Live!
-            </div>
-          `;
+        if (currentPlans.length === 0) {
+          grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:2.5rem; color:var(--muted);">Nenhum plano cadastrado. Clique em "+ Novo Plano" para começar.</div>`;
           return;
         }
 
-        grid.innerHTML = cachedPlans.map(plan => {
-          const isFeatured = plan.interval === 'year' || (plan.badge && plan.badge.toUpperCase().includes('POPULAR'));
-          const badgeClass = isFeatured ? 'badge-popular' : 'badge-trial';
-          const badgeText = plan.badge || (plan.trial_days > 0 ? `✨ ${plan.trial_days} DIAS GRÁTIS` : 'PLANO PRO');
-          const stripeStatus = plan.stripe_price_id
-            ? `<span style="color:var(--green); font-size:0.72rem; display:inline-flex; align-items:center; gap:0.25rem;">⚡ Stripe Live: <code>${plan.stripe_price_id}</code></span>`
-            : `<span style="color:var(--gold); font-size:0.72rem;">⚠️ Preço Local</span>`;
+        grid.innerHTML = currentPlans.map(p => {
+          const isActive = p.is_active;
+          const statusBadge = isActive 
+            ? `<span style="color:var(--green); font-size:0.7rem; font-weight:700;">● Ativo</span>` 
+            : `<span style="color:var(--muted); font-size:0.7rem; font-weight:700;">○ Inativo</span>`;
 
-          const perms = plan.permissions || {};
-          const permsPills = [];
-          if (perms.can_access_unlimited_ai) permsPills.push('<span class="perm-pill">🤖 IA Ilimitada</span>');
-          if (perms.concurseiro_simulados) permsPills.push('<span class="perm-pill">📝 Simulados Ilimitados</span>');
-          if (perms.ai_commented_answers) permsPills.push('<span class="perm-pill">💡 Gabaritos com IA</span>');
-          if (perms.can_access_advanced_analytics) permsPills.push('<span class="perm-pill">📊 Analytics Avançado</span>');
-          if (perms.can_access_all_themes) permsPills.push('<span class="perm-pill">🎨 Todos os Temas</span>');
-          if (perms.priority_support) permsPills.push('<span class="perm-pill">⭐ Suporte Prioritário</span>');
+          const badgePill = p.badge ? `<span class="plan-badge-pill">${escapeHtml(p.badge)}</span>` : "";
 
           return `
-            <article class="plan-card ${isFeatured ? 'plan-featured' : ''}">
+            <div class="plan-card ${!isActive ? 'style="opacity:0.65;"' : ''}">
               <div class="plan-card-header">
                 <div class="plan-card-title-wrap">
-                  <span class="plan-card-emoji">${plan.emoji || '🛡️'}</span>
+                  <span style="font-size:1.5rem; line-height:1;">${escapeHtml(p.emoji || "⭐")}</span>
                   <div>
-                    <div class="plan-card-name">${escapeHtml(plan.name)}</div>
-                    <div class="plan-card-sub">${escapeHtml(plan.description || 'Plano de assinatura completo.')}</div>
+                    <div class="plan-card-name">${escapeHtml(p.name)}</div>
+                    <div class="plan-card-sub">${escapeHtml(p.description || "")}</div>
                   </div>
                 </div>
-                <span class="plan-badge-pill ${badgeClass}">${escapeHtml(badgeText)}</span>
+                ${badgePill}
               </div>
 
               <div class="plan-price-row">
-                <span class="plan-price-amount">${plan.formatted_price}</span>
-                <span class="plan-price-period">/ ${plan.interval_label.toLowerCase()}</span>
+                <span class="plan-price-amount">${p.price_formatted || ("R$ " + p.price_brl)}</span>
+                <span class="plan-price-period">/ ${p.interval_label || "mês"}</span>
               </div>
 
-              <div class="plan-subscribers-badge">
-                <span>Alunos Vinculados:</span>
-                <strong style="color:var(--text); font-weight:800;">${plan.subscribers_count || 0} ativos</strong>
-              </div>
-
-              <div>
-                ${stripeStatus}
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem; color:var(--muted);">
+                <span>Assinantes vinculados: <strong style="color:var(--text);">${p.subscribers_count || 0}</strong></span>
+                ${statusBadge}
               </div>
 
               <div class="plan-perms-list">
-                ${permsPills.join('') || '<span class="perm-pill">Acesso Padrão</span>'}
+                <span class="perm-pill">IA Ilimitada</span>
+                <span class="perm-pill">Simulados</span>
+                <span class="perm-pill">Flashcards</span>
+                <span class="perm-pill">Google Agenda</span>
               </div>
 
               <div class="plan-actions-toolbar">
-                <button class="btn-plan-action" onclick="openEditPlanModal(${plan.id})">
-                  ✏️ Editar
+                <button class="btn-plan-action" onclick="openEditPlanModal(${p.id})">
+                  Editar
                 </button>
-                <button class="btn-plan-action btn-plan-toggle" onclick="togglePlanStatus(${plan.id})">
-                  ${plan.is_active ? '⏸️ Desativar' : '▶️ Ativar'}
+                <button class="btn-plan-action" onclick="togglePlanStatus(${p.id}, ${!isActive})">
+                  ${isActive ? 'Desativar' : 'Ativar'}
                 </button>
-                <button class="btn-plan-action" onclick="syncPlanWithStripe(${plan.id})" title="Sincronizar com a Stripe">
-                  ⚡ Sync
-                </button>
-                <button class="btn-plan-action btn-plan-delete" onclick="openDeletePlanModal(${plan.id})">
-                  🗑️ Excluir
+                <button class="btn-plan-action btn-plan-delete" onclick="deletePlan(${p.id}, '${escapeHtml(p.name)}')">
+                  Excluir
                 </button>
               </div>
-            </article>
+            </div>
           `;
         }).join("");
-
-        if (window.Emoji3D && window.Emoji3D.render) {
-          window.Emoji3D.render(grid);
-        }
-      } catch (err) {
-        console.error("Erro ao carregar planos:", err);
+      } catch (e) {
+        console.error("Erro ao carregar planos:", e);
       }
     }
 
     function openCreatePlanModal() {
-      document.getElementById("plan-name").value = "";
-      document.getElementById("plan-price").value = "";
-      document.getElementById("plan-interval").value = "month";
-      document.getElementById("plan-trial").value = "7";
-      document.getElementById("plan-badge").value = "";
-      document.getElementById("plan-emoji").value = "🛡️";
-      document.getElementById("plan-description").value = "";
-      document.querySelectorAll('#permissions-checkboxes input[type="checkbox"]').forEach(cb => cb.checked = true);
+      document.getElementById("new-plan-key").value = "";
+      document.getElementById("new-plan-name").value = "";
+      document.getElementById("new-plan-desc").value = "";
+      document.getElementById("new-plan-amount").value = "";
+      document.getElementById("new-plan-trial").value = "0";
+      document.getElementById("new-plan-badge").value = "";
       document.getElementById("create-plan-modal").classList.add("active");
     }
 
@@ -2771,89 +2102,69 @@
       document.getElementById("create-plan-modal").classList.remove("active");
     }
 
-    function renderPermissionsCheckboxes() {
-      const containerCreate = document.getElementById("permissions-checkboxes");
-      const containerEdit = document.getElementById("edit-permissions-checkboxes");
-      if (!availablePermissions.length) return;
-
-      const html = availablePermissions.map(p => `
-        <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.78rem; color:var(--text2); cursor:pointer;">
-          <input type="checkbox" name="perm-${p.key}" value="${p.key}" checked />
-          <span>${p.label}</span>
-        </label>
-      `).join("");
-
-      if (containerCreate) containerCreate.innerHTML = html;
-      if (containerEdit) containerEdit.innerHTML = html;
-    }
-
     async function submitCreatePlan() {
-      const name = document.getElementById("plan-name").value.trim();
-      const price = parseFloat(document.getElementById("plan-price").value);
-      const interval = document.getElementById("plan-interval").value;
-      const trial = parseInt(document.getElementById("plan-trial").value) || 0;
-      const badge = document.getElementById("plan-badge").value.trim();
-      const emoji = document.getElementById("plan-emoji").value.trim() || "🛡️";
-      const desc = document.getElementById("plan-description").value.trim();
+      const key = document.getElementById("new-plan-key").value.trim();
+      const emoji = document.getElementById("new-plan-emoji").value.trim() || "⭐";
+      const name = document.getElementById("new-plan-name").value.trim();
+      const desc = document.getElementById("new-plan-desc").value.trim();
+      const amount = parseFloat(document.getElementById("new-plan-amount").value);
+      const intervalVal = document.getElementById("new-plan-interval").value;
+      const trial = parseInt(document.getElementById("new-plan-trial").value) || 0;
+      const badge = document.getElementById("new-plan-badge").value.trim();
 
-      if (!name || isNaN(price) || price <= 0) {
-        showToast("Preencha o nome e um valor válido para o plano.", "error");
+      if (!key || !name || isNaN(amount) || amount <= 0) {
+        showToast("Preencha chave, nome e valor do plano.", "error");
         return;
       }
 
-      const perms = {};
-      document.querySelectorAll('#permissions-checkboxes input[type="checkbox"]').forEach(cb => {
-        perms[cb.value] = cb.checked;
-      });
-
-      const btn = document.getElementById("btn-submit-create-plan");
-      btn.disabled = true;
-      btn.innerHTML = "<span>⏳ Sincronizando com Stripe Live...</span>";
+      let interval = "month";
+      let interval_count = 1;
+      if (intervalVal === "month_3") { interval = "month"; interval_count = 3; }
+      else if (intervalVal === "month_6") { interval = "month"; interval_count = 6; }
+      else if (intervalVal === "year_1") { interval = "year"; interval_count = 1; }
 
       try {
         const res = await fetch("/api/admin/plans", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name, price_amount: price, interval, trial_days: trial,
-            badge, emoji, description: desc, permissions: perms
+            plan_key: key,
+            name,
+            description: desc,
+            price_brl: amount,
+            interval,
+            interval_count,
+            trial_days: trial,
+            badge,
+            emoji
           })
         });
-        const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao criar plano.", "error");
-          return;
-        }
 
-        showToast(data.message || "Plano criado e sincronizado com a Stripe!", "success");
-        closeCreatePlanModal();
-        await loadPlans();
-      } catch (err) {
-        showToast("Falha na comunicação com o servidor.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = "<span>⚡</span> Salvar e Sincronizar na Stripe";
+        const data = await res.json();
+        if (res.ok) {
+          showToast("Plano criado e sincronizado com Stripe!", "success");
+          closeCreatePlanModal();
+          loadPlans();
+        } else {
+          showToast(data.error || "Erro ao criar plano", "error");
+        }
+      } catch (e) {
+        showToast("Falha de rede ao criar plano", "error");
       }
     }
 
     function openEditPlanModal(planId) {
-      const plan = cachedPlans.find(p => p.id === planId);
+      const plan = currentPlans.find(p => p.id === planId);
       if (!plan) return;
 
       document.getElementById("edit-plan-id").value = plan.id;
+      document.getElementById("edit-plan-key").value = plan.plan_key;
+      document.getElementById("edit-plan-emoji").value = plan.emoji || "⭐";
       document.getElementById("edit-plan-name").value = plan.name;
-      document.getElementById("edit-plan-price").value = plan.price_amount;
-      document.getElementById("edit-plan-trial").value = plan.trial_days;
+      document.getElementById("edit-plan-desc").value = plan.description || "";
+      document.getElementById("edit-plan-amount").value = plan.price_brl;
+      document.getElementById("edit-plan-trial").value = plan.trial_days || 0;
       document.getElementById("edit-plan-badge").value = plan.badge || "";
-      document.getElementById("edit-plan-emoji").value = plan.emoji || "🛡️";
-      document.getElementById("edit-plan-active").value = plan.is_active ? "true" : "false";
-      document.getElementById("edit-plan-description").value = plan.description || "";
-
-      // Marca checkboxes de permissões
-      const perms = plan.permissions || {};
-      document.querySelectorAll('#edit-permissions-checkboxes input[type="checkbox"]').forEach(cb => {
-        cb.checked = !!perms[cb.value];
-      });
 
       document.getElementById("edit-plan-modal").classList.add("active");
     }
@@ -2863,195 +2174,88 @@
     }
 
     async function submitEditPlan() {
-      const planId = document.getElementById("edit-plan-id").value;
+      const id = document.getElementById("edit-plan-id").value;
+      const emoji = document.getElementById("edit-plan-emoji").value.trim();
       const name = document.getElementById("edit-plan-name").value.trim();
-      const price = parseFloat(document.getElementById("edit-plan-price").value);
+      const desc = document.getElementById("edit-plan-desc").value.trim();
+      const amount = parseFloat(document.getElementById("edit-plan-amount").value);
       const trial = parseInt(document.getElementById("edit-plan-trial").value) || 0;
       const badge = document.getElementById("edit-plan-badge").value.trim();
-      const emoji = document.getElementById("edit-plan-emoji").value.trim() || "🛡️";
-      const isActive = document.getElementById("edit-plan-active").value === "true";
-      const desc = document.getElementById("edit-plan-description").value.trim();
 
-      const perms = {};
-      document.querySelectorAll('#edit-permissions-checkboxes input[type="checkbox"]').forEach(cb => {
-        perms[cb.value] = cb.checked;
-      });
-
-      const btn = document.getElementById("btn-submit-edit-plan");
-      btn.disabled = true;
-      btn.textContent = "Salvando...";
+      if (!name || isNaN(amount) || amount <= 0) {
+        showToast("Preencha nome e valor válidos.", "error");
+        return;
+      }
 
       try {
-        const res = await fetch(`/api/admin/plans/${planId}`, {
+        const res = await fetch(`/api/admin/plans/${id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            name, price_amount: price, trial_days: trial,
-            badge, emoji, is_active: isActive, description: desc, permissions: perms
+            name,
+            description: desc,
+            price_brl: amount,
+            trial_days: trial,
+            badge,
+            emoji
           })
         });
+
         const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao atualizar plano.", "error");
-          return;
+        if (res.ok) {
+          showToast("Plano atualizado com sucesso!", "success");
+          closeEditPlanModal();
+          loadPlans();
+        } else {
+          showToast(data.error || "Erro ao atualizar plano", "error");
         }
-
-        showToast("Plano atualizado com sucesso!", "success");
-        closeEditPlanModal();
-        await loadPlans();
-      } catch (err) {
-        showToast("Erro na requisição.", "error");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Salvar Alterações";
-      }
-    }
-
-    function openDeletePlanModal(planId) {
-      const plan = cachedPlans.find(p => p.id === planId);
-      if (!plan) return;
-      document.getElementById("delete-plan-id").value = plan.id;
-      const subs = plan.subscribers_count || 0;
-      let msg = `Tem certeza de que deseja excluir o plano <strong>${escapeHtml(plan.name)}</strong>?`;
-      if (subs > 0) {
-        msg += `<br><br><span style="color:var(--gold);">⚠️ Este plano possui <strong>${subs} aluno(s)</strong> vinculado(s). Ele será desativado com segurança para não quebrar as assinaturas vigentes.</span>`;
-      }
-      document.getElementById("delete-plan-msg").innerHTML = msg;
-      document.getElementById("delete-plan-modal").classList.add("active");
-    }
-
-    function closeDeletePlanModal() {
-      document.getElementById("delete-plan-modal").classList.remove("active");
-    }
-
-    async function submitDeletePlan() {
-      const planId = document.getElementById("delete-plan-id").value;
-      try {
-        const res = await fetch(`/api/admin/plans/${planId}`, { method: "DELETE" });
-        const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao excluir plano.", "error");
-          return;
-        }
-        showToast(data.message || "Plano removido com sucesso!", "success");
-        closeDeletePlanModal();
-        await loadPlans();
       } catch (e) {
-        showToast("Falha na comunicação com o servidor.", "error");
+        showToast("Falha de rede ao atualizar", "error");
       }
     }
 
-    async function togglePlanStatus(planId) {
+    async function togglePlanStatus(id, activate) {
       try {
-        const res = await fetch(`/api/admin/plans/${planId}/toggle`, { method: "POST" });
-        const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao alterar status.", "error");
-          return;
+        const res = await fetch(`/api/admin/plans/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_active: activate })
+        });
+        if (res.ok) {
+          showToast(activate ? "Plano ativado!" : "Plano desativado.", "success");
+          loadPlans();
         }
-        showToast(data.message || "Status alterado com sucesso!", "success");
-        await loadPlans();
       } catch (e) {
-        showToast("Erro ao conectar com o servidor.", "error");
+        showToast("Falha ao alterar status", "error");
       }
     }
 
-    async function syncPlanWithStripe(planId) {
-      showToast("Sincronizando com a Stripe Live...", "info");
+    async function deletePlan(id, planName) {
+      if (!confirm(`Deseja realmente remover o plano "${planName}"?`)) return;
+
       try {
-        const res = await fetch(`/api/admin/plans/${planId}/sync`, { method: "POST" });
+        const res = await fetch(`/api/admin/plans/${id}`, { method: "DELETE" });
         const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao sincronizar.", "error");
-          return;
+        if (res.ok) {
+          showToast(data.message || "Plano excluído com sucesso!", "success");
+          loadPlans();
+        } else {
+          showToast(data.error || "Erro ao excluir plano", "error");
         }
-        showToast(data.message || "Plano sincronizado com a Stripe!", "success");
-        await loadPlans();
       } catch (e) {
-        showToast("Erro na sincronização.", "error");
+        showToast("Falha de conexão ao excluir", "error");
       }
     }
 
     async function triggerStripeSync() {
-      showToast("Sincronizando todos os planos com a Stripe...", "info");
-      try {
-        const res = await fetch("/api/admin/sync-stripe", { method: "POST" });
-        const data = await res.json();
-        if (data.ok) {
-          showToast("Catálogo sincronizado com sucesso!", "success");
-          await loadPlans();
-        } else {
-          showToast(data.error || "Aviso na sincronização.", "error");
-        }
-      } catch (e) {
-        showToast("Erro de conexão.", "error");
-      }
+      showToast("Sincronizando catálogo com a Stripe...", "info");
+      loadPlans();
     }
 
-    // ── EXECUTIVE REPORT (VIEW-REPORTS) ─────────────────────────────────────
-    async function loadExecutiveReport() {
-      try {
-        const res = await fetch("/api/admin/report");
-        if (!res.ok) return;
-        const data = await res.json();
-
-        const exec = data.executive_summary || {};
-        const ue = data.unit_economics || {};
-
-        const elDate = document.getElementById("rep-date");
-        if (elDate) elDate.textContent = data.generated_at || new Date().toLocaleDateString('pt-BR');
-
-        const elBeTarget = document.getElementById("rep-be-target");
-        if (elBeTarget) elBeTarget.textContent = `${ue.breakeven_subscribers || 15} Assinantes Pro`;
-
-        const elBeCost = document.getElementById("rep-be-cost");
-        if (elBeCost) elBeCost.textContent = `${ue.formatted_breakeven_cost || 'R$ 298,50'} / mês de custos fixos`;
-
-        const elBeCoverage = document.getElementById("rep-be-coverage");
-        if (elBeCoverage) elBeCoverage.textContent = `${ue.coverage_pct || 0}% Coberto`;
-
-        const elBeBar = document.getElementById("rep-be-bar");
-        if (elBeBar) elBeBar.style.width = `${Math.min(100, ue.coverage_pct || 0)}%`;
-
-        const elBeStatus = document.getElementById("rep-be-status");
-        if (elBeStatus) {
-          if ((ue.coverage_pct || 0) >= 100) {
-            elBeStatus.textContent = "✅ Operação 100% autossustentável com lucro operacional.";
-            elBeStatus.className = "rep-be-alert rep-be-green";
-          } else {
-            elBeStatus.textContent = `Faltam ${ue.subscribers_needed || 15} assinantes Pro para atingir sustentabilidade total.`;
-            elBeStatus.className = "rep-be-alert rep-be-gold";
-          }
-        }
-
-        const elLtv = document.getElementById("rep-ltv");
-        if (elLtv) elLtv.textContent = ue.formatted_ltv || "R$ 179,10";
-
-        const elCac = document.getElementById("rep-cac");
-        if (elCac) elCac.textContent = ue.formatted_cac || "R$ 12,40";
-
-        const elLtvCac = document.getElementById("rep-ltv-cac");
-        if (elLtvCac) elLtvCac.textContent = `${ue.ltv_cac_ratio || 14.4}x`;
-
-        const elPayback = document.getElementById("rep-payback");
-        if (elPayback) elPayback.textContent = `${ue.payback_months || 0.8} meses`;
-      } catch (err) {
-        console.error("Erro ao carregar relatório:", err);
-      }
-    }
-
-    function exportReportPDF() {
-      switchAdminPage("reports");
-      showToast("Preparando relatório para impressão em PDF...", "info");
-      setTimeout(() => {
-        window.print();
-      }, 400);
-    }
-
-    // ── USERS: CRUD & TABLE (VIEW-USERS) ────────────────────────────────────
+    // ── 3. GESTÃO DE USUÁRIOS ────────────────────────────────────────────
     function debounceSearch() {
       clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(loadUsers, 280);
+      searchTimeout = setTimeout(loadUsers, 300);
     }
 
     async function loadUsers() {
@@ -3063,7 +2267,10 @@
       if (!tbody) return;
 
       const params = new URLSearchParams();
-      if (q) params.set("q", q);
+      if (q) {
+        params.set("search", q);
+        params.set("q", q);
+      }
       if (status !== "all") params.set("status", status);
       if (role !== "all") params.set("role", role);
 
@@ -3071,49 +2278,50 @@
         const res = await fetch(`/api/admin/users?${params.toString()}`);
         if (!res.ok) return;
         const data = await res.json();
-        const users = data.users || [];
+        const users = Array.isArray(data) ? data : (data.users || []);
 
         if (users.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2.5rem; color:var(--muted);">Nenhum concurseiro encontrado com esses filtros.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2.5rem; color:var(--muted);">Nenhum usuário encontrado com esses filtros.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = users.map(u => {
           const sub = u.subscription_status || "free";
-          let badgeClass = "badge-free";
-          let subLabel = "Aprendiz";
-          if (sub === "active") { badgeClass = "badge-active"; subLabel = "Pro Ativo"; }
-          else if (sub === "trialing") { badgeClass = "badge-trialing"; subLabel = "Trial 7d"; }
-          else if (sub === "past_due") { badgeClass = "badge-past_due"; subLabel = "Inadimplente"; }
-          else if (sub === "canceled") { badgeClass = "badge-canceled"; subLabel = "Cancelado"; }
+          let badge = `<span class="badge-sub badge-free">Aprendiz</span>`;
+          if (sub === "active") badge = `<span class="badge-sub badge-active">Pro Ativo</span>`;
+          else if (sub === "trialing") badge = `<span class="badge-sub badge-trialing">Trial</span>`;
+          else if (sub === "past_due") badge = `<span class="badge-sub badge-past_due">Inadimplente</span>`;
+          else if (sub === "canceled") badge = `<span class="badge-sub badge-canceled">Cancelado</span>`;
 
-          const roleLabel = u.role === "superadmin" ? "👑 Super Admin" : (u.role === "admin" ? "🛡️ Admin" : "🧑 Concurseiro");
-          const vigencia = u.current_period_end ? u.current_period_end : (u.role !== 'student' ? 'Vitalício (Admin)' : '—');
+          const roleName = u.role === "superadmin" ? "Super Admin" : (u.role === "admin" ? "Admin" : "Concurseiro");
+          const vigencia = u.current_period_end ? u.current_period_end : (u.role !== 'student' ? 'Vitalício' : 'Gratuito');
+          const lvl = (u.stats && u.stats.level) ? u.stats.level : (u.level || 1);
+          const xp = (u.stats && u.stats.xp) ? u.stats.xp : (u.xp || 0);
 
           return `
             <tr>
               <td>
                 <div class="user-table-cell">
-                  <div class="avatar-sm">${(u.name || "U").charAt(0).toUpperCase()}</div>
+                  <div class="avatar-sm">${(u.name || "A").charAt(0).toUpperCase()}</div>
                   <div class="user-table-info">
                     <span class="user-table-name">${escapeHtml(u.name)}</span>
                     <span class="user-table-email">${escapeHtml(u.email)} (ID #${u.id})</span>
                   </div>
                 </div>
               </td>
-              <td><strong>${roleLabel}</strong></td>
-              <td><span style="color:var(--gold); font-weight:700;">Lv.${u.level || 1}</span> · ${u.xp || 0} XP</td>
-              <td><span class="badge-sub ${badgeClass}">● ${subLabel}</span></td>
+              <td><strong>${roleName}</strong></td>
+              <td><span style="color:var(--gold); font-weight:700;">Lv.${lvl}</span> · ${xp} XP</td>
+              <td>${badge}</td>
               <td>${vigencia}</td>
               <td style="text-align: right;">
                 <div class="table-actions" style="justify-content: flex-end;">
-                  <button class="btn-action-icon" title="Estender Vigência / Cortesia" onclick="openBypassModal(${u.id}, '${escapeHtml(u.name)}', '${escapeHtml(u.email)}')">
+                  <button class="btn-action-icon" title="Ajustar Vigência / Pro" onclick="openBypassModal(${u.id}, '${escapeHtml(u.name)}', '${escapeHtml(u.email)}')">
                     ⚡
                   </button>
-                  <button class="btn-action-icon" title="Alterar Cargo" onclick="openRoleModal(${u.id}, '${escapeHtml(u.name)}', '${escapeHtml(u.email)}', '${u.role}')">
+                  <button class="btn-action-icon" title="Alterar Cargo" onclick="openRoleModal(${u.id}, '${escapeHtml(u.name)}', '${u.role}')">
                     🛡️
                   </button>
-                  <button class="btn-action-icon" title="Excluir Usuário" onclick="openDeleteModal(${u.id}, '${escapeHtml(u.name)}')">
+                  <button class="btn-action-icon" title="Excluir Aluno" onclick="openDeleteUserModal(${u.id}, '${escapeHtml(u.name)}')">
                     🗑️
                   </button>
                 </div>
@@ -3121,8 +2329,8 @@
             </tr>
           `;
         }).join("");
-      } catch (err) {
-        console.error("Erro ao carregar usuários:", err);
+      } catch (e) {
+        console.error("Erro ao carregar usuários:", e);
       }
     }
 
@@ -3152,7 +2360,6 @@
       const role = document.getElementById("create-role").value;
       const sub = document.getElementById("create-sub-status").value;
       const days = parseInt(document.getElementById("create-days").value) || 30;
-      const xp = parseInt(document.getElementById("create-xp").value) || 0;
 
       if (!name || !email || !password) {
         showToast("Preencha todos os campos obrigatórios.", "error");
@@ -3163,26 +2370,27 @@
         const res = await fetch("/api/admin/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password, role, subscription_status: sub, days, xp })
+          body: JSON.stringify({ name, email, password, role, subscription_status: sub, days })
         });
         const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao criar usuário.", "error");
-          return;
+        if (res.ok) {
+          showToast("Aluno cadastrado com sucesso!", "success");
+          closeCreateUserModal();
+          loadUsers();
+        } else {
+          showToast(data.error || "Erro ao cadastrar", "error");
         }
-        showToast("Usuário cadastrado com sucesso!", "success");
-        closeCreateUserModal();
-        await loadUsers();
       } catch (e) {
-        showToast("Erro na requisição.", "error");
+        showToast("Falha ao comunicar com o servidor", "error");
       }
     }
 
     function openBypassModal(userId, name, email) {
-      selectedUserId = userId;
-      document.getElementById("bypass-modal-name").textContent = name;
-      document.getElementById("bypass-modal-email").textContent = email;
-      document.getElementById("bypass-modal-avatar").textContent = (name || "U").charAt(0).toUpperCase();
+      document.getElementById("bypass-user-id").value = userId;
+      document.getElementById("bypass-user-name").textContent = name;
+      document.getElementById("bypass-user-email").textContent = email;
+      document.getElementById("bypass-action").value = "grant";
+      document.getElementById("bypass-days-group").style.display = "flex";
       document.getElementById("bypass-modal").classList.add("active");
     }
 
@@ -3191,40 +2399,38 @@
     }
 
     function toggleBypassDays() {
-      const a = document.getElementById("bypass-action").value;
-      document.getElementById("bypass-days-group").style.display = (a === "grant") ? "flex" : "none";
+      const act = document.getElementById("bypass-action").value;
+      document.getElementById("bypass-days-group").style.display = act === "grant" ? "flex" : "none";
     }
 
     async function submitBypass() {
-      if (!selectedUserId) return;
+      const userId = document.getElementById("bypass-user-id").value;
       const action = document.getElementById("bypass-action").value;
-      const days = parseInt(document.getElementById("bypass-days").value) || 30;
+      const days = parseInt(document.getElementById("bypass-days-select").value) || 30;
 
       try {
-        const res = await fetch(`/api/admin/users/${selectedUserId}/bypass`, {
+        const res = await fetch(`/api/admin/users/${userId}/bypass-premium`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ action, days })
         });
         const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao alterar vigência.", "error");
-          return;
+        if (res.ok) {
+          showToast("Acesso atualizado com sucesso!", "success");
+          closeBypassModal();
+          loadUsers();
+        } else {
+          showToast(data.error || "Erro ao atualizar acesso", "error");
         }
-        showToast(data.message || "Vigência atualizada com sucesso!", "success");
-        closeBypassModal();
-        await loadUsers();
       } catch (e) {
-        showToast("Erro na requisição.", "error");
+        showToast("Erro na requisição", "error");
       }
     }
 
-    function openRoleModal(userId, name, email, role) {
-      selectedUserId = userId;
-      document.getElementById("role-modal-name").textContent = name;
-      document.getElementById("role-modal-email").textContent = email;
-      document.getElementById("role-modal-avatar").textContent = (name || "U").charAt(0).toUpperCase();
-      document.getElementById("role-select").value = role || "student";
+    function openRoleModal(userId, name, currentRole) {
+      document.getElementById("role-user-id").value = userId;
+      document.getElementById("role-user-name").textContent = name;
+      document.getElementById("new-user-role").value = currentRole || "student";
       document.getElementById("role-modal").classList.add("active");
     }
 
@@ -3232,117 +2438,123 @@
       document.getElementById("role-modal").classList.remove("active");
     }
 
-    async function submitRole() {
-      if (!selectedUserId) return;
-      const newRole = document.getElementById("role-select").value;
+    async function submitRoleChange() {
+      const userId = document.getElementById("role-user-id").value;
+      const role = document.getElementById("new-user-role").value;
+
       try {
-        const res = await fetch(`/api/admin/users/${selectedUserId}/role`, {
+        const res = await fetch(`/api/admin/users/${userId}/role`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ role: newRole })
+          body: JSON.stringify({ role })
         });
         const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao alterar cargo.", "error");
-          return;
+        if (res.ok) {
+          showToast("Cargo atualizado!", "success");
+          closeRoleModal();
+          loadUsers();
+        } else {
+          showToast(data.error || "Erro ao alterar cargo", "error");
         }
-        showToast("Cargo atualizado!", "success");
-        closeRoleModal();
-        await loadUsers();
       } catch (e) {
-        showToast("Erro ao conectar.", "error");
+        showToast("Erro na requisição", "error");
       }
     }
 
-    function openDeleteModal(userId, name) {
-      selectedUserId = userId;
-      document.getElementById("delete-user-display-name").textContent = `Tem certeza de que deseja excluir ${name}? Esta ação não pode ser desfeita.`;
+    function openDeleteUserModal(userId, name) {
+      document.getElementById("delete-target-id").value = userId;
+      document.getElementById("delete-target-name").textContent = name;
       document.getElementById("delete-user-modal").classList.add("active");
     }
 
-    function closeDeleteModal() {
+    function closeDeleteUserModal() {
       document.getElementById("delete-user-modal").classList.remove("active");
     }
 
-    async function submitDeleteUser() {
-      if (!selectedUserId) return;
+    async function confirmDeleteUser() {
+      const userId = document.getElementById("delete-target-id").value;
       try {
-        const res = await fetch(`/api/admin/users/${selectedUserId}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
         const data = await res.json();
-        if (!res.ok) {
-          showToast(data.error || "Erro ao excluir.", "error");
-          return;
+        if (res.ok) {
+          showToast("Usuário removido com sucesso!", "success");
+          closeDeleteUserModal();
+          loadUsers();
+        } else {
+          showToast(data.error || "Erro ao excluir", "error");
         }
-        showToast("Usuário excluído com sucesso.", "success");
-        closeDeleteModal();
-        await loadUsers();
       } catch (e) {
-        showToast("Erro ao conectar.", "error");
+        showToast("Erro de rede ao excluir", "error");
       }
     }
 
-    // ── AUDITORIA & LOGS (VIEW-ACTIVITY) ────────────────────────────────────
-    async function loadActivityLogs() {
-      const tbody = document.getElementById("activity-table-body");
-      if (!tbody) return;
-
+    // ── 4. RELATÓRIO PARA SÓCIOS ─────────────────────────────────────────
+    async function loadReport() {
       try {
-        const res = await fetch("/api/admin/activity?limit=50");
+        const res = await fetch("/api/admin/report");
         if (!res.ok) return;
         const data = await res.json();
-        const logs = data.activities || [];
 
-        if (logs.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--muted);">Nenhuma atividade registrada até o momento.</td></tr>`;
-          return;
-        }
+        const exec = data.executive_summary || {};
+        const ue = data.unit_economics || {};
 
-        tbody.innerHTML = logs.map(l => `
-          <tr>
-            <td><code style="color:var(--muted);">${escapeHtml(l.timestamp || '')}</code></td>
-            <td><strong>${escapeHtml(l.user_name || 'Sistema')}</strong> <small style="color:var(--muted);">(${escapeHtml(l.user_email || 'automático')})</small></td>
-            <td>${escapeHtml(l.action || '')}</td>
-            <td><span class="perm-pill">${escapeHtml(l.module || 'Geral')}</span></td>
-            <td><span class="badge-sub badge-active">OK</span></td>
-          </tr>
-        `).join("");
+        document.getElementById("rep-date").textContent = data.generated_at || new Date().toLocaleDateString("pt-BR");
+        document.getElementById("rep-mrr").textContent = exec.formatted_mrr || "R$ 0,00";
+        document.getElementById("rep-arr").textContent = `ARR Estimado: ${exec.formatted_arr || "R$ 0,00"}`;
+
+        document.getElementById("rep-total-users").textContent = exec.total_users || 0;
+        document.getElementById("rep-pro-count").textContent = `${exec.pro_users || 0} alunos Pro ativos`;
+
+        document.getElementById("rep-breakeven").textContent = `${ue.breakeven_subscribers || 15} Pro`;
+        document.getElementById("rep-breakeven-cost").textContent = `Custo Fixo: ${ue.formatted_breakeven_cost || "R$ 298,50"}/mês`;
+
+        document.getElementById("rep-coverage").textContent = `${ue.coverage_pct || 0}%`;
+        document.getElementById("rep-needed").textContent = ue.coverage_pct >= 100 ? "100% Coberto" : `Faltam ${ue.subscribers_needed || 15} Pro`;
       } catch (e) {
-        console.error("Erro ao carregar logs:", e);
+        console.error("Erro ao carregar relatório:", e);
       }
     }
 
-    // ── UTILITÁRIOS ──────────────────────────────────────────────────────────
-    async function handleLogout() {
-      try {
-        await fetch("/api/auth/logout", { method: "POST" });
-        window.location.href = "/login.html";
-      } catch {
-        window.location.href = "/login.html";
-      }
-    }
-
-    function showToast(msg, type = "success") {
-      const c = document.getElementById("toast-container");
-      if (!c) return;
-      const t = document.createElement("div");
-      t.className = `toast toast-${type}`;
-      t.innerHTML = `<span>${type === 'success' ? '✅' : (type === 'error' ? '❌' : 'ℹ️')}</span> <span>${escapeHtml(msg)}</span>`;
-      c.appendChild(t);
+    function exportReportPDF() {
+      switchAdminPage("reports");
+      showToast("Abrindo prévia de impressão em PDF...", "info");
       setTimeout(() => {
-        t.style.opacity = "0";
-        setTimeout(() => t.remove(), 300);
-      }, 4000);
+        window.print();
+      }, 350);
+    }
+
+    // ── UTILITÁRIOS ──────────────────────────────────────────────────────
+    function showToast(msg, type = "info") {
+      const container = document.getElementById("toast-container");
+      if (!container) return;
+
+      const toast = document.createElement("div");
+      toast.className = `toast ${type === 'success' ? 'toast-success' : (type === 'error' ? 'toast-error' : '')}`;
+      toast.textContent = msg;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
     }
 
     function escapeHtml(str) {
       if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
     }
+
+    // ── INICIALIZAÇÃO ────────────────────────────────────────────────────
+    window.addEventListener("DOMContentLoaded", () => {
+      checkAuth();
+
+      // Checa se veio ?page= na URL
+      const params = new URLSearchParams(window.location.search);
+      const pageParam = params.get("page") || "dashboard";
+      switchAdminPage(pageParam);
+    });
   </script>
 </body>
 </html>

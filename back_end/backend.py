@@ -2375,7 +2375,7 @@ def admin_stats():
 @require_role("superadmin", "admin")
 def admin_users():
     """Listagem detalhada de usuários com filtros e status de assinatura."""
-    search = (request.args.get("search") or "").strip().lower()
+    search = (request.args.get("search") or request.args.get("q") or "").strip().lower()
     role_filter = (request.args.get("role") or "").strip().lower()
     status_filter = (request.args.get("status") or "").strip().lower()
 
@@ -2428,7 +2428,12 @@ def admin_users():
             "permissions": u.get_permissions()
         })
 
-    return jsonify(result)
+    return jsonify({
+        "ok": True,
+        "users": result,
+        "total": len(result)
+    })
+
 
 
 @app.route("/api/admin/users/<int:user_id>/bypass-premium", methods=["POST"])
