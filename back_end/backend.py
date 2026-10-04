@@ -846,7 +846,6 @@ def create_checkout_session():
 
     checkout_params = {
         "mode": "subscription",
-        "payment_method_types": ["card"],
         "line_items": [
             {
                 "price": price_id,
@@ -1830,6 +1829,14 @@ def index_page():
 
 @app.route("/<path:filename>")
 def frontend_files(filename):
+    target = os.path.join(FRONTEND_DIR, filename)
+    if os.path.exists(target):
+        return send_from_directory(FRONTEND_DIR, filename)
+    # Fallback resiliente para css/ e js/
+    if filename.endswith(".css") and os.path.exists(os.path.join(FRONTEND_DIR, "css", filename)):
+        return send_from_directory(os.path.join(FRONTEND_DIR, "css"), filename)
+    if filename.endswith(".js") and os.path.exists(os.path.join(FRONTEND_DIR, "js"), filename):
+        return send_from_directory(os.path.join(FRONTEND_DIR, "js"), filename)
     return send_from_directory(FRONTEND_DIR, filename)
 
 

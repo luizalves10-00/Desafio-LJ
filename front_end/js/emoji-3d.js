@@ -1,12 +1,13 @@
 /* Renderização local compartilhada: HTML inicial, toasts, chat e jogos. */
 (() => {
   'use strict';
-  const base = new URL('assets/emoji/', document.currentScript.src);
+  const scriptOrigin = (document.currentScript && document.currentScript.src) ? new URL(document.currentScript.src).origin : window.location.origin;
+  const base = new URL('/assets/emoji/', scriptOrigin);
   const catalog = window.EMOJI_3D_CATALOG;
   const segmenter = new Intl.Segmenter('pt-BR', { granularity: 'grapheme' });
   const normalize = text => text.replace(/\uFE0F/g, '');
   const isEmoji = text => /\p{Emoji}/u.test(text) && /\p{Extended_Pictographic}|\p{Regional_Indicator}|\u20e3/u.test(text);
-  const apiBase = new URL('/api/emoji/', document.currentScript.src);
+  const apiBase = new URL('/api/emoji/', scriptOrigin);
   const remote = new Map();
   const queue = [];
   let active = 0;
