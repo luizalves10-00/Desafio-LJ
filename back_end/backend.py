@@ -891,6 +891,146 @@ def create_checkout_session():
         return jsonify({"error": "Falha ao gerar sessão de pagamento no Stripe."}), 500
 
 
+@app.route("/api/stripe/create-setup-intent", methods=["POST"])
+def create_setup_intent():
+    """Cria um SetupIntent no Stripe para coletar dados do cartão via Stripe Elements White-Label."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not api_key or "placeholder" in api_key:
+        return jsonify({"error": "Chave da API do Stripe não configurada."}), 500
+
+    stripe.api_key = api_key
+
+    body = request.get_json(silent=True) or {}
+    plan = (body.get("plan") or "monthly").lower().strip()
+
+    # Garantir que o usuário possui um customer_id na Stripe
+    if not user.stripe_customer_id:
+        try:
+            customer = stripe.Customer.create(
+                email=user.email,
+                name=user.name,
+                metadata={
+                    "user_id": str(user.id),
+                    "app": "levelup_study"
+                }
+            )
+            user.stripe_customer_id = customer.id
+            db.session.commit()
+        except Exception as e:
+            app.logger.error(f"Erro ao criar cliente na Stripe: {e}")
+            return jsonify({"error": f"Erro ao criar cliente no Stripe: {str(e)}"}), 500
+
+    try:
+        setup_intent = stripe.SetupIntent.create(
+            customer=user.stripe_customer_id,
+            payment_method_types=["card"],
+            metadata={
+                "user_id": str(user.id),
+                "plan": plan,
+                "app": "levelup_study"
+            }
+        )
+        return jsonify({
+            "client_secret": setup_intent.client_secret,
+            "customer_id": user.stripe_customer_id,
+            "plan": plan
+        })
+    except Exception as e:
+        app.logger.error(f"Erro ao inicializar SetupIntent: {e}")
+        return jsonify({"error": f"Erro ao inicializar pagamento: {str(e)}"}), 500
+
+
+@app.route("/api/stripe/activate-subscription", methods=["POST"])
+def activate_subscription():
+    """Ativa a assinatura Concurseiro Pro com 7 dias de trial após a confirmação do SetupIntent no Stripe Elements."""
+    result = require_auth()
+    if isinstance(result, tuple):
+        return result
+    user = result
+
+    api_key = os.environ.get("STRIPE_SECRET_KEY")
+    if not api_key or "placeholder" in api_key:
+        return jsonify({"error": "Chave da API do Stripe não configurada."}), 500
+
+    stripe.api_key = api_key
+
+    body = request.get_json(silent=True) or {}
+    payment_method_id = body.get("payment_method_id")
+    plan = (body.get("plan") or "monthly").lower().strip()
+
+    if not payment_method_id:
+        return jsonify({"error": "Método de pagamento (payment_method_id) não fornecido."}), 400
+
+    if plan in ("monthly", "mensal"):
+        price_id = os.environ.get("STRIPE_PRICE_MONTHLY")
+        plan_name = "monthly"
+    elif plan in ("yearly", "anual"):
+        price_id = os.environ.get("STRIPE_PRICE_YEARLY")
+        plan_name = "yearly"
+    else:
+        price_id = body.get("price_id") or os.environ.get("STRIPE_PRICE_MONTHLY")
+        plan_name = "monthly"
+
+    if not price_id or "placeholder" in str(price_id):
+        return jsonify({"error": "ID de preço não configurado para o plano selecionado."}), 400
+
+    try:
+        # 1. Definir o método de pagamento padrão do cliente
+        stripe.Customer.modify(
+            user.stripe_customer_id,
+            invoice_settings={"default_payment_method": payment_method_id}
+        )
+
+        # 2. Criar a assinatura com 7 dias de trial
+        sub = stripe.Subscription.create(
+            customer=user.stripe_customer_id,
+            items=[{"price": price_id}],
+            trial_period_days=7,
+            default_payment_method=payment_method_id,
+            metadata={
+                "user_id": str(user.id),
+                "plan": plan_name,
+                "app": "levelup_study",
+                "origin": "stripe_elements_white_label"
+            }
+        )
+
+        # 3. Atualizar dados no banco de dados local
+        user.is_premium = True
+        user.subscription_status = "trialing"
+        user.stripe_subscription_id = sub.id
+        user.stripe_plan_id = price_id
+        if hasattr(sub, "current_period_end") and sub.current_period_end:
+            user.current_period_end = datetime.utcfromtimestamp(sub.current_period_end)
+
+        log_activity(
+            user.id,
+            "subscription_started",
+            f"Assinatura {plan_name.upper()} ativada com 7 dias de teste grátis via Stripe Elements"
+        )
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "subscription_id": sub.id,
+            "status": "trialing",
+            "plan": plan_name,
+            "message": "Parabéns! Seus 7 dias grátis do Concurseiro Pro foram ativados com sucesso.",
+            "redirect_url": "/index.html?payment=success"
+        })
+    except stripe.error.StripeError as e:
+        app.logger.error(f"Erro Stripe na ativação da assinatura: {e}")
+        return jsonify({"error": f"Erro na Stripe: {e.user_message or str(e)}"}), 400
+    except Exception as e:
+        app.logger.error(f"Erro geral na ativação da assinatura: {e}")
+        return jsonify({"error": f"Erro interno ao ativar assinatura: {str(e)}"}), 500
+
+
 @app.route("/api/webhooks/stripe", methods=["POST"])
 def stripe_webhook():
     """Webhook do Stripe: valida assinatura e atualiza status de assinaturas e concurseiros."""
@@ -1839,6 +1979,17 @@ def admin_dashboard_page():
 @app.route("/")
 def index_page():
     return send_from_directory(FRONTEND_DIR, "landing.html")
+
+
+@app.route("/planos")
+@app.route("/assinatura")
+def subscription_page():
+    return send_from_directory(FRONTEND_DIR, "assinatura.html")
+
+
+@app.route("/checkout")
+def checkout_page():
+    return send_from_directory(FRONTEND_DIR, "checkout.html")
 
 
 

@@ -121,8 +121,10 @@
   // Options nativas não aceitam PNGs. Mantém o select como fonte do valor
   // e oferece a mesma escolha através de uma lista acessível com imagens.
   function enhanceSelect(select) {
-    if (![...select.options].some(o => [...segmenter.segment(o.text)].some(p => catalog[normalize(p.segment)] || isEmoji(p.segment)))) return;
-    if (select.parentElement?.classList.contains('emoji-select')) return;
+    if (select.parentElement?.classList.contains('emoji-select')) {
+      if (select._emojiSync) select._emojiSync();
+      return;
+    }
     const wrapper = document.createElement('div');
     wrapper.className = 'emoji-select';
     select.before(wrapper);
@@ -145,6 +147,9 @@
       render(button);
       [...menu.children].forEach((child, i) => child.setAttribute('aria-selected', String(i === select.selectedIndex)));
     };
+    select._emojiSync = sync;
+    select.addEventListener('change', sync);
+    select.addEventListener('input', sync);
     [...select.options].forEach((option, i) => {
       const choice = document.createElement('button');
       choice.type = 'button'; choice.className = 'emoji-select-option';

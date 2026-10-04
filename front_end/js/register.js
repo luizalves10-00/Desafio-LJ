@@ -113,10 +113,29 @@ form.addEventListener("submit", async (e) => {
     }
 
     showSuccess(`Conta criada! Bem-vindo, ${data.user.name}! 🎮`);
-    setTimeout(() => { window.location.href = "index.html"; }, 900);
+
+    const params = new URLSearchParams(window.location.search);
+    const redirectParam = params.get("redirect");
+    const planParam = params.get("plan");
+
+    setTimeout(() => {
+      if (redirectParam === "checkout" && planParam) {
+        window.location.href = `checkout.html?plan=${encodeURIComponent(planParam)}`;
+        return;
+      }
+      window.location.href = "index.html";
+    }, 900);
   } catch {
     showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
   } finally {
     setLoading(false);
   }
 });
+
+// Propagar parâmetros de redirecionamento para o link de login
+(() => {
+  const loginLink = document.querySelector('.link-row a[href*="login.html"]');
+  if (loginLink && window.location.search) {
+    loginLink.href = `login.html${window.location.search}`;
+  }
+})();

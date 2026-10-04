@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Finalizar Assinatura — LevelUp Study Concurseiro Pro. 7 dias grátis sem compromisso.">
+  <meta name="theme-color" content="#090711">
+  <title>Checkout Seguro — LevelUp Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/emoji-3d.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <link rel="stylesheet" href="css/checkout.css">
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="js/emoji-catalog.js" defer></script>
+  <script src="js/emoji-3d.js" defer></script>
+  <script src="js/checkout.js" defer></script>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <svg class="svg-library" aria-hidden="true">
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M5 12h14M14 7l5 5-5 5"/></symbol>
+    <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="icon-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="icon-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  </svg>
+
+  <div class="checkout-shell">
+    <header class="checkout-header">
+      <a class="brand" href="landing.html#inicio">
+        <span class="brand-mark">LU</span>
+        <span>LevelUp <b>Study</b></span>
+      </a>
+      <a class="btn btn-glass btn-small" href="landing.html#planos">
+        ← Voltar aos Planos
+      </a>
+    </header>
+
+    <main class="checkout-grid">
+      <!-- RESUMO DO PEDIDO -->
+      <aside class="order-summary-card">
+        <div class="summary-badges">
+          <span class="plan-badge-trial">✨ 7 DIAS GRÁTIS</span>
+          <span class="plan-tag" id="summary-plan-tag">Concurseiro Pro</span>
+        </div>
+        <h1 class="summary-title" id="summary-title">Concurseiro Pro Mensal</h1>
+        <p class="summary-desc" id="summary-desc">
+          Acesso completo e irrestrito ao Mentor IA, simulados cronometrados por banca e banco completo de questões.
+        </p>
+
+        <div class="pricing-breakdown">
+          <div class="breakdown-row">
+            <span>Período de degustação</span>
+            <strong style="color:var(--vitae);">7 dias gratuitos</strong>
+          </div>
+          <div class="breakdown-row">
+            <span id="breakdown-recurring-label">Após os 7 dias</span>
+            <span id="breakdown-recurring-val">R$ 19,90 / mês</span>
+          </div>
+          <div class="breakdown-row total-today">
+            <span>Cobrança hoje</span>
+            <span class="amount-free">R$ 0,00</span>
+          </div>
+        </div>
+
+        <ul class="summary-features">
+          <li><svg><use href="#icon-check"></use></svg> <span><strong>Mentor IA Gemini 2.5</strong> perguntas ilimitadas</span></li>
+          <li><svg><use href="#icon-check"></use></svg> <span><strong>Simulados cronometrados</strong> Cebraspe, FGV, FCC</span></li>
+          <li><svg><use href="#icon-check"></use></svg> <span><strong>Banco de questões</strong> completo e atualizado</span></li>
+          <li><svg><use href="#icon-check"></use></svg> <span><strong>Gabaritos comentados com IA</strong> e análise de erros</span></li>
+          <li><svg><use href="#icon-check"></use></svg> <span><strong>Todos os 6 temas</strong> raros e lendários liberados</span></li>
+        </ul>
+
+        <div class="trust-badges-box">
+          <div class="trust-badge-item">
+            <span>🛡️</span>
+            <div>
+              <strong>Segurança de nível bancário</strong>
+              <small>Processado com criptografia SSL 256-bit e certificação PCI-DSS Nível 1.</small>
+            </div>
+          </div>
+          <div class="trust-badge-item">
+            <span>⏱️</span>
+            <div>
+              <strong>Sem fidelidade ou letras miúdas</strong>
+              <small>Cancele em 1 clique a qualquer momento antes do 8º dia diretamente no seu perfil.</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- FORMULÁRIO 100% WHITE-LABEL COM STRIPE ELEMENTS -->
+      <section class="payment-card">
+        <h2 class="payment-title">Dados de Pagamento</h2>
+        <p class="payment-subtitle">
+          Insira as informações do seu cartão para ativar sua avaliação gratuita de 7 dias.
+        </p>
+
+        <!-- Informações do usuário logado -->
+        <div class="user-info-row" id="user-info-row">
+          <div class="avatar-mini" id="user-avatar">U</div>
+          <div>
+            <strong id="user-name" style="display:block; color:#fff;">Carregando...</strong>
+            <small id="user-email" style="color:var(--mist);">...</small>
+          </div>
+        </div>
+
+        <!-- Alerta de Erro / Sucesso -->
+        <div class="payment-alert" id="payment-alert"></div>
+
+        <!-- Formulário Stripe Elements -->
+        <form id="payment-form">
+          <div id="payment-element">
+            <!-- O componente nativo e seguro da Stripe é injetado aqui -->
+            <div style="padding: 40px; text-align: center; color: var(--mist);">
+              <div class="spinner-icon" style="margin: 0 auto 12px;"></div>
+              Carregando formulário seguro...
+            </div>
+          </div>
+
+          <button id="btn-submit" type="submit" class="btn btn-primary btn-large btn-glow btn-checkout-submit" disabled>
+            <span id="btn-spinner" class="spinner-icon" style="display:none;"></span>
+            <span id="btn-text">Ativar Meus 7 Dias Grátis</span>
+          </button>
+        </form>
+
+        <p class="checkout-disclaimer">
+          🔒 <strong>R$ 0,00 cobrado agora.</strong> Os dados do cartão são validados com segurança pela Stripe. A primeira cobrança de <span id="disclaimer-price">R$ 19,90</span> só ocorrerá se você decidir continuar após os 7 dias de degustação.
+        </p>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

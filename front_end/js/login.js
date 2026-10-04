@@ -54,10 +54,29 @@ form.addEventListener("submit", async (e) => {
     }
 
     showSuccess(`Bem-vindo de volta, ${data.user.name}! 🎮`);
-    setTimeout(() => { window.location.href = "index.html"; }, 800);
+
+    const params = new URLSearchParams(window.location.search);
+    const redirectParam = params.get("redirect");
+    const planParam = params.get("plan");
+
+    setTimeout(() => {
+      if (redirectParam === "checkout" && planParam) {
+        window.location.href = `checkout.html?plan=${encodeURIComponent(planParam)}`;
+        return;
+      }
+      window.location.href = "index.html";
+    }, 800);
   } catch {
     showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
   } finally {
     setLoading(false);
   }
 });
+
+// Propagar parâmetros de redirecionamento para o link de cadastro
+(() => {
+  const regLink = document.querySelector('.link-row a[href*="register.html"]');
+  if (regLink && window.location.search) {
+    regLink.href = `register.html${window.location.search}`;
+  }
+})();
