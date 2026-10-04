@@ -56,15 +56,36 @@ form.addEventListener("submit", async (e) => {
     showSuccess(`Bem-vindo de volta, ${data.user.name}! 🎮`);
 
     const params = new URLSearchParams(window.location.search);
-    const redirectParam = params.get("redirect");
+    const redirectParam = (params.get("redirect") || "").trim();
     const planParam = params.get("plan");
 
     setTimeout(() => {
-      if (redirectParam === "checkout" && planParam) {
-        window.location.href = `checkout.html?plan=${encodeURIComponent(planParam)}`;
+      // 1. Fluxo de contratação / checkout
+      if (redirectParam === "checkout" || redirectParam.includes("checkout.html")) {
+        const planQuery = planParam ? `?plan=${encodeURIComponent(planParam)}` : "";
+        window.location.href = `checkout.html${planQuery}`;
         return;
       }
-      window.location.href = "index.html";
+
+      // 2. Administradores e Super Admins
+      if (data.user && (data.user.is_admin || data.user.role === "admin" || data.user.role === "superadmin")) {
+        // Se pediu especificamente index.html ou admin.html, respeita a intenção
+        if (redirectParam && (redirectParam.includes("admin.html") || redirectParam.includes("index.html"))) {
+          window.location.href = redirectParam;
+          return;
+        }
+        window.location.href = data.redirect_to || "admin.html";
+        return;
+      }
+
+      // 3. Concurseiros / Estudantes (role padrão)
+      // Se tentou entrar em admin.html sem permissão, direciona ao index.html para não receber 403
+      if (redirectParam && !redirectParam.includes("admin.html")) {
+        window.location.href = redirectParam;
+        return;
+      }
+
+      window.location.href = data.redirect_to || "index.html";
     }, 800);
   } catch {
     showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");

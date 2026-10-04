@@ -3506,6 +3506,13 @@ async function init() {
     document.getElementById("sb-name").textContent = user.name;
     document.getElementById("sb-email").textContent = user.email;
     document.getElementById("sb-avatar").textContent = user.name.charAt(0).toUpperCase();
+
+    if (user.is_admin || user.role === "admin" || user.role === "superadmin") {
+      const adminSec = document.getElementById("nav-admin-section");
+      const adminLink = document.getElementById("nav-admin-link");
+      if (adminSec) adminSec.style.display = "block";
+      if (adminLink) adminLink.style.display = "flex";
+    }
   } catch {
     redirectLogin();
     return;

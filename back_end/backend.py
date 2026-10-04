@@ -433,7 +433,11 @@ def register():
     db.session.commit()
 
     session["user_id"] = user.id
-    return jsonify({"user": user.to_public(), "stats": stats.to_dict()}), 201
+    return jsonify({
+        "user": user.to_public(),
+        "stats": stats.to_dict(),
+        "redirect_to": "index.html"
+    }), 201
 
 
 @app.route("/api/auth/login", methods=["POST"])
@@ -448,7 +452,12 @@ def login():
 
     session["user_id"] = user.id
     stats = get_or_create_stats(user)
-    return jsonify({"user": user.to_public(), "stats": stats.to_dict()})
+    default_redirect = "admin.html" if user.is_admin else "index.html"
+    return jsonify({
+        "user": user.to_public(),
+        "stats": stats.to_dict(),
+        "redirect_to": default_redirect
+    })
 
 
 @app.route("/api/auth/logout", methods=["POST"])

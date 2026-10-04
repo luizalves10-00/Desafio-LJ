@@ -115,15 +115,16 @@ form.addEventListener("submit", async (e) => {
     showSuccess(`Conta criada! Bem-vindo, ${data.user.name}! 🎮`);
 
     const params = new URLSearchParams(window.location.search);
-    const redirectParam = params.get("redirect");
+    const redirectParam = (params.get("redirect") || "").trim();
     const planParam = params.get("plan");
 
     setTimeout(() => {
-      if (redirectParam === "checkout" && planParam) {
-        window.location.href = `checkout.html?plan=${encodeURIComponent(planParam)}`;
+      if (redirectParam === "checkout" || redirectParam.includes("checkout.html")) {
+        const planQuery = planParam ? `?plan=${encodeURIComponent(planParam)}` : "";
+        window.location.href = `checkout.html${planQuery}`;
         return;
       }
-      window.location.href = "index.html";
+      window.location.href = data.redirect_to || "index.html";
     }, 900);
   } catch {
     showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
