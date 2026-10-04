@@ -462,6 +462,22 @@ class SubscriptionPlan(db.Model):
     def set_permissions(self, perms: dict):
         self.permissions_json = json.dumps(perms, ensure_ascii=False)
 
+    @property
+    def formatted_price(self) -> str:
+        return f"R$ {self.price_amount:.2f}".replace(".", ",")
+
+    @property
+    def interval_label(self) -> str:
+        if self.interval == "year" and self.interval_count == 1:
+            return "Anual"
+        elif self.interval == "month" and self.interval_count == 6:
+            return "Semestral"
+        elif self.interval == "month" and self.interval_count == 3:
+            return "Trimestral"
+        elif self.interval == "month" and self.interval_count > 1:
+            return f"{self.interval_count} Meses"
+        return "Mensal"
+
     def to_dict(self) -> dict:
         label = "Mensal"
         if self.interval == "year" and self.interval_count == 1:
@@ -1789,11 +1805,22 @@ def get_subscription_status():
             stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
             sub_obj = stripe.Subscription.retrieve(user.stripe_subscription_id)
             cancel_at_period_end = bool(getattr(sub_obj, "cancel_at_period_end", False))
-            if sub_obj.status in ("canceled", "unpaid") and user.subscription_status != sub_obj.status:
+            need_commit = False
+
+            if sub_obj.status and user.subscription_status != sub_obj.status:
                 user.subscription_status = sub_obj.status
+                need_commit = True
+
+            if not user.current_period_end:
+                ts = getattr(sub_obj, "trial_end", None) or getattr(sub_obj, "current_period_end", None)
+                if ts:
+                    user.current_period_end = datetime.utcfromtimestamp(ts)
+                    need_commit = True
+
+            if need_commit:
                 db.session.commit()
-        except Exception:
-            pass
+        except Exception as e:
+            app.logger.warning(f"Erro ao sincronizar assinatura com Stripe: {e}")
 
     period_end_formatted = None
     if user.current_period_end:

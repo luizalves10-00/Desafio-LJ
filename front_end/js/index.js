@@ -3685,6 +3685,11 @@ async function loadSubscriptionDetails() {
   try {
     const res = await apiFetch(`${API}/stripe/subscription`);
     if (res.status === 401) { redirectLogin(); return; }
+    if (!res.ok) {
+      if (planTitle) planTitle.textContent = "Erro ao carregar plano";
+      showToast("Não foi possível carregar os dados da assinatura.", "err");
+      return;
+    }
 
     const sub = await res.json();
     userSubscriptionData = sub;
