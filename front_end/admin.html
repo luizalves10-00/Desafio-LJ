@@ -1028,6 +1028,166 @@
     /* ═══════════════════════════════════════════════════════════════════════════
        RESPONSIVE DESIGN (TABLET & MOBILE)
        ═══════════════════════════════════════════════════════════════════════════ */
+    
+    /* ── SIDEBAR HEADER REFINADO PARA MOBILE ────────────────────────────── */
+    .sidebar-header {
+      padding: 1.15rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      text-decoration: none;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+    .brand-logo {
+      font-family: var(--font-display);
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+    .sidebar-badge {
+      font-size: 0.62rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(245, 158, 11, 0.25));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--gold);
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .sidebar-close-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0.2rem;
+      flex-shrink: 0;
+    }
+
+    /* ── GRÁFICO PROFISSIONAL DO DASHBOARD ─────────────────────────────── */
+    .chart-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      width: 100%;
+    }
+    .chart-header {
+      padding: 1.15rem 1.4rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+    .chart-title-group h2 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .chart-title-group p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+    .chart-tab-group {
+      display: flex;
+      gap: 0.35rem;
+      background: var(--bg2);
+      padding: 0.3rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .chart-tab {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 0.4rem 0.75rem;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+    .chart-tab:hover { color: var(--text); }
+    .chart-tab.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .chart-body {
+      padding: 1.25rem 1.4rem;
+      position: relative;
+    }
+    .chart-svg-wrap {
+      width: 100%;
+      height: 230px;
+    }
+    .chart-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* ── PERMISSÕES PICKER NOS MODAIS ──────────────────────────────────── */
+    .perms-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.5rem;
+      max-height: 180px;
+      overflow-y: auto;
+      background: var(--bg2);
+      padding: 0.65rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .perm-toggle-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.76rem;
+      color: var(--text2);
+      cursor: pointer;
+      user-select: none;
+      background: var(--surface2);
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      transition: all 0.15s;
+    }
+    .perm-toggle-item:hover {
+      border-color: var(--accent);
+      background: var(--surface-hover);
+    }
+    .perm-toggle-item input[type="checkbox"] {
+      accent-color: var(--accent);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
     @media (max-width: 1024px) {
       .metrics-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -1037,6 +1197,8 @@
     @media (max-width: 900px) {
       .sidebar {
         transform: translateX(-100%);
+        width: 280px;
+        max-width: 86vw;
       }
       .sidebar.open {
         transform: translateX(0);
@@ -1047,9 +1209,10 @@
         width: 100%;
       }
       .hamburger { display: flex; }
-      .topbar { padding: 0 1rem; }
-      .admin-container { padding: 1.25rem 1rem; }
+      .topbar { padding: 0 0.85rem; }
+      .admin-container { padding: 1rem 0.85rem; }
       .form-row { grid-template-columns: 1fr; }
+      .chart-svg-wrap { height: 200px; }
     }
 
     @media (max-width: 600px) {
@@ -1058,6 +1221,19 @@
       }
       .plans-grid {
         grid-template-columns: 1fr;
+      }
+      .chart-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .chart-tab-group {
+        width: 100%;
+      }
+      .chart-tab {
+        flex: 1;
+        justify-content: center;
+        font-size: 0.7rem;
+        padding: 0.4rem 0.25rem;
       }
       .table-toolbar {
         flex-direction: column;
@@ -1076,14 +1252,12 @@
       .topbar-title-text {
         font-size: 0.92rem;
       }
-      .btn-topbar span {
-        display: none;
-      }
       .btn-topbar {
-        padding: 0.45rem 0.55rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.75rem;
       }
       .modal-card {
-        max-width: 95%;
+        max-width: 96%;
       }
       .report-header-banner {
         flex-direction: column;
@@ -1091,6 +1265,9 @@
       }
       .rep-meta-block {
         text-align: left;
+      }
+      .perms-picker-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -1320,6 +1497,43 @@
           </div>
         </section>
 
+        <!-- GRÁFICO EXECUTIVO -->
+        <section class="chart-section">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h2>Evolução da Plataforma & Engajamento</h2>
+              <p>Histórico mensal de receita, conversão de alunos Pro e matérias com maior engajamento</p>
+            </div>
+            <div class="chart-tab-group">
+              <button class="chart-tab active" id="tab-btn-mrr" onclick="switchChartTab('mrr')">📈 Faturamento MRR</button>
+              <button class="chart-tab" id="tab-btn-growth" onclick="switchChartTab('growth')">👥 Alunos (Pro vs Free)</button>
+              <button class="chart-tab" id="tab-btn-subjects" onclick="switchChartTab('subjects')">📚 Disciplinas</button>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="chart-svg-wrap" id="chart-svg-wrap">
+              <svg id="admin-main-svg" viewBox="0 0 760 250" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="areaGlowGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#a855f7" stop-opacity="0.55" />
+                    <stop offset="100%" stop-color="#7c3aed" stop-opacity="0.0" />
+                  </linearGradient>
+                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#7c3aed" />
+                    <stop offset="50%" stop-color="#a855f7" />
+                    <stop offset="100%" stop-color="#38bdf8" />
+                  </linearGradient>
+                </defs>
+                <g id="svg-grid-lines" stroke="#272147" stroke-dasharray="4,4" opacity="0.6"></g>
+                <path id="svg-area-main" fill="url(#areaGlowGrad)" d="" />
+                <path id="svg-line-main" fill="none" stroke="url(#lineGrad)" stroke-width="3" d="" />
+                <g id="svg-data-points"></g>
+              </svg>
+            </div>
+            <div id="chart-tooltip" style="display:none; position:absolute; background:var(--surface2); border:1px solid var(--accent); padding:6px 10px; border-radius:6px; font-size:0.75rem; pointer-events:none; z-index:10; box-shadow:0 6px 16px rgba(0,0,0,0.5);"></div>
+          </div>
+        </section>
+
         <!-- ÚLTIMOS ALUNOS CADASTRADOS -->
         <section class="table-section">
           <div class="table-toolbar">
@@ -1365,6 +1579,7 @@
               <span>Ver Página Pública ↗</span>
             </a>
             <button class="btn-topbar btn-topbar-primary" onclick="openCreatePlanModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
               <span>+ Novo Plano</span>
             </button>
           </div>
@@ -1389,6 +1604,7 @@
           </div>
           <div>
             <button class="btn-topbar btn-topbar-primary" onclick="openCreateUserModal()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
               <span>+ Novo Aluno</span>
             </button>
           </div>
@@ -1631,6 +1847,39 @@
             <input type="text" id="new-plan-badge" placeholder="ex: MAIS VANTAJOSO" />
           </div>
         </div>
+        <div class="form-group">
+          <label>Permissões & Benefícios Incluídos</label>
+          <div class="perms-picker-grid" id="new-plan-perms-grid">
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="can_access_unlimited_ai" checked>
+              <span>🤖 Mentor IA Ilimitado</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="concurseiro_simulados" checked>
+              <span>⏱️ Simulados por Banca</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="ai_commented_answers" checked>
+              <span>💡 Gabaritos com IA</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="can_access_all_themes" checked>
+              <span>🎨 Temas RPG Desbloqueados</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="can_access_advanced_analytics" checked>
+              <span>📊 Métricas Avançadas</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="priority_support">
+              <span>⭐ Suporte Prioritário</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" name="new-perm" value="offline_downloads">
+              <span>📥 Downloads em PDF</span>
+            </label>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button class="btn-topbar" onclick="closeCreatePlanModal()">Cancelar</button>
@@ -1679,6 +1928,39 @@
         <div class="form-group">
           <label>Texto da Badge</label>
           <input type="text" id="edit-plan-badge" />
+        </div>
+        <div class="form-group">
+          <label>Permissões & Benefícios Incluídos</label>
+          <div class="perms-picker-grid" id="edit-plan-perms-grid">
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-can_access_unlimited_ai" value="can_access_unlimited_ai">
+              <span>🤖 Mentor IA Ilimitado</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-concurseiro_simulados" value="concurseiro_simulados">
+              <span>⏱️ Simulados por Banca</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-ai_commented_answers" value="ai_commented_answers">
+              <span>💡 Gabaritos com IA</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-can_access_all_themes" value="can_access_all_themes">
+              <span>🎨 Temas RPG Desbloqueados</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-can_access_advanced_analytics" value="can_access_advanced_analytics">
+              <span>📊 Métricas Avançadas</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-priority_support" value="priority_support">
+              <span>⭐ Suporte Prioritário</span>
+            </label>
+            <label class="perm-toggle-item">
+              <input type="checkbox" id="edit-perm-offline_downloads" value="offline_downloads">
+              <span>📥 Downloads em PDF</span>
+            </label>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -1941,6 +2223,126 @@
     }
 
     // ── 1. DASHBOARD & STATS ─────────────────────────────────────────────
+    
+    let currentChartTab = "mrr";
+    let chartCachedData = null;
+
+    function switchChartTab(tab) {
+      currentChartTab = tab;
+      ["mrr", "growth", "subjects"].forEach(t => {
+        const b = document.getElementById("tab-btn-" + t);
+        if (b) b.classList.toggle("active", t === tab);
+      });
+      renderChart();
+    }
+
+    function renderChart() {
+      if (!chartCachedData) return;
+      const history = chartCachedData.mrr_evolution || [];
+      const subjects = chartCachedData.subjects_breakdown || [];
+      const svg = document.getElementById("admin-main-svg");
+      const pathLine = document.getElementById("svg-line-main");
+      const pathArea = document.getElementById("svg-area-main");
+      const pointsGroup = document.getElementById("svg-data-points");
+      const gridGroup = document.getElementById("svg-grid-lines");
+
+      if (!svg) return;
+
+      const width = 760;
+      const height = 250;
+      const padding = 35;
+
+      pointsGroup.innerHTML = "";
+      gridGroup.innerHTML = "";
+
+      // Linhas de grade horizontais
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + (height - padding * 2) * (i / 4);
+        gridGroup.innerHTML += `<line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" />`;
+      }
+
+      if (currentChartTab === "subjects") {
+        pathLine.setAttribute("d", "");
+        pathArea.setAttribute("d", "");
+
+        if (!subjects.length) {
+          pointsGroup.innerHTML = `<text x="${width/2}" y="${height/2}" fill="var(--muted)" font-size="12" text-anchor="middle">Nenhum simulado registrado ainda</text>`;
+          return;
+        }
+
+        const barWidth = Math.min(65, (width - padding * 2) / subjects.length - 15);
+        const maxQ = Math.max(...subjects.map(s => s.questions_count || 1), 10);
+
+        subjects.slice(0, 8).forEach((s, idx) => {
+          const x = padding + 15 + idx * ((width - padding * 2) / Math.min(8, subjects.length));
+          const h = ((s.questions_count || 0) / maxQ) * (height - padding * 2 - 20);
+          const y = height - padding - h;
+
+          pointsGroup.innerHTML += `
+            <rect x="${x}" y="${y}" width="${barWidth}" height="${h}" rx="4" fill="url(#areaGlowGrad)" stroke="#a855f7" stroke-width="1.5"
+                  style="cursor:pointer;" onmouseenter="showChartTooltip(event, '${escapeHtml(s.subject)}', '${s.questions_count} questões', 'disciplina')"
+                  onmouseleave="hideChartTooltip()" />
+            <text x="${x + barWidth/2}" y="${height - 12}" fill="var(--muted)" font-size="10" text-anchor="middle">${escapeHtml(s.subject.substring(0, 10))}</text>
+            <text x="${x + barWidth/2}" y="${y - 6}" fill="var(--text)" font-size="10" font-weight="700" text-anchor="middle">${s.questions_count}</text>
+          `;
+        });
+        return;
+      }
+
+      if (!history.length) return;
+
+      let vals = history.map(h => currentChartTab === "growth" ? (h.pro || 0) : (h.mrr || 0));
+      let maxVal = Math.max(...vals, 1);
+      if (currentChartTab === "mrr") maxVal = Math.max(maxVal, 300); // Linha break-even
+
+      const stepX = (width - padding * 2) / Math.max(1, history.length - 1);
+
+      let dLine = "";
+      let dArea = "";
+
+      history.forEach((pt, i) => {
+        const val = vals[i];
+        const x = padding + i * stepX;
+        const y = height - padding - ((val / maxVal) * (height - padding * 2));
+
+        if (i === 0) {
+          dLine += `M ${x} ${y}`;
+          dArea += `M ${x} ${height - padding} L ${x} ${y}`;
+        } else {
+          dLine += ` L ${x} ${y}`;
+          dArea += ` L ${x} ${y}`;
+        }
+
+        pointsGroup.innerHTML += `
+          <circle cx="${x}" cy="${y}" r="5" fill="#a855f7" stroke="#fff" stroke-width="2"
+                  style="cursor:pointer;" onmouseenter="showChartTooltip(event, '${pt.month}', '${val}', '${currentChartTab}')"
+                  onmouseleave="hideChartTooltip()" />
+          <text x="${x}" y="${height - 12}" fill="var(--muted)" font-size="10" text-anchor="middle">${pt.month}</text>
+        `;
+      });
+
+      dArea += ` L ${padding + (history.length - 1) * stepX} ${height - padding} Z`;
+      pathLine.setAttribute("d", dLine);
+      pathArea.setAttribute("d", dArea);
+    }
+
+    function showChartTooltip(e, label, val, tab) {
+      const tip = document.getElementById("chart-tooltip");
+      if (!tip) return;
+      let formatted = val;
+      if (tab === "mrr") formatted = `R$ ${parseFloat(val).toFixed(2).replace('.', ',')}`;
+      else if (tab === "growth") formatted = `${val} alunos Pro`;
+      tip.innerHTML = `<strong>${label}</strong>: ${formatted}`;
+      tip.style.display = "block";
+      tip.style.left = (e.clientX - 60) + "px";
+      tip.style.top = (e.clientY - 40) + "px";
+    }
+
+    function hideChartTooltip() {
+      const tip = document.getElementById("chart-tooltip");
+      if (tip) tip.style.display = "none";
+    }
+
     async function loadStats() {
       try {
         const res = await fetch("/api/admin/stats");
@@ -1960,6 +2362,10 @@
         document.getElementById("kpi-mrr").textContent = fin.mrr_formatted || "R$ 0,00";
         document.getElementById("kpi-pomodoros").textContent = eng.total_pomodoros || 0;
         document.getElementById("kpi-xp-total").textContent = `${(eng.total_xp || 0).toLocaleString()} XP acumulado`;
+
+        // Carrega o gráfico com os dados reais retornados
+        chartCachedData = data.charts || {};
+        renderChart();
 
         // Carrega os 5 usuários mais recentes na tabela do Dashboard
         loadRecentUsers();
@@ -2064,10 +2470,18 @@
               </div>
 
               <div class="plan-perms-list">
-                <span class="perm-pill">IA Ilimitada</span>
-                <span class="perm-pill">Simulados</span>
-                <span class="perm-pill">Flashcards</span>
-                <span class="perm-pill">Google Agenda</span>
+                ${(() => {
+                  const perms = p.permissions || {};
+                  const pills = [];
+                  if (perms.can_access_unlimited_ai) pills.push('<span class="perm-pill">🤖 IA Ilimitada</span>');
+                  if (perms.concurseiro_simulados) pills.push('<span class="perm-pill">⏱️ Simulados</span>');
+                  if (perms.ai_commented_answers) pills.push('<span class="perm-pill">💡 Gabaritos IA</span>');
+                  if (perms.can_access_all_themes) pills.push('<span class="perm-pill">🎨 Todos os Temas</span>');
+                  if (perms.can_access_advanced_analytics) pills.push('<span class="perm-pill">📊 Métricas</span>');
+                  if (perms.priority_support) pills.push('<span class="perm-pill">⭐ Suporte VIP</span>');
+                  if (perms.offline_downloads) pills.push('<span class="perm-pill">📥 PDFs</span>');
+                  return pills.length ? pills.join('') : '<span class="perm-pill" style="opacity:0.5;">Acesso Básico</span>';
+                })()}
               </div>
 
               <div class="plan-actions-toolbar">
@@ -2124,6 +2538,11 @@
       else if (intervalVal === "month_6") { interval = "month"; interval_count = 6; }
       else if (intervalVal === "year_1") { interval = "year"; interval_count = 1; }
 
+      const perms = {};
+      document.querySelectorAll("#new-plan-perms-grid input[name='new-perm']").forEach(cb => {
+        perms[cb.value] = cb.checked;
+      });
+
       try {
         const res = await fetch("/api/admin/plans", {
           method: "POST",
@@ -2138,7 +2557,8 @@
             interval_count,
             trial_days: trial,
             badge,
-            emoji
+            emoji,
+            permissions: perms
           })
         });
 
@@ -2168,6 +2588,13 @@
       document.getElementById("edit-plan-trial").value = plan.trial_days || 0;
       document.getElementById("edit-plan-badge").value = plan.badge || "";
 
+      const pPerms = plan.permissions || {};
+      const allPermKeys = ["can_access_unlimited_ai", "concurseiro_simulados", "ai_commented_answers", "can_access_all_themes", "can_access_advanced_analytics", "priority_support", "offline_downloads"];
+      allPermKeys.forEach(k => {
+        const cb = document.getElementById("edit-perm-" + k);
+        if (cb) cb.checked = !!pPerms[k];
+      });
+
       document.getElementById("edit-plan-modal").classList.add("active");
     }
 
@@ -2189,6 +2616,13 @@
         return;
       }
 
+      const perms = {};
+      const allPermKeys = ["can_access_unlimited_ai", "concurseiro_simulados", "ai_commented_answers", "can_access_all_themes", "can_access_advanced_analytics", "priority_support", "offline_downloads"];
+      allPermKeys.forEach(k => {
+        const cb = document.getElementById("edit-perm-" + k);
+        if (cb) perms[k] = cb.checked;
+      });
+
       try {
         const res = await fetch(`/api/admin/plans/${id}`, {
           method: "PUT",
@@ -2200,7 +2634,8 @@
             price_brl: amount,
             trial_days: trial,
             badge,
-            emoji
+            emoji,
+            permissions: perms
           })
         });
 
