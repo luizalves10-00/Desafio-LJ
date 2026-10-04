@@ -1,3 +1,4 @@
+from functools import wraps
 from flask import Flask, jsonify, request, session, send_from_directory
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -19,8 +20,43 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 # ── App setup ──────────────────────────────────────────────────────────────
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
+
+# Configuração da conexão com o Banco de Dados (MySQL via PyMySQL com suporte a variáveis de ambiente e fallback local)
+use_sqlite = os.environ.get("USE_SQLITE", "").lower() in ("true", "1")
+
+if use_sqlite:
+    db_uri = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
+else:
+    db_uri = os.environ.get("DATABASE_URL")
+    if not db_uri:
+        if os.environ.get("DB_HOST") or os.environ.get("DB_USER"):
+            db_user = os.environ.get("DB_USER", "levelup_user")
+            db_pass = os.environ.get("DB_PASS", "levelup_password")
+            db_host = os.environ.get("DB_HOST", "127.0.0.1")
+            db_port = os.environ.get("DB_PORT", "3306")
+            db_name = os.environ.get("DB_NAME", "levelup_db")
+            db_uri = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}?charset=utf8mb4"
+        else:
+            # Fallback seguro para SQLite se nenhum MySQL foi especificado
+            db_uri = f"sqlite:///{os.path.join(BASE_DIR, 'levelupstudy.db')}"
+
+if db_uri.startswith("mysql://"):
+    db_uri = db_uri.replace("mysql://", "mysql+pymysql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = db_uri
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Opções de engine específicas para evitar desconexão no MySQL
+if not db_uri.startswith("sqlite"):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_recycle": 280,
+        "pool_pre_ping": True,
+    }
+else:
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+    }
+
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 CORS(app, supports_credentials=True, origins=["http://localhost:5500", "http://127.0.0.1:5500", "http://localhost:8080", "http://127.0.0.1:8080", "null"])
@@ -41,12 +77,23 @@ GAME_XP_DAILY_CAP    = 150   # teto de XP de jogos por dia (anti-abuso)
 class User(db.Model):
     __tablename__ = "users"
 
-    id         = db.Column(db.Integer, primary_key=True)
-    name       = db.Column(db.String(100), nullable=False)
-    email      = db.Column(db.String(150), unique=True, nullable=False)
+    id            = db.Column(db.Integer, primary_key=True)
+    name          = db.Column(db.String(100), nullable=False)
+    email         = db.Column(db.String(150), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
-    interests  = db.Column(db.String(500), default="")
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    interests     = db.Column(db.String(500), default="")
+    
+    # Controle de Acesso e Permissões (ACL)
+    role          = db.Column(db.String(20), default="student", nullable=False)  # 'student', 'admin', 'superadmin'
+
+    # Integração Financeira Stripe
+    stripe_customer_id     = db.Column(db.String(120), unique=True, nullable=True, index=True)
+    stripe_subscription_id = db.Column(db.String(120), unique=True, nullable=True, index=True)
+    stripe_plan_id         = db.Column(db.String(100), nullable=True)
+    subscription_status    = db.Column(db.String(50), default="free", nullable=True)  # 'free', 'trialing', 'active', 'past_due', 'canceled'
+    current_period_end     = db.Column(db.DateTime, nullable=True)
+
+    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
 
     stats  = db.relationship("UserStats", back_populates="user", uselist=False, cascade="all, delete-orphan")
     tasks  = db.relationship("Task",      back_populates="user", cascade="all, delete-orphan")
@@ -60,8 +107,32 @@ class User(db.Model):
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def is_admin(self) -> bool:
+        return self.role in ("admin", "superadmin")
+
+    @property
+    def is_premium(self) -> bool:
+        if self.is_admin:
+            return True
+        if self.subscription_status in ("active", "trialing"):
+            if self.current_period_end:
+                return self.current_period_end >= datetime.utcnow()
+            return True
+        return False
+
     def to_public(self) -> dict:
-        return {"id": self.id, "name": self.name, "email": self.email, "interests": self.interests}
+        return {
+            "id": self.id,
+            "name": self.name,
+            "email": self.email,
+            "interests": self.interests,
+            "role": self.role,
+            "is_admin": self.is_admin,
+            "is_premium": self.is_premium,
+            "subscription_status": self.subscription_status,
+            "current_period_end": self.current_period_end.isoformat() if self.current_period_end else None,
+        }
 
 
 class UserStats(db.Model):
@@ -144,6 +215,32 @@ def require_auth():
     if not user:
         return jsonify({"error": "Não autenticado"}), 401
     return user
+
+
+def require_role(*roles):
+    """
+    Decorator para proteger rotas da API com base no papel/role do usuário.
+    Exemplo:
+        @app.route("/api/admin/metrics")
+        @require_role("admin", "superadmin")
+        def admin_metrics():
+            ...
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            user = current_user()
+            if not user:
+                return jsonify({"error": "Não autenticado"}), 401
+            if user.role not in roles:
+                return jsonify({
+                    "error": "Acesso negado: permissão insuficiente.",
+                    "required_roles": list(roles),
+                    "current_role": user.role
+                }), 403
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 def get_or_create_stats(user: User) -> UserStats:
@@ -500,5 +597,12 @@ def frontend_files(filename):
 # ── Entry point ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     with app.app_context():
-        db.create_all()
+        try:
+            db.create_all()
+        except Exception as e:
+            print(f"\n[AVISO DE BANCO DE DADOS] Não foi possível executar db.create_all(): {e}")
+            if "2003" in str(e) or "10061" in str(e):
+                print("[DICA] O serviço MySQL não está rodando localmente na porta 3306.")
+                print("[DICA] Em desenvolvimento local, certifique-se de que USE_SQLITE=true esteja no seu arquivo .env.\n")
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)))
+
