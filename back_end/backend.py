@@ -928,7 +928,7 @@ def create_setup_intent():
     try:
         setup_intent = stripe.SetupIntent.create(
             customer=user.stripe_customer_id,
-            payment_method_types=["card"],
+            automatic_payment_methods={"enabled": True},
             metadata={
                 "user_id": str(user.id),
                 "plan": plan,
