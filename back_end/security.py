@@ -86,11 +86,11 @@ def decrypt_token(cipher_or_plain: str | None) -> str | None:
         decrypted_bytes = cipher.decrypt(cipher_or_plain.encode("utf-8"))
         return decrypted_bytes.decode("utf-8")
     except InvalidToken:
-        logger.warning("Token não pôde ser decriptografado com a chave atual (possível token legado ou chave alterada).")
-        return cipher_or_plain
+        logger.warning("Token não pôde ser decriptografado com a chave atual (chave alterada ou token inválido). Retornando None para forçar reautenticação limpa.")
+        return None
     except Exception as e:
         logger.error(f"Erro inesperado ao decriptografar token: {e}")
-        return cipher_or_plain
+        return None
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
