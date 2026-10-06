@@ -77,7 +77,7 @@ server {
 	# Rotas amigáveis
 	location ~ ^/(login|register|checkout|admin|planos|assinatura)/?$ {
 		root %docroot%;
-		try_files $1.html =404;
+		try_files /$1.html =404;
 	}
 
 	# Favicons com cache

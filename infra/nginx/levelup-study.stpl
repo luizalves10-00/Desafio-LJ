@@ -129,7 +129,7 @@ server {
 
     # ── 5. ROTAS AMIGÁVEIS LIMPAS (SEM EXTENSÃO .HTML) ────────────────────────
     location ~ ^/(login|register|checkout|admin|planos|assinatura)/?$ {
-        try_files $1.html =404;
+        try_files /$1.html =404;
     }
 
     # ── 6. FAVICON OFICIAL COM CACHE ─────────────────────────────────────────

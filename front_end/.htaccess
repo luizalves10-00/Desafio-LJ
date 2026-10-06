@@ -1,0 +1,70 @@
+# ==============================================================================
+# LevelUp Study - Configuração Apache (.htaccess)
+# Compatível com Apache 2.4+ / LiteSpeed
+# ==============================================================================
+
+# ── 1. SEGURANÇA BÁSICA & BLOQUEIO DE LISTAGEM DE DIRETÓRIOS ────────────────
+Options -Indexes +FollowSymLinks
+DirectorySlash On
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # ── 2. BLOQUEIO DE ARQUIVOS OCULTOS E CÓDIGOS SENSÍVEIS ───────────────────
+    # Bloqueia acesso a arquivos iniciados por ponto (.env, .git, etc.) exceto ACME
+    RewriteRule ^\.(?!well-known/) - [F,L]
+
+    # Bloqueia extensões sensíveis caso existam na árvore estática
+    RewriteRule \.(py|pyc|pyo|pyd|db|sqlite|sqlite3|sql|bak|log|conf|ini|sh|yaml|yml|md|env)$ - [F,L]
+
+    # Bloqueia pastas de sistema
+    RewriteRule ^(back_end|\.git|\.venv|venv|migrations|tests)/ - [F,L]
+
+    # ── 3. REDIRECIONAMENTOS CANÔNICOS (Remove .html da barra de navegação) ────
+    # Se o usuário ou robô acessar diretamente com extensão .html, redireciona 301
+    RewriteCond %{THE_REQUEST} \s/landing\.html[\s?] [NC]
+    RewriteRule ^landing\.html$ / [R=301,L]
+
+    RewriteCond %{THE_REQUEST} \s/index\.html[\s?] [NC]
+    RewriteRule ^index\.html$ /app [R=301,L]
+
+    RewriteCond %{THE_REQUEST} \s/([^.]+)\.html[\s?] [NC]
+    RewriteRule ^([^.]+)\.html$ /$1 [R=301,L]
+
+    # ── 4. ROTEAMENTO AMIGÁVEL INTERNO (Serve o arquivo HTML correspondente) ──
+    # Página inicial pública de vendas (Landing Page)
+    RewriteRule ^$ landing.html [L]
+    RewriteRule ^landing/?$ / [R=301,L]
+
+    # Painel autenticado do aluno
+    RewriteRule ^(app|dashboard)/?$ index.html [L]
+
+    # Rotas específicas do frontend
+    RewriteRule ^(login|register|checkout|admin|planos|assinatura)/?$ $1.html [L]
+
+    # Fallback genérico para qualquer página .html existente
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+    RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.html [L]
+</IfModule>
+
+# ── 5. HEADERS DE SEGURANÇA HTTP ─────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# ── 6. CACHE DE FAVICONS E ASSETS ESTÁTICOS ──────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/vnd.microsoft.icon "access plus 30 days"
+    ExpiresByType image/x-icon "access plus 30 days"
+    ExpiresByType image/svg+xml "access plus 30 days"
+    ExpiresByType image/png "access plus 7 days"
+    ExpiresByType text/css "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+</IfModule>
