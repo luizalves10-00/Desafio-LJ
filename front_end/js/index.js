@@ -620,13 +620,26 @@ async function syncGoogleCalendar() {
     btnSync.innerHTML = "⏳ Sincronizando...";
   }
 
+  // Pré-checagem no frontend para evitar requisição quando não conectado
+  if (!googleCalendarConnected) {
+    showToast("Conecte sua conta do Google Agenda primeiro.", "gold");
+    if (btnSync) {
+      btnSync.disabled = false;
+      btnSync.innerHTML = origHtml;
+    }
+    connectGoogleCalendar();
+    return;
+  }
+
   try {
     const res = await apiFetch(`${API}/google/sync-calendar`, { method: "POST" });
     const data = await res.json();
 
-    if (!res.ok) {
-      if (res.status === 400 && data.error && (data.error.includes("não conectada") || data.error.includes("Conecte sua conta"))) {
-        showToast("Conecte sua conta do Google primeiro.", "gold");
+    if (!res.ok || data.success === false) {
+      if (data.need_connect || (data.error && (data.error.includes("não conectada") || data.error.includes("Conecte sua conta") || data.error.includes("expirou") || data.error.includes("renovar")))) {
+        googleCalendarConnected = false;
+        checkGoogleCalendarStatus();
+        showToast(data.error || "Conecte sua conta do Google primeiro.", "gold");
         connectGoogleCalendar();
         return;
       }
@@ -634,7 +647,7 @@ async function syncGoogleCalendar() {
       return;
     }
 
-    showToast(`📅 ${data.message}`, "gold");
+    showToast(`📅 ${data.message || 'Tarefas sincronizadas com a Google Agenda!'}`, "gold");
 
     if (window.studyNotifier && data.synced_count > 0) {
       window.studyNotifier.notifyCalendarSync(data.synced_count);

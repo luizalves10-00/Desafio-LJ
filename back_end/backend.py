@@ -902,10 +902,23 @@ def sync_study_plan_to_google_calendar(user_id: int, plan_tasks=None) -> dict:
             db.session.commit()
         except Exception as refresh_err:
             app.logger.error(f"Erro ao renovar token OAuth do Google: {refresh_err}")
-            raise ValueError(f"Não foi possível renovar o acesso à sua conta Google: {refresh_err}")
+            user.google_access_token = None
+            user.google_refresh_token = None
+            user.google_token_expiry = None
+            db.session.commit()
+            raise ValueError("Sua sessão da Google Agenda expirou. Por favor, conecte sua conta novamente.")
+    elif (not creds.valid or creds.expired) and not creds.refresh_token:
+        user.google_access_token = None
+        user.google_token_expiry = None
+        db.session.commit()
+        raise ValueError("Sua sessão da Google Agenda expirou. Por favor, conecte sua conta novamente.")
 
     # Cria o client oficial da API do Google Calendar v3
-    service = build("calendar", "v3", credentials=creds)
+    try:
+        service = build("calendar", "v3", credentials=creds)
+    except Exception as build_err:
+        app.logger.error(f"Erro ao inicializar serviço Google Calendar: {build_err}")
+        raise ValueError(f"Não foi possível conectar ao serviço Google Agenda: {build_err}")
 
     # Busca o Plano de Estudo do banco de dados (Tarefas de estudo pendentes do usuário)
     if plan_tasks is None:
@@ -1019,7 +1032,8 @@ def google_login():
 
     redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI")
     if not redirect_uri:
-        redirect_uri = request.url_root.rstrip("/") + "/api/google/callback"
+        scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+        redirect_uri = f"{scheme}://{request.host}/api/google/callback"
 
     # Cria estado com user_id
     state_payload = {
@@ -1085,7 +1099,10 @@ def google_callback():
 
     client_id = os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("CLIENT_ID")
     client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET")
-    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI") or (request.url_root.rstrip("/") + "/api/google/callback")
+    redirect_uri = os.environ.get("GOOGLE_REDIRECT_URI")
+    if not redirect_uri:
+        scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+        redirect_uri = f"{scheme}://{request.host}/api/google/callback"
 
     token_url = "https://oauth2.googleapis.com/token"
     payload = {
@@ -1127,7 +1144,15 @@ def google_status():
         return result
     user = result
 
-    is_connected = bool(user.google_access_token or user.google_refresh_token)
+    is_connected = False
+    if user.google_refresh_token:
+        is_connected = True
+    elif user.google_access_token:
+        if user.google_token_expiry and user.google_token_expiry < datetime.utcnow():
+            is_connected = False
+        else:
+            is_connected = True
+
     return jsonify({
         "connected": is_connected,
         "token_expiry": user.google_token_expiry.isoformat() if user.google_token_expiry else None
@@ -1138,20 +1163,40 @@ def google_status():
 def google_sync_calendar():
     """
     Dispara a sincronização das metas de estudo do aluno com a sua Google Agenda primária.
+    Retorna respostas estruturadas sem provocar falhas 400 no console do cliente.
     """
     result = require_auth()
     if isinstance(result, tuple):
         return result
     user = result
 
+    # 1. Validação prévia de autenticação com o Google
+    if not user.google_access_token and not user.google_refresh_token:
+        return jsonify({
+            "success": False,
+            "connected": False,
+            "need_connect": True,
+            "error": "Conta Google não conectada. Conecte sua Google Agenda para sincronizar suas metas."
+        }), 200
+
     try:
         res = sync_study_plan_to_google_calendar(user.id)
         return jsonify(res)
     except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
+        err_msg = str(ve)
+        need_connect = any(w in err_msg.lower() for w in ("conecte", "expirou", "renovar", "não conectada", "não encontrado"))
+        return jsonify({
+            "success": False,
+            "connected": not need_connect,
+            "need_connect": need_connect,
+            "error": err_msg
+        }), 200
     except Exception as e:
         app.logger.error(f"Erro ao sincronizar tarefas com Google Calendar: {e}")
-        return jsonify({"error": f"Erro interno ao sincronizar com Google Agenda: {str(e)}"}), 500
+        return jsonify({
+            "success": False,
+            "error": f"Erro interno ao sincronizar com Google Agenda: {str(e)}"
+        }), 500
 
 
 @app.route("/api/google/disconnect", methods=["POST"])
@@ -3159,35 +3204,58 @@ def frontend_files(filename):
 
 
 def check_and_apply_db_migrations():
-    """Garante que as novas colunas do Google Calendar e OAuth existam no banco de dados."""
+    """Garante que todas as tabelas e colunas necessárias existam no banco de dados tanto em dev quanto em produção."""
     try:
         from sqlalchemy import inspect, text
         inspector = inspect(db.engine)
-        if "users" in inspector.get_table_names():
-            cols = [c["name"] for c in inspector.get_columns("users")]
-            with db.engine.connect() as conn:
-                if "google_access_token" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN google_access_token TEXT"))
-                if "google_refresh_token" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN google_refresh_token TEXT"))
-                if "google_token_expiry" not in cols:
-                    conn.execute(text("ALTER TABLE users ADD COLUMN google_token_expiry DATETIME"))
-                conn.commit()
+        tables = inspector.get_table_names()
+        if not tables or "users" not in tables:
+            db.create_all()
+            return
+
+        cols = [c["name"] for c in inspector.get_columns("users")]
+        with db.engine.connect() as conn:
+            # 1. Colunas de Perfil e Controle de Acesso
+            if "interests" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN interests VARCHAR(500) DEFAULT ''"))
+            if "role" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'student' NOT NULL"))
+
+            # 2. Colunas Stripe / Financeiro
+            if "stripe_customer_id" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(120) NULL"))
+            if "stripe_subscription_id" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN stripe_subscription_id VARCHAR(120) NULL"))
+            if "stripe_plan_id" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN stripe_plan_id VARCHAR(100) NULL"))
+            if "subscription_status" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN subscription_status VARCHAR(50) DEFAULT 'free'"))
+            if "current_period_end" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN current_period_end DATETIME NULL"))
+
+            # 3. Colunas Google Calendar & OAuth 2.0
+            if "google_access_token" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN google_access_token TEXT NULL"))
+            if "google_refresh_token" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN google_refresh_token TEXT NULL"))
+            if "google_token_expiry" not in cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN google_token_expiry DATETIME NULL"))
+
+            conn.commit()
     except Exception as e:
-        app.logger.warning(f"Aviso na migração de colunas Google Calendar: {e}")
+        app.logger.warning(f"Aviso na verificação/migração automática de colunas: {e}")
+
+
+# Execução automática na inicialização da aplicação (Gunicorn e WSGI)
+with app.app_context():
+    try:
+        check_and_apply_db_migrations()
+    except Exception as _init_mig_err:
+        app.logger.warning(f"Aviso na inicialização do schema do banco: {_init_mig_err}")
 
 
 # ── Entry point ────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    with app.app_context():
-        try:
-            db.create_all()
-            check_and_apply_db_migrations()
-        except Exception as e:
-            print(f"\n[AVISO DE BANCO DE DADOS] Não foi possível executar db.create_all(): {e}")
-            if "2003" in str(e) or "10061" in str(e):
-                print("[DICA] O serviço MySQL não está rodando localmente na porta 3306.")
-                print("[DICA] Em desenvolvimento local, certifique-se de que USE_SQLITE=true esteja no seu arquivo .env.\n")
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)))
 
 
