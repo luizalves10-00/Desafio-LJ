@@ -112,3 +112,4 @@ class StudyNotifier {
 
 // Inicializa no escopo global
 window.studyNotifier = new StudyNotifier();
+
