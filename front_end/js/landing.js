@@ -81,13 +81,13 @@
         try {
           const authRes = await fetch('/api/auth/me', { credentials: 'include' });
           if (!authRes.ok) {
-            window.location.href = `login.html?redirect=checkout&plan=${encodeURIComponent(plan)}`;
+            window.location.href = `login?redirect=checkout&plan=${encodeURIComponent(plan)}`;
             return;
           }
-          window.location.href = `checkout.html?plan=${encodeURIComponent(plan)}`;
+          window.location.href = `checkout?plan=${encodeURIComponent(plan)}`;
         } catch (err) {
           console.error('Erro ao redirecionar para o checkout:', err);
-          window.location.href = `checkout.html?plan=${encodeURIComponent(plan)}`;
+          window.location.href = `checkout?plan=${encodeURIComponent(plan)}`;
         } finally {
           setTimeout(() => {
             btn.disabled = false;
@@ -128,7 +128,7 @@
             </div>
             <span class="period">/ sempre</span>
           </div>
-          <a class="btn btn-glass btn-large btn-plan" href="register.html">
+          <a class="btn btn-glass btn-large btn-plan" href="register">
             Começar Grátis
           </a>
           <div class="guarantee-text">Sem cartão de crédito. Crie sua conta em 30s.</div>
@@ -236,5 +236,22 @@
 
   attachCheckoutHandlers();
   loadDynamicPlans();
+
+  // ─── VERIFICAÇÃO DE SESSÃO ATIVA (UX PRO) ───
+  fetch('/api/auth/me', { credentials: 'include' })
+    .then(res => res.ok ? res.json() : null)
+    .then(data => {
+      if (data && data.user) {
+        const dest = (data.user.is_admin || data.user.role === 'admin' || data.user.role === 'superadmin') ? '/admin' : '/app';
+        document.querySelectorAll('.desktop-login, .mobile-menu a[href="login"], a[href="login"]').forEach(el => {
+          if (el.classList.contains('desktop-login') || el.textContent.includes('Entrar') || el.textContent.includes('Já tenho uma conta')) {
+            el.textContent = 'Acessar App 🚀';
+            el.href = dest;
+          }
+        });
+      }
+    })
+    .catch(() => {});
 })();
+
 

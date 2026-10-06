@@ -119,12 +119,13 @@ form.addEventListener("submit", async (e) => {
     const planParam = params.get("plan");
 
     setTimeout(() => {
-      if (redirectParam === "checkout" || redirectParam.includes("checkout.html")) {
+      if (redirectParam === "checkout" || redirectParam.includes("checkout")) {
         const planQuery = planParam ? `?plan=${encodeURIComponent(planParam)}` : "";
-        window.location.href = `checkout.html${planQuery}`;
+        window.location.href = `checkout${planQuery}`;
         return;
       }
-      window.location.href = data.redirect_to || "index.html";
+      const dest = data.redirect_to ? data.redirect_to.replace('.html', '').replace('index', 'app') : '/app';
+      window.location.href = dest.startsWith('/') ? dest : `/${dest}`;
     }, 900);
   } catch {
     showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
@@ -135,8 +136,8 @@ form.addEventListener("submit", async (e) => {
 
 // Propagar parâmetros de redirecionamento para o link de login
 (() => {
-  const loginLink = document.querySelector('.link-row a[href*="login.html"]');
+  const loginLink = document.querySelector('.link-row a[href*="login"]');
   if (loginLink && window.location.search) {
-    loginLink.href = `login.html${window.location.search}`;
+    loginLink.href = `login${window.location.search}`;
   }
 })();

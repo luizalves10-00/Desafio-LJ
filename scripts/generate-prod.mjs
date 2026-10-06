@@ -52,7 +52,10 @@ const filterFunc = (src) => {
   }
 
   // Bloqueio de testes e scripts de rascunho de dev
-  if (filename === 'test_emoji_cache.py' || filename === 'extract_notes.py') {
+  if (filename === 'test_emoji_cache.py' || filename === 'extract_notes.py' || filename === 'generate_favicon.py') {
+    return false;
+  }
+  if (filename.endsWith('.zip') || filename.endsWith('.tar.gz') || filename.endsWith('.rar')) {
     return false;
   }
   if (relativePath.startsWith('front_end/tests')) {
@@ -198,6 +201,9 @@ back_end/emoji-cache/*
 # Dependências e Logs
 node_modules/
 *.log
+*.zip
+*.tar.gz
+*.rar
 .DS_Store
 Thumbs.db
 .vscode/

@@ -1,0 +1,9 @@
+# ==============================================================================
+# HestiaCP Nginx Custom Include - LevelUp Study (HTTP)
+# Local no Servidor: /home/LevelUp/conf/web/levelupstudy.com.br/nginx.conf_api
+# ==============================================================================
+
+# Se a requisição não for para validação de certificado ACME, redireciona 301 para HTTPS
+location / {
+    return 301 https://$host$request_uri;
+}

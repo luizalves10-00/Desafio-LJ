@@ -662,7 +662,7 @@ def register():
     return jsonify({
         "user": user.to_public(),
         "stats": stats.to_dict(),
-        "redirect_to": "index.html"
+        "redirect_to": "/app"
     }), 201
 
 
@@ -679,7 +679,7 @@ def login():
 
     session["user_id"] = user.id
     stats = get_or_create_stats(user)
-    default_redirect = "admin.html" if user.is_admin else "index.html"
+    default_redirect = "/admin" if user.is_admin else "/app"
     return jsonify({
         "user": user.to_public(),
         "stats": stats.to_dict(),
@@ -1009,7 +1009,7 @@ def google_login():
     if not user:
         if request.args.get("json") == "true" or request.headers.get("Accept") == "application/json":
             return jsonify({"error": "Não autenticado. Faça login no LevelUp Study primeiro."}), 401
-        return redirect("/login.html?redirect=/api/google/login")
+        return redirect("/login?redirect=/api/google/login")
 
     client_id = os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("CLIENT_ID")
     client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET")
@@ -1060,12 +1060,12 @@ def google_callback():
     error = request.args.get("error")
     if error:
         app.logger.warning(f"Google OAuth cancelado ou com erro: {error}")
-        return redirect(f"/index.html?calendar_error={urllib.parse.quote(error)}")
+        return redirect(f"/app?calendar_error={urllib.parse.quote(error)}")
 
     code = request.args.get("code")
     state_b64 = request.args.get("state")
     if not code:
-        return redirect("/index.html?calendar_error=missing_code")
+        return redirect("/app?calendar_error=missing_code")
 
     user = current_user()
     if not user and state_b64:
@@ -1081,7 +1081,7 @@ def google_callback():
             app.logger.warning(f"Erro ao decodificar state OAuth: {state_err}")
 
     if not user:
-        return redirect("/login.html?error=session_expired")
+        return redirect("/login?error=session_expired")
 
     client_id = os.environ.get("GOOGLE_CLIENT_ID") or os.environ.get("CLIENT_ID")
     client_secret = os.environ.get("GOOGLE_CLIENT_SECRET") or os.environ.get("CLIENT_SECRET")
@@ -1101,12 +1101,12 @@ def google_callback():
         token_data = resp.json()
     except Exception as net_err:
         app.logger.error(f"Erro de conexão com OAuth Google: {net_err}")
-        return redirect("/index.html?calendar_error=google_connection_failed")
+        return redirect("/app?calendar_error=google_connection_failed")
 
     if "error" in token_data:
         err_msg = token_data.get("error_description", token_data.get("error"))
         app.logger.error(f"Erro retornado pelo Google OAuth: {err_msg}")
-        return redirect(f"/index.html?calendar_error={urllib.parse.quote(str(err_msg))}")
+        return redirect(f"/app?calendar_error={urllib.parse.quote(str(err_msg))}")
 
     user.google_access_token = token_data.get("access_token")
     if token_data.get("refresh_token"):
@@ -1116,7 +1116,7 @@ def google_callback():
     user.google_token_expiry = datetime.utcnow() + timedelta(seconds=expires_in)
     db.session.commit()
 
-    return redirect("/index.html?calendar_status=connected")
+    return redirect("/app?calendar_status=connected")
 
 
 @app.route("/api/google/status", methods=["GET"])
@@ -1410,8 +1410,8 @@ def create_checkout_session():
             "user_id": str(user.id),
             "plan": plan_name,
         },
-        "success_url": f"{frontend_url}/index.html?payment=success&session_id={{CHECKOUT_SESSION_ID}}",
-        "cancel_url": f"{frontend_url}/index.html?payment=cancelled",
+        "success_url": f"{frontend_url}/app?payment=success&session_id={{CHECKOUT_SESSION_ID}}",
+        "cancel_url": f"{frontend_url}/app?payment=cancelled",
         "allow_promotion_codes": True,
     }
 
@@ -1573,7 +1573,7 @@ def activate_subscription():
             "status": "trialing",
             "plan": plan_name,
             "message": "Parabéns! Seus 7 dias grátis do Concurseiro Pro foram ativados com sucesso.",
-            "redirect_url": "/index.html?payment=success"
+            "redirect_url": "/app?payment=success"
         })
     except stripe.error.StripeError as e:
         app.logger.error(f"Erro Stripe na ativação da assinatura: {e}")
@@ -1761,10 +1761,10 @@ def create_portal_session():
     stripe.api_key = api_key
     origin = request.headers.get("Origin") or request.headers.get("Referer") or os.environ.get("FRONTEND_URL", "https://levelupstudy.com.br")
     return_url = origin.rstrip("/")
-    if not return_url.endswith("/index.html") and not return_url.endswith("/"):
-        return_url += "/index.html"
+    if not return_url.endswith("/app") and not return_url.endswith("/index.html") and not return_url.endswith("/"):
+        return_url += "/app"
     elif return_url.endswith("/"):
-        return_url += "index.html"
+        return_url += "app"
 
     try:
         portal_session = stripe.billing_portal.Session.create(
@@ -3115,6 +3115,22 @@ def admin_dashboard_page():
 @app.route("/")
 def index_page():
     return send_from_directory(FRONTEND_DIR, "landing.html")
+
+
+@app.route("/app")
+@app.route("/dashboard")
+def student_app_page():
+    return send_from_directory(FRONTEND_DIR, "index.html")
+
+
+@app.route("/login")
+def login_page():
+    return send_from_directory(FRONTEND_DIR, "login.html")
+
+
+@app.route("/register")
+def register_page():
+    return send_from_directory(FRONTEND_DIR, "register.html")
 
 
 @app.route("/planos")

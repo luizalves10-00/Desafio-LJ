@@ -53,8 +53,50 @@ server {
 		return 404;
 	}
 
-	# Proxy Reverso para a aplicação Flask via Gunicorn
-	location / {
+	# Redirecionamentos amigáveis (remove .html)
+	if ($request_uri ~ ^/landing\.html(\?.*)?$) { return 301 /$1; }
+	if ($request_uri ~ ^/index\.html(\?.*)?$) { return 301 /app$1; }
+	if ($request_uri ~ ^/([^?]+)\.html(\?.*)?$) { return 301 /$1$2; }
+
+	# Home Pública de Vendas
+	location = / {
+		root %docroot%;
+		try_files /landing.html =404;
+	}
+
+	location = /landing {
+		return 301 /;
+	}
+
+	# Painel Privado do Aluno
+	location ~ ^/(app|dashboard)/?$ {
+		root %docroot%;
+		try_files /index.html =404;
+	}
+
+	# Rotas amigáveis
+	location ~ ^/(login|register|checkout|admin|planos|assinatura)/?$ {
+		root %docroot%;
+		try_files $1.html =404;
+	}
+
+	# Favicons com cache
+	location = /favicon.ico {
+		root %docroot%;
+		access_log off;
+		log_not_found off;
+		expires 30d;
+	}
+
+	location = /favicon.svg {
+		root %docroot%;
+		access_log off;
+		log_not_found off;
+		expires 30d;
+	}
+
+	# Proxy Reverso para a API Flask / Gunicorn
+	location ^~ /api/ {
 		proxy_pass http://127.0.0.1:8017;
 		proxy_http_version 1.1;
 
@@ -78,6 +120,18 @@ server {
 
 		access_log /var/log/%web_system%/domains/%domain%.log combined;
 		access_log /var/log/%web_system%/domains/%domain%.bytes bytes;
+	}
+
+	# Frontend Estático
+	location / {
+		root %docroot%;
+		try_files $uri $uri/ /landing.html;
+
+		location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+			expires 7d;
+			add_header Cache-Control "public, no-transform";
+			add_header X-Content-Type-Options "nosniff" always;
+		}
 	}
 
 	include %home%/%user%/conf/web/%domain%/nginx.ssl.conf_*;

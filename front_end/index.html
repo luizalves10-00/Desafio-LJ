@@ -4,10 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LevelUp Study – Painel</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/favicon-192.png" />
   <link rel="stylesheet" href="css/index.css" />
   <link rel="stylesheet" href="css/emoji-3d.css" />
   <script src="js/emoji-catalog.js" defer></script>
   <script src="js/emoji-3d.js" defer></script>
+  <style id="auth-shield">
+    body { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+  </style>
+  <script>
+    // Guarda de Sessão Imediato: bloqueia qualquer renderização para usuários deslogados
+    (function() {
+      fetch("/api/auth/me", { credentials: "include" })
+        .then(function(res) {
+          if (!res.ok) {
+            window.location.replace("/login");
+          } else {
+            var shield = document.getElementById("auth-shield");
+            if (shield) shield.remove();
+            if (document.body) {
+              document.body.style.opacity = "1";
+              document.body.style.visibility = "visible";
+              document.body.style.pointerEvents = "auto";
+            }
+          }
+        })
+        .catch(function() {
+          window.location.replace("/login");
+        });
+    })();
+  </script>
 </head>
 <body>
 
@@ -62,7 +90,7 @@
     </button>
 
     <div class="nav-section-label" id="nav-admin-section" style="display:none;">Gestão</div>
-    <a class="nav-item" id="nav-admin-link" href="admin.html" style="display:none; text-decoration:none; color:inherit;">
+    <a class="nav-item" id="nav-admin-link" href="admin" style="display:none; text-decoration:none; color:inherit;">
       <span class="nav-icon">🛡️</span> Painel Admin
     </a>
   </nav>
@@ -1030,7 +1058,7 @@
           <div style="flex:1;">
             <p style="margin:0; font-size:0.9rem; color:var(--text2);">Você está utilizando a versão de degustação Free com limites diários.</p>
           </div>
-          <a href="checkout.html" class="btn btn-primary" style="text-decoration:none;">
+          <a href="checkout" class="btn btn-primary" style="text-decoration:none;">
             🚀 Fazer Upgrade para o Pro (7 Dias Grátis)
           </a>
         </div>
@@ -1042,7 +1070,7 @@
               ⚠️ Sua assinatura foi cancelada. Seu acesso Pro continuará liberado até <strong id="sub-access-until">—</strong>.
             </p>
           </div>
-          <a href="checkout.html" class="btn btn-primary" style="text-decoration:none;">
+          <a href="checkout" class="btn btn-primary" style="text-decoration:none;">
             🔄 Reativar Plano Pro
           </a>
         </div>

@@ -73,10 +73,21 @@ server {
         return 404;
     }
 
-    # ── 2. PROXY REVERSO PARA A API FLASK / GUNICORN ───────────────────────────
-    # Direciona chamadas /api/ para o backend Gunicorn (127.0.0.1:5000)
-    location /api/ {
-        proxy_pass          http://127.0.0.1:5000;
+    # ── REDIRECIONAMENTOS AMIGÁVEIS (Remove extensão .html da URL) ───────────
+    if ($request_uri ~ ^/landing\.html(\?.*)?$) {
+        return 301 /$1;
+    }
+    if ($request_uri ~ ^/index\.html(\?.*)?$) {
+        return 301 /app$1;
+    }
+    if ($request_uri ~ ^/([^?]+)\.html(\?.*)?$) {
+        return 301 /$1$2;
+    }
+
+    # ── 2. PROXY REVERSO PARA A API FLASK / GUNICORN (Porta 8017) ─────────────
+    # Direciona chamadas /api/ para o backend Gunicorn (127.0.0.1:8017)
+    location ^~ /api/ {
+        proxy_pass          http://127.0.0.1:8017;
         proxy_http_version  1.1;
 
         proxy_set_header    Host                $host;
@@ -91,17 +102,52 @@ server {
         proxy_read_timeout    60s;
         proxy_send_timeout    60s;
 
-        # Desativa buffers para webhooks se necessário
+        # Buffers otimizados
         proxy_buffering       on;
         proxy_buffer_size     8k;
         proxy_buffers         8 8k;
 
-        client_max_body_size  5M;
+        client_max_body_size  10M;
     }
 
-    # ── 3. ROTEAMENTO DE ARQUIVOS ESTÁTICOS DO FRONTEND ───────────────────────
+    # ── 3. HOME PÚBLICA DE VENDAS ─────────────────────────────────────────────
+    # Acessos à raiz do domínio sempre carregam a Landing Page de conversão
+    location = / {
+        try_files /landing.html =404;
+    }
+
+    # Redireciona /landing para a raiz
+    location = /landing {
+        return 301 /;
+    }
+
+    # ── 4. PAINEL PRIVADO DO ALUNO ────────────────────────────────────────────
+    # O painel de estudos autenticado fica em /app ou /dashboard
+    location ~ ^/(app|dashboard)/?$ {
+        try_files /index.html =404;
+    }
+
+    # ── 5. ROTAS AMIGÁVEIS LIMPAS (SEM EXTENSÃO .HTML) ────────────────────────
+    location ~ ^/(login|register|checkout|admin|planos|assinatura)/?$ {
+        try_files $1.html =404;
+    }
+
+    # ── 6. FAVICON OFICIAL COM CACHE ─────────────────────────────────────────
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+        expires 30d;
+    }
+
+    location = /favicon.svg {
+        log_not_found off;
+        access_log off;
+        expires 30d;
+    }
+
+    # ── 7. ROTEAMENTO DE ARQUIVOS ESTÁTICOS DO FRONTEND ───────────────────────
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /landing.html;
 
         # Cache control para assets estáticos
         location ~* \.(css|js|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {

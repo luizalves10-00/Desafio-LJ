@@ -775,7 +775,7 @@ async function logout() {
   redirectLogin();
 }
 
-function redirectLogin() { window.location.href = "login.html"; }
+function redirectLogin() { window.location.href = "login"; }
 
 // ── RENDER ─────────────────────────────────────────────────────────────────
 // dificuldade das missões: quanto mais difícil, maior a recompensa

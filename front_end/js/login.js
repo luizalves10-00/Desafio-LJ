@@ -61,31 +61,37 @@ form.addEventListener("submit", async (e) => {
 
     setTimeout(() => {
       // 1. Fluxo de contratação / checkout
-      if (redirectParam === "checkout" || redirectParam.includes("checkout.html")) {
+      if (redirectParam === "checkout" || redirectParam.includes("checkout")) {
         const planQuery = planParam ? `?plan=${encodeURIComponent(planParam)}` : "";
-        window.location.href = `checkout.html${planQuery}`;
+        window.location.href = `checkout${planQuery}`;
         return;
       }
 
+      // Helper para normalizar destinos
+      const sanitizeDest = (dest, fallback) => {
+        if (!dest) return fallback;
+        if (dest.includes("admin")) return "/admin";
+        if (dest.includes("index") || dest.includes("app")) return "/app";
+        return dest.replace(/\.html$/, "");
+      };
+
       // 2. Administradores e Super Admins
       if (data.user && (data.user.is_admin || data.user.role === "admin" || data.user.role === "superadmin")) {
-        // Se pediu especificamente index.html ou admin.html, respeita a intenção
-        if (redirectParam && (redirectParam.includes("admin.html") || redirectParam.includes("index.html"))) {
-          window.location.href = redirectParam;
+        if (redirectParam && (redirectParam.includes("admin") || redirectParam.includes("app") || redirectParam.includes("index"))) {
+          window.location.href = sanitizeDest(redirectParam, "/admin");
           return;
         }
-        window.location.href = data.redirect_to || "admin.html";
+        window.location.href = sanitizeDest(data.redirect_to, "/admin");
         return;
       }
 
       // 3. Concurseiros / Estudantes (role padrão)
-      // Se tentou entrar em admin.html sem permissão, direciona ao index.html para não receber 403
-      if (redirectParam && !redirectParam.includes("admin.html")) {
-        window.location.href = redirectParam;
+      if (redirectParam && !redirectParam.includes("admin")) {
+        window.location.href = sanitizeDest(redirectParam, "/app");
         return;
       }
 
-      window.location.href = data.redirect_to || "index.html";
+      window.location.href = sanitizeDest(data.redirect_to, "/app");
     }, 800);
   } catch {
     showError("Não foi possível conectar ao servidor. Verifique se o backend está rodando.");
@@ -96,8 +102,9 @@ form.addEventListener("submit", async (e) => {
 
 // Propagar parâmetros de redirecionamento para o link de cadastro
 (() => {
-  const regLink = document.querySelector('.link-row a[href*="register.html"]');
+  const regLink = document.querySelector('.link-row a[href*="register"]');
   if (regLink && window.location.search) {
-    regLink.href = `register.html${window.location.search}`;
+    regLink.href = `register${window.location.search}`;
   }
 })();
+

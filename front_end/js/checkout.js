@@ -153,7 +153,7 @@
       // 2. Verificar Autenticação do Usuário
       const authRes = await fetch('/api/auth/me', { credentials: 'include' });
       if (!authRes.ok) {
-        window.location.href = `login.html?redirect=checkout&plan=${encodeURIComponent(currentPlan)}`;
+        window.location.href = `login?redirect=checkout&plan=${encodeURIComponent(currentPlan)}`;
         return;
       }
       const authData = await authRes.json();
@@ -346,7 +346,7 @@
               }
             }
           },
-          return_url: `${window.location.origin}/index.html?payment=success`,
+          return_url: `${window.location.origin}/app?payment=success`,
         };
 
         if (billingEmail) {
@@ -401,7 +401,8 @@
 
           showAlert('✨ Parabéns! Seus 7 dias grátis do Concurseiro Pro foram ativados com sucesso! Redirecionando...', 'success');
           setTimeout(() => {
-            window.location.href = actData.redirect_url || 'index.html?payment=success';
+            const dest = actData.redirect_url ? actData.redirect_url.replace('.html', '').replace('index', 'app') : '/app?payment=success';
+            window.location.href = dest.startsWith('/') ? dest : `/${dest}`;
           }, 1200);
         } else {
           showAlert('Validação pendente ou não autorizada pelo banco emissor.', 'error');

@@ -4,12 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>LevelUp Study – Painel do Super Admin</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="alternate icon" href="favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/favicon-192.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/emoji-3d.css" />
   <script src="js/emoji-catalog.js" defer></script>
   <script src="js/emoji-3d.js" defer></script>
+  <style id="admin-auth-shield">
+    body { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }
+  </style>
+  <script>
+    (function() {
+      fetch("/api/auth/me", { credentials: "include" })
+        .then(function(res) {
+          if (!res.ok) { window.location.replace("/login?redirect=admin"); return; }
+          return res.json();
+        })
+        .then(function(data) {
+          if (data && data.user && (data.user.is_admin || data.user.role === "admin" || data.user.role === "superadmin")) {
+            var s = document.getElementById("admin-auth-shield");
+            if (s) s.remove();
+            if (document.body) {
+              document.body.style.opacity = "1";
+              document.body.style.visibility = "visible";
+              document.body.style.pointerEvents = "auto";
+            }
+          } else {
+            window.location.replace("/app");
+          }
+        })
+        .catch(function() {
+          window.location.replace("/login?redirect=admin");
+        });
+    })();
+  </script>
   <style>
     /* ═══════════════════════════════════════════════════════════════════════════
        DESIGN SYSTEM & THEME TOKENS
@@ -1340,7 +1371,7 @@
   <!-- ── SIDEBAR ── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <a href="/index.html" class="brand-group">
+      <a href="/app" class="brand-group">
         <span style="font-size:1.3rem;">⚡</span>
         <span class="brand-logo">LevelUp <span>Study</span></span>
       </a>
@@ -1424,7 +1455,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           <span>Atualizar</span>
         </button>
-        <a href="/index.html" class="btn-topbar">
+        <a href="/app" class="btn-topbar">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           <span>Plataforma</span>
         </a>
@@ -1578,7 +1609,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
               <span>Sincronizar Stripe</span>
             </button>
-            <a href="/planos.html" target="_blank" class="btn-topbar">
+            <a href="/#planos" target="_blank" class="btn-topbar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
               <span>Ver Página Pública ↗</span>
             </a>
@@ -2195,14 +2226,14 @@
       try {
         const res = await fetch("/api/auth/me");
         if (!res.ok) {
-          window.location.href = "/login.html";
+          window.location.href = "/login";
           return;
         }
         const data = await res.json();
         const user = data.user || data;
 
         if (user.role !== "admin" && user.role !== "superadmin") {
-          window.location.href = "/index.html";
+          window.location.href = "/app";
           return;
         }
 
@@ -2230,7 +2261,7 @@
       try {
         await fetch("/api/auth/logout", { method: "POST" });
       } catch (e) {}
-      window.location.href = "/login.html";
+      window.location.href = "/login";
     }
 
     // ── 1. DASHBOARD & STATS ─────────────────────────────────────────────

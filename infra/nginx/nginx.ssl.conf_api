@@ -1,0 +1,84 @@
+# ==============================================================================
+# HestiaCP Nginx Custom Include - LevelUp Study (HTTPS)
+# Local no Servidor: /home/LevelUp/conf/web/levelupstudy.com.br/nginx.ssl.conf_api
+# ==============================================================================
+
+# ── 1. REDIRECIONAMENTOS AMIGÁVEIS (Remove .html da barra de navegação) ──────
+if ($request_uri ~ ^/landing\.html(\?.*)?$) {
+    return 301 /$1;
+}
+if ($request_uri ~ ^/index\.html(\?.*)?$) {
+    return 301 /app$1;
+}
+if ($request_uri ~ ^/([^?]+)\.html(\?.*)?$) {
+    return 301 /$1$2;
+}
+
+# ── 2. PÁGINA INICIAL (HOME PÚBLICA DE VENDAS) ────────────────────────────────
+# O visitante deslogado que entra em https://levelupstudy.com.br/ vê a landing page
+location = / {
+    root /home/LevelUp/web/levelupstudy.com.br/public_html;
+    try_files /landing.html =404;
+}
+
+location = /landing {
+    return 301 /;
+}
+
+# ── 3. PAINEL PRIVADO DO ALUNO (Área Logada) ──────────────────────────────────
+# Acessível via /app ou /dashboard (com escudo anti-flicker e verificação de login)
+location ~ ^/(app|dashboard)/?$ {
+    root /home/LevelUp/web/levelupstudy.com.br/public_html;
+    try_files /index.html =404;
+}
+
+# ── 4. ROTAS AMIGÁVEIS DO FRONTEND (Sem .html) ────────────────────────────────
+location ~ ^/(login|register|checkout|admin|planos|assinatura)/?$ {
+    root /home/LevelUp/web/levelupstudy.com.br/public_html;
+    try_files $1.html =404;
+}
+
+# ── 5. FAVICON OFICIAL MODERNO (Cache de 30 dias) ─────────────────────────────
+location = /favicon.ico {
+    root /home/LevelUp/web/levelupstudy.com.br/public_html;
+    access_log off;
+    log_not_found off;
+    expires 30d;
+}
+
+location = /favicon.svg {
+    root /home/LevelUp/web/levelupstudy.com.br/public_html;
+    access_log off;
+    log_not_found off;
+    expires 30d;
+}
+
+# ── 6. PROXY REVERSO PARA A API FLASK / GUNICORN (Porta 8017) ─────────────────
+location ^~ /api/ {
+    proxy_pass          http://127.0.0.1:8017;
+    proxy_http_version  1.1;
+
+    proxy_set_header    Host                $host;
+    proxy_set_header    X-Real-IP           $remote_addr;
+    proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
+    proxy_set_header    X-Forwarded-Proto   $scheme;
+    proxy_set_header    X-Forwarded-Host    $host;
+    proxy_set_header    X-Forwarded-Port    $server_port;
+
+    proxy_connect_timeout 15s;
+    proxy_read_timeout    60s;
+    proxy_send_timeout    60s;
+
+    proxy_buffering       on;
+    proxy_buffer_size     8k;
+    proxy_buffers         8 8k;
+
+    client_max_body_size  10M;
+}
+
+# ── 7. HARDENING: Bloqueio estrito de arquivos sensíveis e bancos de dados ───
+location ~* \.(py|pyc|db|sqlite|sqlite3|sql|bak|log|conf|ini|sh|yaml|yml|md|env)$ {
+    access_log off;
+    log_not_found off;
+    return 404;
+}
