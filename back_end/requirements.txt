@@ -4,6 +4,10 @@ flask-sqlalchemy
 flask-migrate
 werkzeug
 google-genai
+google-api-python-client>=2.0.0
+google-auth>=2.0.0
+google-auth-httplib2>=0.2.0
+google-auth-oauthlib>=1.0.0
 python-dotenv
 emoji>=2,<3
 Pillow>=12.3,<13
